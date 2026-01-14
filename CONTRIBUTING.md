@@ -169,14 +169,3 @@ PR은 코드 품질을 보장하는 마지막 관문입니다.
   [https://google.github.io/eng-practices/review/reviewer/](https://google.github.io/eng-practices/review/reviewer/)
 
 ---
-
-## 💡 팀장을 위한 실무 Tip
-
-초반 1~2주는 팀원들이 규칙에 익숙하지 않습니다.
-PR에서 직접
-
-> “커밋 메시지 이렇게 수정해주세요 🙂”
-
-라고 코멘트하며 습관을 잡아주는 **온보딩 과정**이 꼭 필요합니다.
-
----
