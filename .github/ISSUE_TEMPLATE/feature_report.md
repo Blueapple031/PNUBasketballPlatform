@@ -1,7 +1,7 @@
 ---
 name: ✨ Feature Request (기능 요청)
 about: 새로운 기능 개발이 필요할 때 사용하세요.
-title: "[Feat(범위)]: 기능 요약 (예: [Feat(be)]: 회원가입 API 구현)"
+title: "ex) [Feat(fe/be)]: 회원가입 API 구현"
 labels: enhancement
 assignees: ''
 ---

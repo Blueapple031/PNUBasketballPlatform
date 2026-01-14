@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: basketball-backend
+  
+  datasource:
+    url: jdbc:mysql://localhost:3306/basketball_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: 
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  
+  redis:
+    host: localhost
+    port: 6379
+    password: 
+    timeout: 2000ms
+
+server:
+  port: 8080
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.pnu.basketball: DEBUG
+    org.springframework.web: INFO
+
