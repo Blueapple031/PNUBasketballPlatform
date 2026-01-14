@@ -1,4 +1,4 @@
-# 🏀 Hoop Mate (프로젝트명)
+# 🏀 딸바
 
 > **내 주변 농구장을 찾고, 실시간으로 번개 매칭을 즐기세요!** > 위치 기반 실시간 농구 매칭 & 커뮤니티 플랫폼
 
@@ -14,10 +14,10 @@
 ## 👥 Team Members
 | Position | Name | GitHub | Role |
 | :--- | :---: | :---: | :--- |
-| **Backend** | **홍길동** (팀장) | [@gildong](https://github.com/username) | API 설계, DB 구축, 배포 |
-| **Backend** | **김철수** | [@chulsoo](https://github.com/username) | 회원가입/인증, 채팅 서버 구현 |
-| **Frontend** | **이영희** | [@younghee](https://github.com/username) | 지도 서비스, 매칭 UI 구현 |
-| **Frontend** | **박민수** | [@minsoo](https://github.com/username) | 채팅 클라이언트, 게시판 UI |
+| **Backend** | **김세엽** (팀장) | [@gildong](https://github.com/username) | API 설계, DB 구축, 배포 |
+| **Backend** | **임도균** | [@chulsoo](https://github.com/username) | 회원가입/인증, 채팅 서버 구현 |
+| **Frontend** | **이학영** | [@younghee](https://github.com/username) | 지도 서비스, 매칭 UI 구현 |
+| **Frontend** | **박현아** | [@minsoo](https://github.com/username) | 채팅 클라이언트, 게시판 UI |
 
 ---
 
