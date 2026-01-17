@@ -27,11 +27,22 @@ dependencies:
   # Utils
   shared_preferences: ^2.2.2
   intl: ^0.18.1
+  
+  # 구글 로그인
+  google_sign_in: ^6.1.5
+  
+  # 보안 저장소 (토큰 저장)
+  flutter_secure_storage: ^9.0.0
+  
+  # JSON 직렬화
+  json_annotation: ^4.8.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  json_serializable: ^6.7.1
+  build_runner: ^2.4.7
 
 flutter:
   uses-material-design: true

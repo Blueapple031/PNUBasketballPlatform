@@ -3,10 +3,10 @@ spring:
     name: basketball-backend
   
   datasource:
-    url: jdbc:mysql://localhost:3306/basketball_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: root
+    url: jdbc:postgresql://localhost:5432/basketball_db
+    username: postgres
     password: 
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: org.postgresql.Driver
   
   jpa:
     hibernate:
@@ -15,13 +15,38 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
   
   redis:
     host: localhost
     port: 6379
     password: 
     timeout: 2000ms
+  
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
+
+jwt:
+  secret: ${JWT_SECRET:your-secret-key-change-in-production-min-256-bits}
+  access-token-expiration: 3600000  # 1시간 (밀리초)
+  refresh-token-expiration: 604800000  # 7일 (밀리초)
+
+google:
+  oauth2:
+    client-id: ${GOOGLE_CLIENT_ID:}
 
 server:
   port: 8080

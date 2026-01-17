@@ -30,7 +30,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     
     // Database
-    runtimeOnly 'com.mysql:mysql-connector-j'
+    runtimeOnly 'org.postgresql:postgresql'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     
     // JWT
@@ -40,6 +40,12 @@ dependencies {
     
     // API Documentation (Swagger)
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    
+    // OAuth2 Client (구글 로그인)
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    
+    // Google API Client (ID Token 검증)
+    implementation 'com.google.api-client:google-api-client:2.2.0'
     
     // Lombok
     compileOnly 'org.projectlombok:lombok'

@@ -95,8 +95,8 @@ dev_dependencies:
 ### User 테이블
 
 ```sql
-CREATE TABLE users (
-    user_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS users (
+    user_id BIGSERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255),  -- NULL 가능 (구글 로그인 사용자)
     nickname VARCHAR(50) NOT NULL UNIQUE,
@@ -105,11 +105,28 @@ CREATE TABLE users (
     login_type VARCHAR(20) NOT NULL DEFAULT 'EMAIL',  -- EMAIL, GOOGLE
     google_id VARCHAR(255) UNIQUE,  -- 구글 사용자 ID
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_email (email),
-    INDEX idx_google_id (google_id),
-    INDEX idx_nickname (nickname)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 인덱스 생성
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
+CREATE INDEX IF NOT EXISTS idx_users_nickname ON users(nickname);
+
+-- updated_at 자동 업데이트를 위한 트리거 함수
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- updated_at 트리거 생성
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 ```
 
 ### RefreshToken 테이블 (Redis 사용 권장)
@@ -119,20 +136,22 @@ CREATE TABLE users (
 - Value: `{refreshToken}`
 - TTL: 7일
 
-**옵션 2: MySQL 테이블 (대안)**
+**옵션 2: PostgreSQL 테이블 (대안)**
 
 ```sql
-CREATE TABLE refresh_tokens (
-    token_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    token_id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     token VARCHAR(500) NOT NULL UNIQUE,
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    INDEX idx_user_id (user_id),
-    INDEX idx_token (token),
-    INDEX idx_expires_at (expires_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- 인덱스 생성
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON refresh_tokens(expires_at);
 ```
 
 ---

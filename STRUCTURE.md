@@ -26,7 +26,7 @@
   - Frontend: **Clean Architecture** (Presentation → Domain → Data)
 
 ### 기술 스택
-- **Backend**: Java 17, Spring Boot 3.2.1, Gradle, MySQL, Redis
+- **Backend**: Java 17, Spring Boot 3.2.1, Gradle, PostgreSQL, Redis
 - **Frontend**: Flutter 3.0+, Dart, Provider (State Management)
 - **인프라**: WebSocket (STOMP), JWT 인증
 

@@ -30,7 +30,7 @@
 ### Development
 | Frontend (App) | Backend (Server) | Data & Infra |
 | :---: | :---: | :---: |
-| ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white) | ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) | ![MySQL](https://img.shields.io/badge/mysql-4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white) |
+| ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white) | ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) | ![PostgreSQL](https://img.shields.io/badge/postgresql-316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) |
 | ![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white) | ![Spring Boot](https://img.shields.io/badge/springboot-6DB33F.svg?style=for-the-badge&logo=springboot&logoColor=white) | ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white) |
 | | ![WebSocket](https://img.shields.io/badge/Websocket-white?style=for-the-badge) | |
 
@@ -69,18 +69,29 @@ basket-match-app/
 
 ### 1. Backend (Spring Boot)
 
-서버 실행을 위해 Java 17 이상이 필요합니다.
+서버 실행을 위해 Java 17 이상과 PostgreSQL이 필요합니다.
 
+**데이터베이스 설정:**
+```bash
+# PostgreSQL 데이터베이스 생성
+createdb basketball_db
+
+# 또는 psql에서 실행
+psql -U postgres
+CREATE DATABASE basketball_db;
+```
+
+**애플리케이션 실행:**
 ```bash
 # 프로젝트 루트에서 백엔드 폴더로 이동
 cd backend
 
 # 의존성 설치 및 실행
 ./gradlew bootRun
-
 ```
 
 * **Server Port:** 8080
+* **Database:** PostgreSQL (기본 포트: 5432)
 * **API Docs:** `http://localhost:8080/swagger-ui.html` (실행 후 접속 가능)
 
 ### 2. Frontend (Flutter)
