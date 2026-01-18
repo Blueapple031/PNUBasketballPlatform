@@ -15,6 +15,11 @@ replay_pid*
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Backend build files
+backend/build/
+backend/.gradle/
+backend/out/
+
 # ===================================
 # Gradle
 # ===================================
@@ -82,7 +87,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
-pubspec.lock # 팀 프로젝트에서는 주석 해제 고려
+pubspec.lock
+.metadata
 
 # Symbolication related
 app.*.symbols
@@ -96,10 +102,19 @@ capture/
 .gradle/
 local.properties
 
+# Flutter Android build files
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/android/build/
+frontend/android/.idea/
+frontend/android/local.properties
+frontend/android/.metadata
+
 # Flutter generated files
 *.g.dart
 flutter_*.png
 /lib/generated_plugin_registrant.dart
+**/generated_plugin_registrant.dart
 
 # Web related
 lib/generated_plugin_registrant.dart
@@ -132,9 +147,13 @@ gen/
 out/
 release/
 
-# Gradle files
+# Gradle files (일반)
 .gradle/
 build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+!**/gradle/wrapper/gradle-wrapper.jar
+!**/gradle/wrapper/gradle-wrapper.properties
 
 # Local configuration file (sdk path, etc)
 local.properties
