@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/home/home_screen.dart';
 
 class BasketballApp extends StatelessWidget {
   const BasketballApp({super.key});
@@ -21,6 +22,7 @@ class BasketballApp extends StatelessWidget {
         home: const LoginScreen(),
         routes: {
           '/login': (context) => const LoginScreen(),
+          '/home': (context) => const HomeScreen(),
         },
       ),
     );
