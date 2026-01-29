@@ -2,12 +2,13 @@ spring:
   application:
     name: basketball-backend
   
-  datasource:
-    url: jdbc:postgresql://localhost:5432/basketball_db
-    username: postgres
-    password: 
-    driver-class-name: org.postgresql.Driver
+  # 민감한 정보는 application-secret.yml에서 로드
+  config:
+    import: optional:classpath:application-secret.yml
   
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    
   jpa:
     hibernate:
       ddl-auto: update
@@ -19,9 +20,6 @@ spring:
         default_schema: public
   
   redis:
-    host: localhost
-    port: 6379
-    password: 
     timeout: 2000ms
   
   security:
@@ -29,8 +27,6 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:}
-            client-secret: ${GOOGLE_CLIENT_SECRET:}
             scope:
               - openid
               - profile
@@ -40,13 +36,8 @@ spring:
             issuer-uri: https://accounts.google.com
 
 jwt:
-  secret: ${JWT_SECRET:your-secret-key-change-in-production-min-256-bits}
   access-token-expiration: 3600000  # 1시간 (밀리초)
   refresh-token-expiration: 604800000  # 7일 (밀리초)
-
-google:
-  oauth2:
-    client-id: ${GOOGLE_CLIENT_ID:}
 
 server:
   port: 8080
