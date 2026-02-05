@@ -24,18 +24,12 @@ class ProfileHeader extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.grey.shade300,
-              image: const DecorationImage(
-                image: AssetImage('assets/images/placeholder_avatar.png'),
-                fit: BoxFit.cover,
-              ),
             ),
-            child: Colors.grey.shade300 == Colors.grey.shade300
-                ? Icon(
-                    Icons.person,
-                    size: 50,
-                    color: Colors.grey.shade600,
-                  )
-                : null,
+            child: Icon(
+              Icons.person,
+              size: 50,
+              color: Colors.grey.shade600,
+            ),
           ),
           const SizedBox(height: 16),
           // 닉네임, 나이, 국기

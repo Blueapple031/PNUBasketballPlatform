@@ -58,13 +58,13 @@ class SettingsList extends StatelessWidget {
 class _SettingsMenuTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final bool isDestructive;
 
   const _SettingsMenuTile({
     required this.icon,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     this.isDestructive = false,
   });
 
@@ -82,7 +82,7 @@ class _SettingsMenuTile extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
-      subtitle: subtitle.isNotEmpty ? Text(subtitle) : null,
+      subtitle: subtitle != null ? Text(subtitle) : null,
       trailing: Icon(
         Icons.arrow_forward_ios,
         size: 16,

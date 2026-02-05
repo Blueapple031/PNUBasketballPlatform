@@ -15,8 +15,8 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const BasketballApp());
 
-    // Verify that login screen is displayed
-    expect(find.text('로그인'), findsWidgets);
+    // Verify that the UserTab screen is displayed
+    expect(find.text('마이페이지'), findsOneWidget);
     expect(find.text('딸바'), findsOneWidget);
   });
 }
