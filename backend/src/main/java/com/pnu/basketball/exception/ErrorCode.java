@@ -17,7 +17,10 @@ public enum ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 일치하지 않습니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
-    GOOGLE_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "구글 토큰 검증에 실패했습니다."),
+    GOOGLE_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "구글 토큰 검증에 실패했습니다."),    
+    SOCIAL_LOGIN_USER_ACCESS_DENIED(HttpStatus.FORBIDDEN, "소셜 로그인 사용자는 접근할 수 없습니다."),
+    INVALID_CURRENT_PASSWORD(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
+    USER_DEACTIVATED(HttpStatus.FORBIDDEN, "탈퇴한 회원입니다."),
     
     // 404 Not Found
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
@@ -33,4 +36,3 @@ public enum ErrorCode {
     private final HttpStatus httpStatus;
     private final String message;
 }
-

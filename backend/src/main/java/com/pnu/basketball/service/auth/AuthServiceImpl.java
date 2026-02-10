@@ -64,15 +64,24 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         
+        // 탈퇴한 회원인지 확인.
+        if (user.getDeletedAt() != null) {
+            throw new CustomException(ErrorCode.USER_DEACTIVATED, "이미 탈퇴한 회원입니다.");
+        }        
         // 비밀번호 확인
         if (user.getPassword() == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
         }
-        
+
+         // 마지막 로그인 시간 업데이트
+        user.updateLastLoginTime();
+        userRepository.save(user);
+
         log.info("사용자 로그인: userId={}, email={}", user.getUserId(), user.getEmail());
         
         return generateAuthResponse(user, false);

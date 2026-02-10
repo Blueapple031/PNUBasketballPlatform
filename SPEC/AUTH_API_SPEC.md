@@ -13,8 +13,9 @@
 3. [자체 로그인 API](#자체-로그인-api)
 4. [구글 로그인 API](#구글-로그인-api)
 5. [토큰 관리 API](#토큰-관리-api)
-6. [에러 응답](#에러-응답)
-7. [데이터 모델](#데이터-모델)
+6. [사용자 관리 API](#-사용자-관리-api-user-management-api)
+7. [에러 응답](#에러-응답)
+8. [데이터 모델](#데이터-모델)
 
 ---
 
@@ -432,6 +433,110 @@ Authorization: Bearer {access_token}
 
 ---
 
+## 👤 사용자 API (User API)
+
+### 1. 프로필 수정 (Update Profile)
+
+**엔드포인트**: `PUT /api/users/me`
+
+**설명**: 현재 로그인한 사용자의 프로필 정보(닉네임, 전화번호, 프로필 이미지 URL)를 수정합니다.
+
+**인증 필요**: ✅ (Access Token 필요)
+
+**요청 본문**:
+```json
+{
+  "nickname": "새로운농구왕",
+  "phoneNumber": "010-8765-4321",
+  "profileImageUrl": "https://example.com/new-profile.jpg"
+}
+```
+
+**요청 필드**:
+| 필드 | 타입 | 필수 | 설명 | 제약 조건 |
+|------|------|------|------|----------|
+| `nickname` | string | ❌ | 변경할 닉네임 | 2-20자, 중복 불가 |
+| `phoneNumber` | string | ❌ | 변경할 전화번호 | 010-XXXX-XXXX 형식 |
+| `profileImageUrl` | string | ❌ | 변경할 프로필 이미지 URL | URL 형식 |
+
+**성공 응답 (200 OK)**:
+```json
+{
+  "success": true,
+  "data": {
+    "userId": 1,
+    "email": "user@example.com",
+    "nickname": "새로운농구왕",
+    "phoneNumber": "010-8765-4321",
+    "profileImageUrl": "https://example.com/new-profile.jpg",
+    "loginType": "EMAIL",
+    "updatedAt": "2026-01-16T11:00:00"
+  },
+  "message": "프로필이 성공적으로 수정되었습니다."
+}
+```
+
+**에러 응답**:
+- `400 Bad Request`: 유효하지 않은 입력값
+- `401 Unauthorized`: 유효하지 않은 Access Token
+- `409 Conflict`: 닉네임 중복
+
+---
+
+### 2. 비밀번호 변경 (Change Password)
+
+**엔드포인트**: `PUT /api/users/me/password`
+
+**설명**: 자체 로그인 사용자의 비밀번호를 변경합니다. (구글 로그인 사용자는 접근 불가)
+
+**인증 필요**: ✅ (Access Token 필요)
+
+**요청 본문**:
+```json
+{
+  "currentPassword": "SecurePassword123!",
+  "newPassword": "NewSecurePassword456@"
+}
+```
+
+**성공 응답 (200 OK)**:
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "비밀번호가 성공적으로 변경되었습니다."
+}
+```
+
+**에러 응답**:
+- `400 Bad Request`: 현재 비밀번호 불일치 또는 새 비밀번호 유효성 오류
+- `401 Unauthorized`: 유효하지 않은 Access Token
+- `403 Forbidden`: 구글 로그인 사용자가 접근 시도
+
+---
+
+### 3. 회원 탈퇴 (Withdraw Account)
+
+**엔드포인트**: `DELETE /api/users/me`
+
+**설명**: 현재 로그인한 사용자의 계정을 비활성화(소프트 삭제)합니다.
+
+**인증 필요**: ✅ (Access Token 필요)
+
+**성공 응답 (200 OK)**:
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "회원 탈퇴가 성공적으로 처리되었습니다."
+}
+```
+
+**에러 응답**:
+- `401 Unauthorized`: 유효하지 않은 Access Token
+
+---
+
 ## ⚠️ 에러 응답
 
 ### 에러 코드 목록
@@ -543,10 +648,10 @@ Authorization: Bearer {access_token}
 | 버전 | 날짜 | 변경 내용 | 작성자 |
 |------|------|----------|--------|
 | 1.0.0 | 2026-01 | 초기 API 명세서 작성 | 팀 |
+| 1.0.1 | 2026-02 | User API 명세서 작성 | 팀 |
 
 ---
 
 **문서 작성일**: 2026년 1월  
-**최종 수정일**: 2026년 1월  
+**최종 수정일**: 2026년 2월  
 **작성자**: 딸바 개발팀
-

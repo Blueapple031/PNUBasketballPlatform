@@ -10,5 +10,7 @@ class ApiEndpoints {
   static const String me = '/api/auth/me';
   static const String checkEmail = '/api/auth/check-email';
   static const String checkNickname = '/api/auth/check-nickname';
-}
 
+  // User endpoints
+  static const String userProfile = '/api/user/profile';
+}
