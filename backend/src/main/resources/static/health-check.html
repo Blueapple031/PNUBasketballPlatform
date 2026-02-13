@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNU Basketball Platform - Server Status</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 15px 30px;
+            background: #10b981;
+            color: white;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 20px 0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+        }
+
+        .status-badge::before {
+            content: "●";
+            margin-right: 10px;
+            font-size: 1.5em;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #f6f8fb 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-card h3 {
+            color: #667eea;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .info-card p {
+            color: #333;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .api-section {
+            margin-top: 40px;
+        }
+
+        .api-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .api-endpoint {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .api-endpoint:hover {
+            background: #e9ecef;
+        }
+
+        .api-endpoint .endpoint-name {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .api-endpoint .endpoint-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .endpoint-status.checking {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .endpoint-status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .endpoint-status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.95);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏀 PNU Basketball Platform</h1>
+            <p>AWS Server Status Dashboard</p>
+            <div class="status-badge" id="mainStatus">Server is Running</div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Server Status</h3>
+                <p id="serverStatus">✓ Online</p>
+            </div>
+            <div class="info-card">
+                <h3>Current Time</h3>
+                <p id="currentTime">Loading...</p>
+            </div>
+            <div class="info-card">
+                <h3>Uptime</h3>
+                <p id="uptime">Checking...</p>
+            </div>
+            <div class="info-card">
+                <h3>Environment</h3>
+                <p id="environment">AWS EC2</p>
+            </div>
+        </div>
+
+        <div class="api-section">
+            <h2>API Endpoints Status</h2>
+            <div class="api-endpoint">
+                <span class="endpoint-name">GET /api/health</span>
+                <span class="endpoint-status checking" id="health-status">Checking...</span>
+            </div>
+            <div class="api-endpoint">
+                <span class="endpoint-name">GET /api/v1/auth/google/login</span>
+                <span class="endpoint-status checking" id="auth-status">Checking...</span>
+            </div>
+            <div class="api-endpoint">
+                <span class="endpoint-name">POST /api/v1/auth/google/callback</span>
+                <span class="endpoint-status checking" id="callback-status">Checking...</span>
+            </div>
+            <div class="api-endpoint">
+                <span class="endpoint-name">Database Connection</span>
+                <span class="endpoint-status checking" id="db-status">Checking...</span>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <button class="refresh-btn" onclick="checkAllEndpoints()">
+                <span id="refreshBtnText">Refresh Status</span>
+            </button>
+        </div>
+
+        <div class="footer">
+            <p>Last checked: <span id="lastChecked">-</span></p>
+            <p style="margin-top: 10px;">© 2026 PNU Basketball Platform. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('ko-KR');
+        }
+
+        function updateLastChecked() {
+            const now = new Date();
+            document.getElementById('lastChecked').textContent = now.toLocaleString('ko-KR');
+        }
+
+        async function checkEndpoint(url, statusElementId) {
+            const statusElement = document.getElementById(statusElementId);
+            try {
+                const response = await fetch(url, { 
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok || response.status === 302) {
+                    statusElement.textContent = '✓ Available';
+                    statusElement.className = 'endpoint-status success';
+                } else {
+                    statusElement.textContent = `⚠ ${response.status}`;
+                    statusElement.className = 'endpoint-status error';
+                }
+            } catch (error) {
+                statusElement.textContent = '○ Not configured';
+                statusElement.className = 'endpoint-status checking';
+            }
+        }
+
+        async function checkAllEndpoints() {
+            const btn = document.getElementById('refreshBtnText');
+            btn.innerHTML = '<span class="loading"></span>';
+            
+            // 현재 도메인을 기준으로 API 체크
+            const baseUrl = window.location.origin;
+            
+            await Promise.all([
+                checkEndpoint(`${baseUrl}/api/health`, 'health-status'),
+                checkEndpoint(`${baseUrl}/api/v1/auth/google/login`, 'auth-status'),
+                checkEndpoint(`${baseUrl}/api/v1/auth/google/callback`, 'callback-status')
+            ]);
+
+            // DB 상태는 health endpoint가 있으면 연결됨으로 간주
+            const healthStatus = document.getElementById('health-status');
+            const dbStatus = document.getElementById('db-status');
+            if (healthStatus.classList.contains('success')) {
+                dbStatus.textContent = '✓ Connected';
+                dbStatus.className = 'endpoint-status success';
+            } else {
+                dbStatus.textContent = '○ Unknown';
+                dbStatus.className = 'endpoint-status checking';
+            }
+
+            updateLastChecked();
+            btn.textContent = 'Refresh Status';
+        }
+
+        // 시작 시간 저장 및 업타임 계산
+        const startTime = new Date();
+        function updateUptime() {
+            const now = new Date();
+            const diff = Math.floor((now - startTime) / 1000);
+            const minutes = Math.floor(diff / 60);
+            const seconds = diff % 60;
+            document.getElementById('uptime').textContent = `${minutes}m ${seconds}s`;
+        }
+
+        // 초기 로드
+        updateTime();
+        updateLastChecked();
+        checkAllEndpoints();
+        
+        // 주기적 업데이트
+        setInterval(updateTime, 1000);
+        setInterval(updateUptime, 1000);
+        setInterval(checkAllEndpoints, 30000); // 30초마다 자동 체크
+    </script>
+</body>
+</html>

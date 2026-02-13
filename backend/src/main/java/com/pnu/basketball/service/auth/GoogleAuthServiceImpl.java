@@ -53,6 +53,10 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
             String pictureUrl = (String) payload.get("picture");
             String googleId = payload.getSubject();
             
+            // 신규 사용자 여부 확인 (사용자 조회 전에 확인)
+            boolean isNewUser = !userRepository.existsByGoogleId(googleId) && 
+                               !userRepository.existsByEmail(email);
+            
             // 기존 사용자 조회 또는 신규 생성
             User user = userRepository.findByGoogleId(googleId)
                     .orElseGet(() -> {
@@ -86,9 +90,6 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
                                     return userRepository.save(newUser);
                                 });
                     });
-            
-            boolean isNewUser = user.getGoogleId() == null || 
-                               !userRepository.existsByGoogleId(googleId);
             
             log.info("구글 로그인 성공: userId={}, email={}, isNewUser={}", user.getUserId(), email, isNewUser);
             
