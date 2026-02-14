@@ -6,6 +6,7 @@ plugins {
 
 group = 'com.pnu'
 version = '0.0.1-SNAPSHOT'
+archivesBaseName = 'PNUBasketballPlatform'
 
 java {
     sourceCompatibility = '17'

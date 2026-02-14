@@ -49,5 +49,34 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-}
 
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+    
+    public void updateProfile(String nickname, String phoneNumber, String profileImageUrl) {
+        if (nickname != null) {
+            this.nickname = nickname;
+        }
+        if (phoneNumber != null) {
+            this.phoneNumber = phoneNumber;
+        }
+        if (profileImageUrl != null) {
+            this.profileImageUrl = profileImageUrl;
+        }
+    }
+
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void updateLastLoginTime() {
+        this.lastLoginAt = LocalDateTime.now();
+    }
+}
