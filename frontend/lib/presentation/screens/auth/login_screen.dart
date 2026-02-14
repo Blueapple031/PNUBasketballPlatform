@@ -150,9 +150,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   onPressed: _handleGoogleLogin,
-                  icon: Image.network(
-                    'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                    height: 20,
+                  icon: const Icon(
+                    Icons.g_mobiledata,
+                    size: 24,
                   ),
                   label: const Text('구글로 로그인'),
                 ),
