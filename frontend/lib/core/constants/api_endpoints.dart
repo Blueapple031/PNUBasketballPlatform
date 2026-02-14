@@ -1,5 +1,8 @@
 class ApiEndpoints {
-  static const String baseUrl = 'http://localhost:8080';
+  // Override with:
+  // flutter run --dart-define=API_BASE_URL=http://<ec2-host>:8080
+  static const String baseUrl =
+      String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8080');
   
   // Auth endpoints
   static const String signup = '/api/auth/signup';
