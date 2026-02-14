@@ -1,8 +1,8 @@
 class ApiEndpoints {
   // Override with:
-  // flutter run --dart-define=API_BASE_URL=http://<ec2-host>:8080
+  // flutter run --dart-define=API_BASE_URL=https://ddalba.duckdns.org
   static const String baseUrl =
-      String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8080');
+      String.fromEnvironment('API_BASE_URL', defaultValue: 'https://ddalba.duckdns.org');
   
   // Auth endpoints
   static const String signup = '/api/auth/signup';
