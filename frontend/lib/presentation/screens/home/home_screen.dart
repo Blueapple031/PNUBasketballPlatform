@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -65,27 +66,17 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         title: Row(
           children: [
-            Icon(Icons.sports_basketball, color: Colors.orange[700], size: 28),
+            Icon(Icons.sports_basketball, color: AppColors.alertOrange, size: 28),
             const SizedBox(width: 8),
-            const Text(
-              '딸바',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
+            const Text('딸바'),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.black),
+            icon: const Icon(Icons.notifications_outlined),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('알림 기능 준비 중입니다')),
@@ -93,7 +84,7 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.filter_list, color: Colors.black),
+            icon: const Icon(Icons.filter_list),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('필터 기능 준비 중입니다')),
@@ -111,7 +102,7 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withValues(alpha: 0.1),
+                  color: AppColors.border.withValues(alpha: 0.3),
                   spreadRadius: 1,
                   blurRadius: 3,
                   offset: const Offset(0, 2),
@@ -157,7 +148,7 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: isActive ? Colors.white : Colors.grey[700]),
+          Icon(icon, size: 16, color: isActive ? Colors.white : AppColors.subText),
           const SizedBox(width: 4),
           Text(label),
         ],
@@ -169,12 +160,12 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
         );
       },
       backgroundColor: Colors.white,
-      selectedColor: Colors.blue,
+      selectedColor: AppColors.activeBlue,
       labelStyle: TextStyle(
-        color: isActive ? Colors.white : Colors.black87,
+        color: isActive ? Colors.white : AppColors.titleText,
         fontSize: 13,
       ),
-      side: BorderSide(color: isActive ? Colors.blue : Colors.grey[300]!),
+      side: BorderSide(color: isActive ? AppColors.activeBlue : AppColors.border),
     );
   }
 
@@ -193,143 +184,134 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
           );
         },
         child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 프로필 사진
-            Stack(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.blue[200],
-                  child: const Icon(
-                    Icons.person,
-                    size: 40,
-                    color: Colors.white,
-                  ),
-                ),
-                if (profile['isOnline'])
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            // 프로필 정보
-            Expanded(
-              child: Column(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: [
+              // 상단: 프로필 정보
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  // 프로필 사진
+                  Stack(
                     children: [
-                      Text(
-                        profile['nickname'],
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      CircleAvatar(
+                        radius: 35,
+                        backgroundColor: AppColors.activeBlue.withValues(alpha: 0.3),
+                        child: const Icon(Icons.person, size: 35, color: Colors.white),
                       ),
-                      const SizedBox(width: 8),
-                      if (profile['isNew'])
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.orange[100],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'NEW',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange[800],
+                      if (profile['isOnline'])
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            width: 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: AppColors.classTeal,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
                             ),
                           ),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${profile['age']}세 · ${profile['location']}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
+                  const SizedBox(width: 12),
+                  // 프로필 정보
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              profile['nickname'],
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: 8),
+                            if (profile['isNew'])
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.alertOrange.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'NEW',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.alertOrange,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${profile['age']}세 · ${profile['location']}',
+                          style: const TextStyle(fontSize: 13, color: AppColors.subText),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          profile['bio'],
+                          style: const TextStyle(fontSize: 13, color: AppColors.titleText),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    profile['bio'],
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[800],
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 12),
-                  // 좋아요 버튼
-                  Row(
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('${profile['nickname']}님에게 관심 표시!')),
-                          );
-                        },
-                        icon: Icon(Icons.favorite_border, size: 18, color: Colors.red[400]),
-                        label: const Text('관심 표시'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.black87,
-                          side: BorderSide(color: Colors.grey[300]!),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('${profile['nickname']}님에게 메시지 보내기 준비 중')),
-                          );
-                        },
-                        icon: Icon(Icons.message_outlined, size: 18, color: Colors.blue[400]),
-                        label: const Text('메시지'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.black87,
-                          side: BorderSide(color: Colors.grey[300]!),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        ),
-                      ),
-                    ],
+                  // 더보기 아이콘
+                  IconButton(
+                    icon: const Icon(Icons.more_vert, color: AppColors.subText, size: 20),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('더보기 메뉴 준비 중입니다')),
+                      );
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
                 ],
               ),
-            ),
-            // 더보기 아이콘
-            IconButton(
-              icon: Icon(Icons.more_vert, color: Colors.grey[600]),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('더보기 메뉴 준비 중입니다')),
-                );
-              },
-            ),
-          ],
+              const SizedBox(height: 12),
+              // 하단: 버튼들
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('${profile['nickname']}님에게 관심 표시!')),
+                        );
+                      },
+                      icon: Icon(Icons.favorite_border, size: 18, color: AppColors.alertOrange),
+                      label: const Text('관심 표시', style: TextStyle(fontSize: 14)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('${profile['nickname']}님에게 메시지 보내기 준비 중')),
+                        );
+                      },
+                      icon: Icon(Icons.message_outlined, size: 18, color: AppColors.activeBlue),
+                      label: const Text('메시지', style: TextStyle(fontSize: 14)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

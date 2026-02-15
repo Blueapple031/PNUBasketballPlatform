@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
 import '../home/home_screen.dart';
 
 /// RootScreen: BottomNavigationBar를 관리하는 루트 화면
@@ -32,25 +33,12 @@ class _RootScreenState extends State<RootScreen> {
         children: _screens,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
           });
         },
-        // Design System: PNU Plato Colors
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF005BAA),  // ActiveBlue
-        unselectedItemColor: const Color(0xFF9E9E9E), // SubText
-        selectedLabelStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.normal,
-        ),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
@@ -96,18 +84,15 @@ class PlaceholderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF545454), // HeaderGrey
-        elevation: 0,
+        backgroundColor: AppColors.headerGrey,
         title: Text(
           title,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 20,
           ),
         ),
       ),
-      backgroundColor: const Color(0xFFF5F5F5), // PageBg
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -120,18 +105,13 @@ class PlaceholderScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               '$title 화면',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF212121), // TitleText
-              ),
+              style: Theme.of(context).textTheme.displayLarge,
             ),
             const SizedBox(height: 8),
             Text(
               '준비 중입니다',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: AppColors.subText,
               ),
             ),
           ],
