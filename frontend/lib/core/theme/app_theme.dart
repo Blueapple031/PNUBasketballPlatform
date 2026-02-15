@@ -51,7 +51,7 @@ class AppTheme {
       ),
       
       // ===== Card Theme (자동 적용) =====
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
