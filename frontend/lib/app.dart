@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/screens/auth/login_screen.dart';
-import 'presentation/screens/home/home_screen.dart';
+import 'presentation/screens/root/root_screen.dart';
 import 'presentation/screens/user/user_tab.dart';
 
 class BasketballApp extends StatelessWidget {
@@ -23,7 +23,7 @@ class BasketballApp extends StatelessWidget {
         home: const UserTab(), // 임시: UserTab 테스트용
         routes: {
           '/login': (context) => const LoginScreen(),
-          '/home': (context) => const HomeScreen(),
+          '/home': (context) => const RootScreen(),
         },
       ),
     );

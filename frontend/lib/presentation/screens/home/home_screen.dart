@@ -18,8 +18,6 @@ class MainFeedScreen extends StatefulWidget {
 }
 
 class _MainFeedScreenState extends State<MainFeedScreen> {
-  int _selectedBottomIndex = 0;
-  
   // 임시 프로필 데이터
   final List<Map<String, dynamic>> _profiles = [
     {
@@ -148,38 +146,6 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
                 return _buildProfileCard(profile);
               },
             ),
-          ),
-        ],
-      ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedBottomIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedBottomIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '홈',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.stadium),
-            label: '커뮤니티',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group),
-            label: '채팅',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: '일정',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'MY',
           ),
         ],
       ),
