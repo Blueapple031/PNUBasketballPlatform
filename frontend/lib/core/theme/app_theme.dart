@@ -19,17 +19,17 @@ class AppTheme {
       
       // ===== AppBar Theme (모든 AppBar에 자동 적용) =====
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.backgroundWhite,
-        foregroundColor: AppColors.titleText,
+        backgroundColor: AppColors.headerGrey,
+        foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
-          color: AppColors.titleText,
+          color: Colors.white,
         ),
         iconTheme: IconThemeData(
-          color: AppColors.titleText,
+          color: Colors.white,
         ),
       ),
       

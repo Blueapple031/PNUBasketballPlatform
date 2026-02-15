@@ -149,7 +149,7 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 16, color: isActive ? Colors.white : AppColors.subText),
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
           Text(label),
         ],
       ),
@@ -163,7 +163,7 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
       selectedColor: AppColors.activeBlue,
       labelStyle: TextStyle(
         color: isActive ? Colors.white : AppColors.titleText,
-        fontSize: 13,
+        fontSize: 12,
       ),
       side: BorderSide(color: isActive ? AppColors.activeBlue : AppColors.border),
     );
@@ -204,8 +204,8 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
                           right: 0,
                           bottom: 0,
                           child: Container(
-                            width: 14,
-                            height: 14,
+                            width: 16,
+                            height: 16,
                             decoration: BoxDecoration(
                               color: AppColors.classTeal,
                               shape: BoxShape.circle,
@@ -230,15 +230,15 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
                             const SizedBox(width: 8),
                             if (profile['isNew'])
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: AppColors.alertOrange.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(4),
+                                  color: AppColors.alertOrange.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: const Text(
                                   'NEW',
                                   style: TextStyle(
-                                    fontSize: 9,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.alertOrange,
                                   ),
