@@ -253,8 +253,9 @@ $RECYCLE.BIN/
 .env.*.local
 *.pem
 secrets.yml
+secrets.yml
 application-secret.yml
-application-local.yml
+application.yml
 
 # ===================================
 # Logs

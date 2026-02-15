@@ -90,7 +90,17 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
                                     return userRepository.save(newUser);
                                 });
                     });
-            
+        
+            // 탈퇴한 회원인지 확인
+            if (user.getDeletedAt() != null) {
+                log.warn("탈퇴한 회원의 로그인 시도: userId={}, email={}", user.getUserId(), user.getEmail());
+                throw new CustomException(ErrorCode.USER_DEACTIVATED, "이미 탈퇴한 회원입니다.");
+            }
+
+             // 마지막 로그인 시간 업데이트
+            user.updateLastLoginTime();
+            userRepository.save(user);
+
             log.info("구글 로그인 성공: userId={}, email={}, isNewUser={}", user.getUserId(), email, isNewUser);
             
             return generateAuthResponse(user, isNewUser);
@@ -169,4 +179,3 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
                 .build();
     }
 }
-
