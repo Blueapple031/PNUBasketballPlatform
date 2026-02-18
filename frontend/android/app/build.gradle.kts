@@ -44,12 +44,18 @@ flutter {
 }
 
 dependencies {
-    // AGP 8.7.3과 호환되는 androidx.core 버전으로 다운그레이드
+    // AGP 8.7.3과 호환되는 androidx.core 버전으로 강제 고정
     constraints {
         implementation("androidx.core:core:1.13.1") {
+            version {
+                strictly("1.13.1")
+            }
             because("AGP 8.7.3 compatibility")
         }
         implementation("androidx.core:core-ktx:1.13.1") {
+            version {
+                strictly("1.13.1")
+            }
             because("AGP 8.7.3 compatibility")
         }
     }

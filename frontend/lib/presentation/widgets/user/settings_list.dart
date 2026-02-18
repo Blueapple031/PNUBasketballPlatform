@@ -70,6 +70,7 @@ class _SettingsMenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final subtitleText = subtitle;
     return ListTile(
       leading: Icon(
         icon,
@@ -82,6 +83,9 @@ class _SettingsMenuTile extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
+      subtitle: (subtitleText != null && subtitleText.isNotEmpty)
+          ? Text(subtitleText)
+          : null,
       subtitle: subtitle != null ? Text(subtitle) : null,
       trailing: Icon(
         Icons.arrow_forward_ios,
