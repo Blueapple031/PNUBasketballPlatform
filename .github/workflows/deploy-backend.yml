@@ -54,10 +54,11 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          command_timeout: 1m
           script: |
             cd ~/PNUBasketballPlatform
-            PID=$(pgrep -f "app.jar" || true)
-            [ -n "$PID" ] && kill $PID 2>/dev/null || true
+            pkill -f "app.jar" || true
             sleep 2
-            nohup java -jar app.jar --spring.profiles.active=prod > app.log 2>&1 &
+            nohup java -jar app.jar --spring.profiles.active=prod >> app.log 2>&1 </dev/null &
+            disown
             echo "배포 완료"
