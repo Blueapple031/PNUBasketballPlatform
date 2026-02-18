@@ -8,9 +8,8 @@ import com.pnu.basketball.dto.response.UserResponse;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
 import com.pnu.basketball.repository.UserRepository;
+import com.pnu.basketball.storage.TokenStorage;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +20,7 @@ public class UserServiceImpl implements UserService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final TokenStorage tokenStorage;
     
     @Override
     @Transactional(readOnly = true)
@@ -109,8 +108,7 @@ public class UserServiceImpl implements UserService {
         user.softDelete();
         userRepository.save(user);
 
-        // Redis에 저장된 Refresh Token을 무효화합니다.
-        String refreshTokenKey = "RT:" + userId;
-        redisTemplate.delete(refreshTokenKey);
+        // 저장소에 있는 Refresh Token을 무효화합니다.
+        tokenStorage.deleteRefreshToken(userId);
     }
 }

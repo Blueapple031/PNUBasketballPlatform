@@ -11,11 +11,11 @@ import com.pnu.basketball.dto.response.AuthResponse;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
 import com.pnu.basketball.repository.UserRepository;
+import com.pnu.basketball.storage.TokenStorage;
 import com.pnu.basketball.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +29,10 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final TokenStorage tokenStorage;
     
     @Value("${google.oauth2.client-id}")
     private String googleClientId;
-    
-    private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
     
     @Override
     @Transactional
@@ -155,13 +153,8 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
         
         String refreshToken = jwtUtil.generateRefreshToken(user.getUserId());
         
-        // Redis에 Refresh Token 저장 (7일)
-        redisTemplate.opsForValue().set(
-                REFRESH_TOKEN_PREFIX + user.getUserId(),
-                refreshToken,
-                7,
-                TimeUnit.DAYS
-        );
+        // Refresh Token 저장 (7일)
+        tokenStorage.saveRefreshToken(user.getUserId(), refreshToken, 7, TimeUnit.DAYS);
         
         return AuthResponse.builder()
                 .accessToken(accessToken)
