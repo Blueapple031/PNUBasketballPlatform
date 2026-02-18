@@ -86,6 +86,7 @@ class _SettingsMenuTile extends StatelessWidget {
       subtitle: (subtitleText != null && subtitleText.isNotEmpty)
           ? Text(subtitleText)
           : null,
+      subtitle: subtitle != null ? Text(subtitle) : null,
       trailing: Icon(
         Icons.arrow_forward_ios,
         size: 16,
