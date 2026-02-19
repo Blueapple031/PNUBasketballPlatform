@@ -41,6 +41,25 @@ public class User {
     
     @Column(name = "google_id", unique = true)
     private String googleId;
+
+    @Column(name = "kakao_id", unique = true)
+    private String kakaoId;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer wins = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer games = 0;
+
+    @Column(name = "total_score", nullable = false)
+    @Builder.Default
+    private Integer totalScore = 0;
+
+    @Column(name = "virtual_currency", nullable = false)
+    @Builder.Default
+    private Integer virtualCurrency = 0;
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
