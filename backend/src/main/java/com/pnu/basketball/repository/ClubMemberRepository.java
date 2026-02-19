@@ -9,6 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface ClubMemberRepository extends JpaRepository<ClubMember, UUID> {
-    Optional<ClubMember> findByUserId(Long userId);
-    boolean existsByUserId(Long userId);
+    Optional<ClubMember> findByUserUserId(Long userId);
+    boolean existsByUserUserId(Long userId);
 }

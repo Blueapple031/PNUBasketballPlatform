@@ -10,5 +10,5 @@ import java.util.UUID;
 @Repository
 public interface MatchParticipantRepository extends JpaRepository<MatchParticipant, UUID> {
     List<MatchParticipant> findByMatchId(UUID matchId);
-    List<MatchParticipant> findByUserId(Long userId);
+    List<MatchParticipant> findByUserUserId(Long userId);
 }
