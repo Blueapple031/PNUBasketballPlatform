@@ -22,12 +22,20 @@ public enum ErrorCode {
     INVALID_CURRENT_PASSWORD(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
     USER_DEACTIVATED(HttpStatus.FORBIDDEN, "탈퇴한 회원입니다."),
     
+    // 403 Forbidden
+    FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+    NOT_CLUB_CAPTAIN(HttpStatus.FORBIDDEN, "동아리 주장만 접근할 수 있습니다."),
+    CANNOT_REMOVE_CAPTAIN(HttpStatus.FORBIDDEN, "주장은 권한을 위임하기 전까지 탈퇴할 수 없습니다."),
+    
     // 404 Not Found
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+    CLUB_NOT_FOUND(HttpStatus.NOT_FOUND, "동아리를 찾을 수 없습니다."),
+    CLUB_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "동아리 멤버를 찾을 수 없습니다."),
     
     // 409 Conflict
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다."),
     NICKNAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다."),
+    ALREADY_CLUB_MEMBER(HttpStatus.CONFLICT, "이미 동아리 멤버입니다."),
     
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
