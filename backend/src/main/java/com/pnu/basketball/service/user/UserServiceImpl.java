@@ -84,9 +84,9 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // 구글 로그인 사용자인지 확인
-        if (user.getLoginType() == LoginType.GOOGLE) {
-            throw new CustomException(ErrorCode.SOCIAL_LOGIN_USER_ACCESS_DENIED, "구글 로그인 사용자는 비밀번호를 변경할 수 없습니다.");
+        // 소셜 로그인 사용자인지 확인
+        if (user.getLoginType() == LoginType.GOOGLE || user.getLoginType() == LoginType.KAKAO) {
+            throw new CustomException(ErrorCode.SOCIAL_LOGIN_USER_ACCESS_DENIED, "소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.");
         }
 
         // 현재 비밀번호 확인

@@ -46,6 +46,22 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleKakaoLogin() async {
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.kakaoLogin();
+
+    if (success && mounted) {
+      Navigator.of(context).pushReplacementNamed('/home');
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage ?? '카카오 로그인 실패'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Future<void> _handleGoogleLogin() async {
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.googleLogin();
@@ -155,6 +171,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     size: 24,
                   ),
                   label: const Text('구글로 로그인'),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: _handleKakaoLogin,
+                  icon: const Icon(
+                    Icons.chat_bubble_outline,
+                    size: 24,
+                  ),
+                  label: const Text('카카오로 로그인'),
                 ),
                 const SizedBox(height: 24),
                 Row(

@@ -6,6 +6,7 @@ import com.pnu.basketball.dto.response.AuthResponse;
 import com.pnu.basketball.dto.response.UserResponse;
 import com.pnu.basketball.service.auth.AuthService;
 import com.pnu.basketball.service.auth.GoogleAuthService;
+import com.pnu.basketball.service.auth.KakaoAuthService;
 import com.pnu.basketball.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class AuthController {
     
     private final AuthService authService;
     private final GoogleAuthService googleAuthService;
+    private final KakaoAuthService kakaoAuthService;
     private final UserService userService;
     
     @PostMapping("/signup")
@@ -43,6 +45,12 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
         AuthResponse response = googleAuthService.authenticate(request);
         return ResponseEntity.ok(ApiResponse.success(response, "구글 로그인 성공"));
+    }
+
+    @PostMapping("/kakao")
+    public ResponseEntity<ApiResponse<AuthResponse>> kakaoLogin(@Valid @RequestBody KakaoLoginRequest request) {
+        AuthResponse response = kakaoAuthService.authenticate(request);
+        return ResponseEntity.ok(ApiResponse.success(response, "카카오 로그인 성공"));
     }
     
     @PostMapping("/refresh")

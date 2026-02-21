@@ -113,6 +113,35 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> kakaoLogin() async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      final authResponse = await authRepository.kakaoLogin();
+
+      _currentUser = UserModel(
+        userId: authResponse.user.userId,
+        email: authResponse.user.email,
+        nickname: authResponse.user.nickname,
+        profileImageUrl: authResponse.user.profileImageUrl,
+        loginType: authResponse.user.loginType,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> googleLogin() async {
     try {
       _isLoading = true;

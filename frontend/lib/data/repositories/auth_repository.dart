@@ -3,6 +3,7 @@ import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 class AuthRepository {
   final AuthService authService;
@@ -62,6 +63,29 @@ class AuthRepository {
       return response.data!;
     } else {
       throw Exception(response.error?['message'] ?? '로그인 실패');
+    }
+  }
+
+  // 카카오 로그인
+  Future<AuthResponseModel> kakaoLogin() async {
+    try {
+      OAuthToken token;
+      if (await isKakaoTalkInstalled()) {
+        token = await UserApi.instance.loginWithKakaoTalk();
+      } else {
+        token = await UserApi.instance.loginWithKakaoAccount();
+      }
+
+      final response = await authService.kakaoLogin(accessToken: token.accessToken);
+
+      if (response.success && response.data != null) {
+        await _saveTokens(response.data!);
+        return response.data!;
+      } else {
+        throw Exception(response.error?['message'] ?? '카카오 로그인 실패');
+      }
+    } catch (e) {
+      throw Exception('카카오 로그인 중 오류 발생: $e');
     }
   }
 
@@ -145,6 +169,9 @@ class AuthRepository {
     } finally {
       await clearTokens();
       await googleSignIn.signOut();
+      try {
+        await UserApi.instance.logout();
+      } catch (_) {}
     }
   }
 

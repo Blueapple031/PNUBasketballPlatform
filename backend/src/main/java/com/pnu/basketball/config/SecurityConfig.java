@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 "/api/auth/signup",
                                 "/api/auth/login",
                                 "/api/auth/google",
+                                "/api/auth/kakao",
                                 "/api/auth/refresh",
                                 "/api/auth/check-email",
                                 "/api/auth/check-nickname",
