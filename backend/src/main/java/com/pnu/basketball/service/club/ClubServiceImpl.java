@@ -5,10 +5,8 @@ import com.pnu.basketball.domain.ClubMember;
 import com.pnu.basketball.domain.ClubMemberRole;
 import com.pnu.basketball.domain.ClubMemberStatus;
 import com.pnu.basketball.domain.User;
-import com.pnu.basketball.dto.request.club.ClubCreateRequest;
 import com.pnu.basketball.dto.request.club.ClubUpdateRequest;
 import com.pnu.basketball.dto.request.club.TransferCaptainRequest;
-import com.pnu.basketball.dto.request.club.UpdateApplicationRequest;
 import com.pnu.basketball.dto.response.club.ApplicationResponse;
 import com.pnu.basketball.dto.response.club.ClubResponse;
 import com.pnu.basketball.exception.CustomException;
@@ -30,34 +28,6 @@ public class ClubServiceImpl implements ClubService {
     private final ClubRepository clubRepository;
     private final UserRepository userRepository;
     private final ClubMemberRepository clubMemberRepository;
-
-    @Override
-    @Transactional
-    public ClubResponse createClub(ClubCreateRequest request, Long currentUserId) {
-        User captain = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        // Club 생성
-        Club club = Club.builder()
-                .name(request.getName())
-                .logoUrl(request.getLogoUrl())
-                .captain(captain)
-                .build();
-
-        Club savedClub = clubRepository.save(club);
-
-        // 생성자를 주장(CAPTAIN)으로 멤버 리스트에 추가
-        ClubMember clubMember = ClubMember.builder()
-                .club(savedClub)
-                .user(captain)
-                .role(ClubMemberRole.CAPTAIN)
-                .status(ClubMemberStatus.APPROVED) // 주장은 자동 승인
-                .build();
-
-        clubMemberRepository.save(clubMember);
-
-        return ClubResponse.fromEntity(savedClub);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -102,11 +72,20 @@ public class ClubServiceImpl implements ClubService {
 
     @Override
     @Transactional
-    public void handleApplication(Long clubId, Long userId, UpdateApplicationRequest request, Long currentUserId) {
+    public void approveJoinRequest(Long clubId, Long userId, Long currentUserId) {
+        updateApplicationStatus(clubId, userId, currentUserId, ClubMemberStatus.APPROVED);
+    }
+
+    @Override
+    @Transactional
+    public void rejectJoinRequest(Long clubId, Long userId, Long currentUserId) {
+        updateApplicationStatus(clubId, userId, currentUserId, ClubMemberStatus.REJECTED);
+    }
+
+    private void updateApplicationStatus(Long clubId, Long userId, Long currentUserId, ClubMemberStatus status) {
         Club club = clubRepository.findById(clubId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CLUB_NOT_FOUND));
 
-        // 주장 권한 확인
         if (!club.getCaptain().getUserId().equals(currentUserId)) {
             throw new CustomException(ErrorCode.NOT_CLUB_CAPTAIN);
         }
@@ -117,14 +96,10 @@ public class ClubServiceImpl implements ClubService {
         ClubMember clubMember = clubMemberRepository.findByClubAndUser(club, applicant)
                 .orElseThrow(() -> new CustomException(ErrorCode.CLUB_MEMBER_NOT_FOUND));
 
-        // 상태 업데이트
-        clubMember.setStatus(request.getStatus());
-        
-        // 승인된 경우 멤버로 추가
-        if (request.getStatus() == ClubMemberStatus.APPROVED) {
+        clubMember.setStatus(status);
+        if (status == ClubMemberStatus.APPROVED) {
             clubMember.setRole(ClubMemberRole.MEMBER);
         }
-
         clubMemberRepository.save(clubMember);
     }
 
@@ -185,9 +160,31 @@ public class ClubServiceImpl implements ClubService {
 
     @Override
     @Transactional
-    public void removeMember(Long clubId, Long userId, Long currentUserId) {
+    public void leaveClub(Long clubId, Long currentUserId) {
         Club club = clubRepository.findById(clubId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CLUB_NOT_FOUND));
+
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        ClubMember clubMember = clubMemberRepository.findByClubAndUser(club, user)
+                .orElseThrow(() -> new CustomException(ErrorCode.CLUB_MEMBER_NOT_FOUND));
+
+        if (clubMember.getRole() == ClubMemberRole.CAPTAIN) {
+            throw new CustomException(ErrorCode.CANNOT_REMOVE_CAPTAIN);
+        }
+        clubMemberRepository.delete(clubMember);
+    }
+
+    @Override
+    @Transactional
+    public void kickMember(Long clubId, Long userId, Long currentUserId) {
+        Club club = clubRepository.findById(clubId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CLUB_NOT_FOUND));
+
+        if (!club.getCaptain().getUserId().equals(currentUserId)) {
+            throw new CustomException(ErrorCode.NOT_CLUB_CAPTAIN);
+        }
 
         User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -195,26 +192,9 @@ public class ClubServiceImpl implements ClubService {
         ClubMember clubMember = clubMemberRepository.findByClubAndUser(club, targetUser)
                 .orElseThrow(() -> new CustomException(ErrorCode.CLUB_MEMBER_NOT_FOUND));
 
-        // 자진 탈퇴: 본인인 경우
-        if (userId.equals(currentUserId)) {
-            // 주장은 탈퇴할 수 없음
-            if (clubMember.getRole() == ClubMemberRole.CAPTAIN) {
-                throw new CustomException(ErrorCode.CANNOT_REMOVE_CAPTAIN);
-            }
-            clubMemberRepository.delete(clubMember);
-            return;
-        }
-
-        // 강제 추방: 주장인 경우
-        if (!club.getCaptain().getUserId().equals(currentUserId)) {
-            throw new CustomException(ErrorCode.NOT_CLUB_CAPTAIN);
-        }
-
-        // 주장은 추방할 수 없음
         if (clubMember.getRole() == ClubMemberRole.CAPTAIN) {
             throw new CustomException(ErrorCode.CANNOT_REMOVE_CAPTAIN);
         }
-
         clubMemberRepository.delete(clubMember);
     }
 }
