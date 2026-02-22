@@ -21,16 +21,31 @@ public class Match {
     @Column(name = "id", updatable = false)
     private UUID id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "match_type", nullable = false)
+    private MatchType matchType;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "home_club_id", nullable = false)
+    @JoinColumn(name = "home_club_id")
     private Club homeClub;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "away_club_id", nullable = false)
+    @JoinColumn(name = "away_club_id")
     private Club awayClub;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", referencedColumnName = "user_id")
+    private User createdBy;
 
     @Column(name = "scheduled_at", nullable = false)
     private LocalDateTime scheduledAt;
+
+    @Column(length = 255)
+    private String location;
+
+    @Column(name = "max_players_per_team")
+    @Builder.Default
+    private Integer maxPlayersPerTeam = 5;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -58,5 +73,13 @@ public class Match {
     public void updateScore(Integer homeScore, Integer awayScore) {
         this.homeScore = homeScore;
         this.awayScore = awayScore;
+    }
+
+    public boolean isFormal() {
+        return matchType == MatchType.FORMAL;
+    }
+
+    public boolean isQuick() {
+        return matchType == MatchType.QUICK;
     }
 }

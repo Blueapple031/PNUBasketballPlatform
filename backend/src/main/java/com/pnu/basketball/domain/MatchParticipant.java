@@ -31,8 +31,12 @@ public class MatchParticipant {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "club_id", nullable = false)
+    @JoinColumn(name = "club_id")
     private Club club;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "team_side", nullable = false)
+    private TeamSide teamSide;
 
     @Column(name = "points_scored", nullable = false)
     @Builder.Default

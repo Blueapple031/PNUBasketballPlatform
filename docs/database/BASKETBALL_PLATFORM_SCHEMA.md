@@ -18,7 +18,14 @@
 
 ## 1. ER 다이어그램 설명
 
-### 1.1 엔티티 관계 개요
+### 1.1 매치 유형
+
+| 유형 | 설명 | 특징 |
+|------|------|------|
+| **정식 매치 (FORMAL)** | 동아리 vs 동아리 | home_club, away_club 필수, 동아리원만 참가 |
+| **빠른 매치 (QUICK)** | 픽업 게임 | 클럽 없음, 아무나 참가, 팀은 매칭 시 배정 |
+
+### 1.2 엔티티 관계 개요
 
 ```
 ┌─────────────┐         ┌──────────────────┐         ┌─────────────┐
@@ -30,33 +37,34 @@
 │ - wins      │         └──────────────────┘         │ - logo_url  │
 │ - games     │                        │              └──────┬──────┘
 │ - total_scr │                        │                     │
-│ - currency  │                        │  1:N                │ 1:N
+│ - currency  │                        │  1:N (정식만)       │ 1:N
 └──────┬──────┘                        │                     │
        │                               │              ┌──────▼──────┐
        │         ┌─────────────────────┴─────────────│   matches   │
        │         │                                   │             │
-       │    N:1  │                                   │ - id (PK)   │
-       │         │                                   │ - home_club │
-       └────────>│  match_participants (junction)   │ - away_club │
-            N:1  │                                   │ - scheduled │
-                 │  - match_id (FK)                   │ - state     │
-                 │  - user_id (FK)                    │ - scores    │
-                 │  - club_id (FK)                    └─────────────┘
-                 │  - points_scored
+       │    N:1  │                                   │ match_type  │
+       │         │                                   │ (FORMAL/QUICK)
+       └────────>│  match_participants (junction)   │ home_club?  │
+            N:1  │                                   │ away_club?  │
+                 │  - match_id (FK)                   │ created_by  │
+                 │  - user_id (FK)                   │ (빠른매치)  │
+                 │  - club_id? (정식만)               │ location    │
+                 │  - team_side (HOME/AWAY)          │ max_players │
+                 │  - points_scored                  └─────────────┘
                  └───────────────────────────────────
 ```
 
-### 1.2 엔티티 상세
+### 1.3 엔티티 상세
 
 | 엔티티 | 설명 | 주요 관계 |
 |--------|------|----------|
-| **users** | 플랫폼 사용자 (선수, 회원) | club_members 통해 1개 클럽 소속 |
+| **users** | 플랫폼 사용자 (선수, 회원) | club_members 통해 1개 클럽 소속 (선택) |
 | **clubs** | 농구 동아리/팀 | captain이 users 참조, members는 club_members 통해 |
 | **club_members** | 사용자-클럽 소속 (Junction) | 1 user 1 club (UNIQUE 제약) |
-| **matches** | 클럽 간 경기 | home_club, away_club 참조 |
-| **match_participants** | 경기별 참가자 (Junction) | match + user + club, 경기별 득점 저장 |
+| **matches** | 경기 (정식/빠른) | match_type으로 구분, 정식 시 home/away_club, 빠른 시 created_by |
+| **match_participants** | 경기별 참가자 | match + user + team_side, club_id는 정식 매치만 |
 
-### 1.3 순환 참조 해결
+### 1.4 순환 참조 해결
 
 - `clubs.captain_id` → `users`: 주장은 반드시 club_members에 등록된 회원
 - `users`는 `club_members`를 통해서만 클럽과 연결 (club_id 없음)
@@ -69,6 +77,12 @@
 ```sql
 -- 인증 타입
 CREATE TYPE auth_type AS ENUM ('LOCAL', 'KAKAO', 'GOOGLE');
+
+-- 매치 유형
+CREATE TYPE match_type AS ENUM ('FORMAL', 'QUICK');
+
+-- 팀 구분 (HOME/AWAY)
+CREATE TYPE team_side AS ENUM ('HOME', 'AWAY');
 
 -- 경기 상태
 CREATE TYPE match_state AS ENUM (
@@ -142,19 +156,28 @@ CREATE TABLE club_members (
 );
 
 -- ============================================================
--- 4. matches 테이블
+-- 4. matches 테이블 (정식 매치 + 빠른 매치)
 -- ============================================================
 CREATE TABLE matches (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    home_club_id    UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
-    away_club_id    UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
-    scheduled_at    TIMESTAMP NOT NULL,
-    state           match_state NOT NULL DEFAULT 'SCHEDULED',
-    home_score      INTEGER,                          -- DONE 시 입력
-    away_score      INTEGER,                          -- DONE 시 입력
-    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_match_clubs_different CHECK (home_club_id != away_club_id)
+    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    match_type          match_type NOT NULL,           -- FORMAL | QUICK
+    home_club_id        UUID REFERENCES clubs(id) ON DELETE CASCADE,  -- 정식만
+    away_club_id        UUID REFERENCES clubs(id) ON DELETE CASCADE,  -- 정식만
+    created_by          BIGINT REFERENCES users(user_id) ON DELETE SET NULL,  -- 빠른 매치 생성자
+    scheduled_at        TIMESTAMP NOT NULL,
+    location            VARCHAR(255),                  -- 빠른 매치: "OO대 실내체육관"
+    max_players_per_team INTEGER DEFAULT 5,           -- 빠른 매치: 팀당 인원 (5v5)
+    state               match_state NOT NULL DEFAULT 'SCHEDULED',
+    home_score          INTEGER,
+    away_score          INTEGER,
+    created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_formal_clubs CHECK (
+        match_type != 'FORMAL' OR (home_club_id IS NOT NULL AND away_club_id IS NOT NULL AND home_club_id != away_club_id)
+    ),
+    CONSTRAINT chk_quick_no_clubs CHECK (
+        match_type != 'QUICK' OR (home_club_id IS NULL AND away_club_id IS NULL)
+    )
 );
 
 -- ============================================================
@@ -163,8 +186,9 @@ CREATE TABLE matches (
 CREATE TABLE match_participants (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     match_id        UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
-    user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    club_id         UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
+    user_id         BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    club_id         UUID REFERENCES clubs(id) ON DELETE CASCADE,  -- 정식 매치만
+    team_side       team_side NOT NULL,                -- HOME | AWAY
     points_scored   INTEGER NOT NULL DEFAULT 0,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uq_match_participant UNIQUE (match_id, user_id),
@@ -202,8 +226,11 @@ COMMENT ON TABLE clubs IS '농구 동아리/팀';
 COMMENT ON COLUMN clubs.captain_id IS '주장 (users.id)';
 
 COMMENT ON TABLE club_members IS '사용자-클럽 소속 (1 user : 1 club)';
-COMMENT ON TABLE matches IS '클럽 간 경기';
+COMMENT ON TABLE matches IS '경기 (정식: 동아리 vs 동아리, 빠른: 픽업 게임)';
+COMMENT ON COLUMN matches.match_type IS 'FORMAL=정식 매치, QUICK=빠른 매치';
+COMMENT ON COLUMN matches.created_by IS '빠른 매치 생성자 (users.user_id)';
 COMMENT ON TABLE match_participants IS '경기별 참가자 및 개인 득점';
+COMMENT ON COLUMN match_participants.team_side IS 'HOME/AWAY 팀 구분';
 ```
 
 ---
