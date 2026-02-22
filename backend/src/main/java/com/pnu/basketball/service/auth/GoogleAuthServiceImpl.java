@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +42,18 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     
     @Value("${google.oauth2.client-id:}")
     private String legacyClientId;
+    
+    @PostConstruct
+    public void logGoogleConfig() {
+        int count = (int) Arrays.asList(webClientId, androidClientId, legacyClientId).stream()
+                .filter(id -> id != null && !id.isEmpty())
+                .distinct()
+                .count();
+        log.info("구글 OAuth 설정: 허용 클라이언트 ID {}개 로드됨", count);
+        if (count == 0) {
+            log.warn("구글 클라이언트 ID가 하나도 설정되지 않음. application-secret.yml의 google.oauth2 확인 필요");
+        }
+    }
     
     @Override
     @Transactional
@@ -126,11 +139,9 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
                     .collect(Collectors.toList());
             
             if (clientIds.isEmpty()) {
-                log.warn("Google Client ID가 설정되지 않았습니다. (web-client-id, android-client-id 확인)");
+                log.error("Google Client ID가 설정되지 않았습니다. application-secret.yml에 google.oauth2.web-client-id, android-client-id 또는 client-id 추가 필요");
                 return null;
             }
-            
-            log.debug("구글 토큰 검증 시도 - 허용 클라이언트 ID 수: {}", clientIds.size());
             
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(),
@@ -140,7 +151,8 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
             
             return verifier.verify(idTokenString);
         } catch (Exception e) {
-            log.error("구글 토큰 검증 실패: {} - 원인: {}", e.getClass().getSimpleName(), e.getMessage(), e);
+            log.error("구글 토큰 검증 실패 - 예외: {}, 메시지: {}", e.getClass().getSimpleName(), e.getMessage());
+            log.error("상세 스택트레이스:", e);
             return null;
         }
     }
