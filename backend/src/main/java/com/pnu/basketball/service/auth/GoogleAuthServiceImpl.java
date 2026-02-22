@@ -49,9 +49,12 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     @Value("${google.oauth2.client-id:}")
     private String legacyClientId;
     
+    @Value("${spring.security.oauth2.client.registration.google.client-id:}")
+    private String springGoogleClientId;
+    
     @PostConstruct
     public void logGoogleConfig() {
-        int count = (int) Arrays.asList(webClientId, androidClientId, legacyClientId).stream()
+        int count = (int) Arrays.asList(webClientId, androidClientId, legacyClientId, springGoogleClientId).stream()
                 .filter(id -> id != null && !id.isEmpty())
                 .distinct()
                 .count();
@@ -64,6 +67,7 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     @Override
     @Transactional
     public AuthResponse authenticate(GoogleLoginRequest request) {
+        log.info("[구글로그인] authenticate 호출됨 - 토큰 검증 시작");
         try {
             // Google ID Token 검증
             GoogleIdToken idToken = verifyGoogleToken(request.getIdToken());
@@ -138,7 +142,7 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     }
     
     private GoogleIdToken verifyGoogleToken(String idTokenString) {
-        List<String> clientIds = Arrays.asList(webClientId, androidClientId, legacyClientId).stream()
+        List<String> clientIds = Arrays.asList(webClientId, androidClientId, legacyClientId, springGoogleClientId).stream()
                 .filter(id -> id != null && !id.isEmpty())
                 .distinct()
                 .collect(Collectors.toList());
