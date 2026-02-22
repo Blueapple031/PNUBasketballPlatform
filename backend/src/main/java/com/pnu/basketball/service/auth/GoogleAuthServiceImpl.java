@@ -20,10 +20,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.PostConstruct;
+
 import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Service
@@ -132,12 +138,12 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     }
     
     private GoogleIdToken verifyGoogleToken(String idTokenString) {
+        List<String> clientIds = Arrays.asList(webClientId, androidClientId, legacyClientId).stream()
+                .filter(id -> id != null && !id.isEmpty())
+                .distinct()
+                .collect(Collectors.toList());
+        
         try {
-            List<String> clientIds = Arrays.asList(webClientId, androidClientId, legacyClientId).stream()
-                    .filter(id -> id != null && !id.isEmpty())
-                    .distinct()
-                    .collect(Collectors.toList());
-            
             if (clientIds.isEmpty()) {
                 log.error("Google Client ID가 설정되지 않았습니다. application-secret.yml에 google.oauth2.web-client-id, android-client-id 또는 client-id 추가 필요");
                 return null;
@@ -153,6 +159,18 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
         } catch (Exception e) {
             log.error("구글 토큰 검증 실패 - 예외: {}, 메시지: {}", e.getClass().getSimpleName(), e.getMessage());
             log.error("상세 스택트레이스:", e);
+            // 토큰의 aud 클레임 확인 (디버깅용)
+            try {
+                String[] parts = idTokenString.split("\\.");
+                if (parts.length >= 2) {
+                    String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+                    JsonNode node = new ObjectMapper().readTree(payload);
+                    String aud = node.has("aud") ? node.get("aud").asText() : "없음";
+                    log.error("토큰의 aud(대상): {}, 허용 ID: {}", aud, clientIds);
+                }
+            } catch (Exception ex) {
+                log.debug("토큰 디코딩 실패: {}", ex.getMessage());
+            }
             return null;
         }
     }
