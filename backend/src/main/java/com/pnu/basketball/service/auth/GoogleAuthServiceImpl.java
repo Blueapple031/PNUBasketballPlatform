@@ -19,8 +19,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,8 +33,14 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     private final JwtUtil jwtUtil;
     private final TokenStorage tokenStorage;
     
-    @Value("${google.oauth2.client-id}")
-    private String googleClientId;
+    @Value("${google.oauth2.web-client-id:}")
+    private String webClientId;
+    
+    @Value("${google.oauth2.android-client-id:}")
+    private String androidClientId;
+    
+    @Value("${google.oauth2.client-id:}")
+    private String legacyClientId;
     
     @Override
     @Transactional
@@ -112,20 +120,27 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     
     private GoogleIdToken verifyGoogleToken(String idTokenString) {
         try {
-            if (googleClientId == null || googleClientId.isEmpty()) {
-                log.warn("Google Client ID가 설정되지 않았습니다.");
+            List<String> clientIds = Arrays.asList(webClientId, androidClientId, legacyClientId).stream()
+                    .filter(id -> id != null && !id.isEmpty())
+                    .distinct()
+                    .collect(Collectors.toList());
+            
+            if (clientIds.isEmpty()) {
+                log.warn("Google Client ID가 설정되지 않았습니다. (web-client-id, android-client-id 확인)");
                 return null;
             }
+            
+            log.debug("구글 토큰 검증 시도 - 허용 클라이언트 ID 수: {}", clientIds.size());
             
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(),
                     new GsonFactory())
-                    .setAudience(Collections.singletonList(googleClientId))
+                    .setAudience(clientIds)
                     .build();
             
             return verifier.verify(idTokenString);
         } catch (Exception e) {
-            log.error("구글 토큰 검증 실패: ", e);
+            log.error("구글 토큰 검증 실패: {} - 원인: {}", e.getClass().getSimpleName(), e.getMessage(), e);
             return null;
         }
     }

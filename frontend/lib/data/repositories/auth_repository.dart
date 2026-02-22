@@ -9,7 +9,10 @@ class AuthRepository {
   final FlutterSecureStorage secureStorage;
   final GoogleSignIn googleSignIn;
   static const String _googleWebClientId =
-      String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
+      String.fromEnvironment(
+        'GOOGLE_WEB_CLIENT_ID',
+        defaultValue: '234779227231-11ip2gu9o7bt1absesjmh1u58ovno9hv.apps.googleusercontent.com',
+      );
 
   AuthRepository({
     AuthService? authService,

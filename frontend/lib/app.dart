@@ -19,7 +19,7 @@ class BasketballApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           useMaterial3: true,
         ),
-        home: const UserTab(), // 임시: UserTab 테스트용
+        home: const LoginScreen(), // 임시: UserTab 테스트용
         routes: {
           '/login': (context) => const LoginScreen(),
           '/home': (context) => const UserTab(),
