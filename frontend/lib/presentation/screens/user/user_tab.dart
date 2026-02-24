@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:basketball_frontend/presentation/widgets/user/profile_header.dart';
 import 'package:basketball_frontend/presentation/widgets/user/subscription_banner.dart';
 import 'package:basketball_frontend/presentation/widgets/user/settings_list.dart';
+import '../../../core/theme/app_colors.dart';
 
 class UserTab extends StatelessWidget {
   const UserTab({super.key});
@@ -9,9 +10,17 @@ class UserTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.pageBg,
       appBar: AppBar(
-        title: const Text('마이페이지'),
+        backgroundColor: AppColors.headerGrey,
         elevation: 0,
+        title: const Text(
+          '마이페이지',
+          style: TextStyle(
+            color: AppColors.backgroundWhite,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -23,7 +32,10 @@ class UserTab extends StatelessWidget {
             const PointsBanner(),
             const SizedBox(height: 24),
             // 프로필 헤더
-            const ProfileHeader(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: const ProfileHeader(),
+            ),
             const SizedBox(height: 24),
             // 설정 메뉴 리스트
             const SettingsList(),
