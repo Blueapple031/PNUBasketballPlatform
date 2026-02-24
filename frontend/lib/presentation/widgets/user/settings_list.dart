@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:basketball_frontend/core/theme/plato_theme.dart';
 
 class SettingsList extends StatelessWidget {
   const SettingsList({super.key});
@@ -13,10 +14,12 @@ class SettingsList extends StatelessWidget {
           child: Text(
             '설정',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: PlatoColors.titleText,
                   fontWeight: FontWeight.bold,
                 ),
           ),
         ),
+        const SizedBox(height: 8),
         const _SettingsMenuTile(
           icon: Icons.language,
           title: '언어 설정',
@@ -25,23 +28,18 @@ class SettingsList extends StatelessWidget {
         const _SettingsMenuTile(
           icon: Icons.notifications,
           title: '알림 설정',
-          subtitle: '',
         ),
         const _SettingsMenuTile(
           icon: Icons.help_center,
           title: '고객센터',
-          subtitle: '',
         ),
         const _SettingsMenuTile(
           icon: Icons.info,
           title: '공지사항',
-          subtitle: '',
         ),
-        const Divider(height: 1),
         const _SettingsMenuTile(
           icon: Icons.logout,
           title: '로그아웃',
-          subtitle: '',
           isDestructive: true,
         ),
         const _SettingsMenuTile(
@@ -70,33 +68,47 @@ class _SettingsMenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final subtitleText = subtitle;
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isDestructive ? Colors.red : Colors.grey.shade700,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDestructive ? Colors.red : Colors.black,
-          fontWeight: FontWeight.w500,
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: PlatoColors.border),
         ),
       ),
-      subtitle: (subtitleText != null && subtitleText.isNotEmpty)
-          ? Text(subtitleText)
-          : null,
-      subtitle: subtitle != null ? Text(subtitle) : null,
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 16,
-        color: Colors.grey.shade400,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Icon(
+          icon,
+          color: isDestructive ? PlatoColors.errorRed : PlatoColors.headerGrey,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isDestructive ? PlatoColors.errorRed : PlatoColors.titleText,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: subtitle != null
+            ? Text(
+                subtitle!,
+                style: const TextStyle(
+                  color: PlatoColors.subText,
+                  fontSize: 12,
+                ),
+              )
+            : null,
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: PlatoColors.subText,
+        ),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$title 클릭됨')),
+          );
+        },
       ),
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$title 클릭됨')),
-        );
-      },
     );
   }
 }

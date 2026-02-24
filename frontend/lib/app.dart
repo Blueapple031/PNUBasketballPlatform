@@ -28,4 +28,3 @@ class BasketballApp extends StatelessWidget {
     );
   }
 }
-  }
