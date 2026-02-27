@@ -11,16 +11,25 @@ import com.pnu.basketball.dto.response.AuthResponse;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
 import com.pnu.basketball.repository.UserRepository;
+import com.pnu.basketball.storage.TokenStorage;
 import com.pnu.basketball.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
+import jakarta.annotation.PostConstruct;
+
+import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Service
@@ -29,16 +38,36 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final TokenStorage tokenStorage;
     
-    @Value("${google.oauth2.client-id}")
-    private String googleClientId;
+    @Value("${google.oauth2.web-client-id:}")
+    private String webClientId;
     
-    private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
+    @Value("${google.oauth2.android-client-id:}")
+    private String androidClientId;
+    
+    @Value("${google.oauth2.client-id:}")
+    private String legacyClientId;
+    
+    @Value("${spring.security.oauth2.client.registration.google.client-id:}")
+    private String springGoogleClientId;
+    
+    @PostConstruct
+    public void logGoogleConfig() {
+        int count = (int) Arrays.asList(webClientId, androidClientId, legacyClientId, springGoogleClientId).stream()
+                .filter(id -> id != null && !id.isEmpty())
+                .distinct()
+                .count();
+        log.info("구글 OAuth 설정: 허용 클라이언트 ID {}개 로드됨", count);
+        if (count == 0) {
+            log.warn("구글 클라이언트 ID가 하나도 설정되지 않음. application-secret.yml의 google.oauth2 확인 필요");
+        }
+    }
     
     @Override
     @Transactional
     public AuthResponse authenticate(GoogleLoginRequest request) {
+        log.info("[구글로그인] authenticate 호출됨 - 토큰 검증 시작");
         try {
             // Google ID Token 검증
             GoogleIdToken idToken = verifyGoogleToken(request.getIdToken());
@@ -113,21 +142,39 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     }
     
     private GoogleIdToken verifyGoogleToken(String idTokenString) {
+        List<String> clientIds = Arrays.asList(webClientId, androidClientId, legacyClientId, springGoogleClientId).stream()
+                .filter(id -> id != null && !id.isEmpty())
+                .distinct()
+                .collect(Collectors.toList());
+        
         try {
-            if (googleClientId == null || googleClientId.isEmpty()) {
-                log.warn("Google Client ID가 설정되지 않았습니다.");
+            if (clientIds.isEmpty()) {
+                log.error("Google Client ID가 설정되지 않았습니다. application-secret.yml에 google.oauth2.web-client-id, android-client-id 또는 client-id 추가 필요");
                 return null;
             }
             
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(),
                     new GsonFactory())
-                    .setAudience(Collections.singletonList(googleClientId))
+                    .setAudience(clientIds)
                     .build();
             
             return verifier.verify(idTokenString);
         } catch (Exception e) {
-            log.error("구글 토큰 검증 실패: ", e);
+            log.error("구글 토큰 검증 실패 - 예외: {}, 메시지: {}", e.getClass().getSimpleName(), e.getMessage());
+            log.error("상세 스택트레이스:", e);
+            // 토큰의 aud 클레임 확인 (디버깅용)
+            try {
+                String[] parts = idTokenString.split("\\.");
+                if (parts.length >= 2) {
+                    String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+                    JsonNode node = new ObjectMapper().readTree(payload);
+                    String aud = node.has("aud") ? node.get("aud").asText() : "없음";
+                    log.error("토큰의 aud(대상): {}, 허용 ID: {}", aud, clientIds);
+                }
+            } catch (Exception ex) {
+                log.debug("토큰 디코딩 실패: {}", ex.getMessage());
+            }
             return null;
         }
     }
@@ -155,13 +202,8 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
         
         String refreshToken = jwtUtil.generateRefreshToken(user.getUserId());
         
-        // Redis에 Refresh Token 저장 (7일)
-        redisTemplate.opsForValue().set(
-                REFRESH_TOKEN_PREFIX + user.getUserId(),
-                refreshToken,
-                7,
-                TimeUnit.DAYS
-        );
+        // Refresh Token 저장 (7일)
+        tokenStorage.saveRefreshToken(user.getUserId(), refreshToken, 7, TimeUnit.DAYS);
         
         return AuthResponse.builder()
                 .accessToken(accessToken)

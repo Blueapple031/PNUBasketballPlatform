@@ -255,7 +255,6 @@ $RECYCLE.BIN/
 secrets.yml
 secrets.yml
 application-secret.yml
-application.yml
 
 # ===================================
 # Logs

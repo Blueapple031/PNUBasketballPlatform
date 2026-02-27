@@ -8,6 +8,11 @@ class AuthRepository {
   final AuthService authService;
   final FlutterSecureStorage secureStorage;
   final GoogleSignIn googleSignIn;
+  static const String _googleWebClientId =
+      String.fromEnvironment(
+        'GOOGLE_WEB_CLIENT_ID',
+        defaultValue: '234779227231-11ip2gu9o7bt1absesjmh1u58ovno9hv.apps.googleusercontent.com',
+      );
 
   AuthRepository({
     AuthService? authService,
@@ -15,7 +20,11 @@ class AuthRepository {
     GoogleSignIn? googleSignIn,
   })  : authService = authService ?? AuthService(),
         secureStorage = secureStorage ?? const FlutterSecureStorage(),
-        googleSignIn = googleSignIn ?? GoogleSignIn();
+        googleSignIn = googleSignIn ??
+            GoogleSignIn(
+              serverClientId:
+                  _googleWebClientId.isEmpty ? null : _googleWebClientId,
+            );
 
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
@@ -72,7 +81,10 @@ class AuthRepository {
       final String? idToken = authentication.idToken;
 
       if (idToken == null) {
-        throw Exception('구글 ID 토큰을 가져올 수 없습니다.');
+        throw Exception(
+          '구글 ID 토큰을 가져올 수 없습니다. '
+          'Android OAuth 및 GOOGLE_WEB_CLIENT_ID 설정을 확인하세요.',
+        );
       }
 
       final response = await authService.googleLogin(idToken: idToken);

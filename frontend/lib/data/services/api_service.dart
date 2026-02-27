@@ -46,7 +46,25 @@ class ApiService {
     http.Response response,
     T Function(Object?)? fromJson,
   ) {
-    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    final responseBody = utf8.decode(response.bodyBytes);
+    final contentType = response.headers['content-type'] ?? '';
+
+    if (!contentType.toLowerCase().contains('application/json')) {
+      final preview = responseBody.length > 120
+          ? '${responseBody.substring(0, 120)}...'
+          : responseBody;
+      throw Exception(
+        '서버가 JSON이 아닌 응답을 반환했습니다 '
+        '(status: ${response.statusCode}, content-type: $contentType). '
+        'API 경로/리버스 프록시 설정을 확인해주세요. 응답 일부: $preview',
+      );
+    }
+
+    final decoded = jsonDecode(responseBody);
+    if (decoded is! Map<String, dynamic>) {
+      throw Exception('예상하지 못한 응답 형식입니다. (status: ${response.statusCode})');
+    }
+    final json = decoded;
 
     if (fromJson != null && json['data'] != null) {
       json['data'] = fromJson(json['data']);
