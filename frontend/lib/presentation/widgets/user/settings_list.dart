@@ -76,7 +76,6 @@ class _SettingsMenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
     final color = isDestructive ? AppColors.errorRed : AppColors.titleText;
     final iconColor = isDestructive ? AppColors.errorRed : AppColors.subText;
     
@@ -132,34 +131,6 @@ class _SettingsMenuTile extends StatelessWidget {
           ],
         ),
       ),
-=======
-    final subtitleText = subtitle;
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isDestructive ? Colors.red : Colors.grey.shade700,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDestructive ? Colors.red : Colors.black,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: (subtitleText != null && subtitleText.isNotEmpty)
-          ? Text(subtitleText)
-          : null,
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 16,
-        color: Colors.grey.shade400,
-      ),
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$title 클릭됨')),
-        );
-      },
->>>>>>> origin/main
     );
   }
 }

@@ -40,6 +40,13 @@ class _RootScreenState extends State<RootScreen> {
             _selectedIndex = index;
           });
         },
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: AppColors.backgroundWhite,
+        selectedItemColor: AppColors.activeBlue,
+        unselectedItemColor: AppColors.subText,
+        elevation: 8,
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
