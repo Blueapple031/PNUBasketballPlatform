@@ -17,16 +17,12 @@ class BasketballApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: '딸바',
-<<<<<<< HEAD
-        theme: AppTheme.theme,
-        home: const RootScreen(),
-=======
         theme: ThemeData(
           primarySwatch: Colors.blue,
           useMaterial3: true,
         ),
-        home: const LoginScreen(), // 임시: UserTab 테스트용
->>>>>>> origin/main
+        // LoginScreen 변경필요
+        home: const RootScreen(), // 임시: UserTab 테스트용
         routes: {
           '/login': (context) => const LoginScreen(),
           '/home': (context) => const RootScreen(),
@@ -34,8 +30,4 @@ class BasketballApp extends StatelessWidget {
       ),
     );
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main
