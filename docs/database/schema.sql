@@ -47,4 +47,3 @@ COMMENT ON COLUMN users.login_type IS '로그인 타입 (EMAIL, GOOGLE)';
 COMMENT ON COLUMN users.google_id IS '구글 사용자 ID (구글 로그인 사용자만)';
 COMMENT ON COLUMN users.created_at IS '생성일시';
 COMMENT ON COLUMN users.updated_at IS '수정일시';
-

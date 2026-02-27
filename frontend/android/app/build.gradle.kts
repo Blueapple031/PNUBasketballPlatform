@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.basketball_frontend"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -41,4 +41,16 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // AGP 8.7.3과 호환되는 androidx.core 버전으로 다운그레이드
+    constraints {
+        implementation("androidx.core:core:1.13.1") {
+            because("AGP 8.7.3 compatibility")
+        }
+        implementation("androidx.core:core-ktx:1.13.1") {
+            because("AGP 8.7.3 compatibility")
+        }
+    }
 }
