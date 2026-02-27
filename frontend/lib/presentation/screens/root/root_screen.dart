@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../home/home_screen.dart';
-import '../match/match_list_screen.dart';
 import '../user/user_tab.dart';
 
 /// RootScreen: BottomNavigationBar를 관리하는 루트 화면
@@ -21,7 +20,7 @@ class _RootScreenState extends State<RootScreen> {
   // 각 탭에 해당하는 화면들
   final List<Widget> _screens = [
     const HomeScreen(),           // 0: 홈 (프로필 피드)
-    const MatchListScreen(),      // 1: 커뮤니티 (매치 목록)
+    const PlaceholderScreen(title: '커뮤니티'),      // 1: 커뮤니티
     const PlaceholderScreen(title: '채팅'),     // 2: 채팅
     const PlaceholderScreen(title: '일정'),     // 3: 일정
     const UserTab(),              // 4: 마이페이지
