@@ -45,6 +45,8 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/auth/check-email",
                                 "/api/auth/check-nickname",
+                                "/api/board/posts/list",
+                                "/api/board/posts/*/detail",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/v3/api-docs/**"
