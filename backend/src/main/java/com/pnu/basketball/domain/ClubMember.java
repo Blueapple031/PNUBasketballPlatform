@@ -30,6 +30,11 @@ public class ClubMember {
     @JoinColumn(name = "club_id", nullable = false)
     private Club club;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    @Builder.Default
+    private ClubRole role = ClubRole.MEMBER;
+
     @CreationTimestamp
     @Column(name = "joined_at", nullable = false, updatable = false)
     private LocalDateTime joinedAt;

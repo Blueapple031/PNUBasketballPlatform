@@ -28,10 +28,10 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
     
-    public String generateAccessToken(Long userId, String email, String nickname, String loginType) {
+    public String generateAccessToken(Long userId, String email, String realName, String loginType) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("email", email);
-        claims.put("nickname", nickname);
+        claims.put("realName", realName);
         claims.put("loginType", loginType);
         
         return Jwts.builder()
