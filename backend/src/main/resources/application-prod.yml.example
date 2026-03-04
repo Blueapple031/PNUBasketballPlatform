@@ -1,0 +1,9 @@
+# 운영 서버용 설정 예시
+# 사용법: 이 파일을 application-prod.yml로 복사 후 서버의 config/ 폴더에 배치
+# application-secret.yml도 함께 config/에 두세요 (DB, Redis, JWT, OAuth 비밀값)
+
+# Redis 토큰 저장소 사용 (운영 환경)
+app:
+  token-storage: redis
+
+# Redis 호스트/포트는 application-secret.yml에서 설정

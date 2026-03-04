@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import '../../data/models/auth_response_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
@@ -19,19 +18,26 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _currentUser != null;
 
   Future<bool> initialize() async {
+    if (!await authRepository.isLoggedIn()) {
+      _currentUser = null;
+      _errorMessage = null;
+      notifyListeners();
+      return false;
+    }
+
+    return fetchCurrentUser();
+  }
+
+  Future<bool> fetchCurrentUser() async {
     try {
       _isLoading = true;
+      _errorMessage = null;
       notifyListeners();
 
-      if (await authRepository.isLoggedIn()) {
-        _currentUser = await authRepository.getCurrentUser();
-        notifyListeners();
-        return true;
-      }
-      return false;
+      _currentUser = await authRepository.getCurrentUser();
+      return true;
     } catch (e) {
-      _errorMessage = e.toString();
-      notifyListeners();
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
       return false;
     } finally {
       _isLoading = false;

@@ -1,0 +1,13 @@
+# 로컬 개발용 설정 (Redis 없이 실행)
+# 사용법: --spring.profiles.active=local
+# 또는 환경변수: SPRING_PROFILES_ACTIVE=local
+
+# Redis 대신 인메모리 토큰 저장소 사용
+app:
+  token-storage: memory
+
+# Redis 자동 설정 비활성화 (연결 시도 방지)
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration

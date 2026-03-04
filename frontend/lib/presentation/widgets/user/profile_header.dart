@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:basketball_frontend/data/models/user_model.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../screens/user/edit_profile_screen.dart';
 
 class ProfileHeader extends StatelessWidget {
-  const ProfileHeader({super.key});
+  final UserModel user;
+
+  const ProfileHeader({
+    super.key,
+    required this.user,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(24.0),
       decoration: BoxDecoration(
         color: AppColors.backgroundWhite,
@@ -15,7 +22,6 @@ class ProfileHeader extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // 프로필 아바타
           Container(
             width: 100,
             height: 100,
@@ -23,49 +29,53 @@ class ProfileHeader extends StatelessWidget {
               shape: BoxShape.circle,
               color: AppColors.border,
             ),
-            child: const Icon(
-              Icons.person,
-              size: 50,
-              color: AppColors.subText,
-            ),
+            clipBehavior: Clip.antiAlias,
+            child: user.profileImageUrl != null && user.profileImageUrl!.isNotEmpty
+                ? Image.network(
+                    user.profileImageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.person,
+                      size: 50,
+                      color: AppColors.subText,
+                    ),
+                  )
+                : const Icon(
+                    Icons.person,
+                    size: 50,
+                    color: AppColors.subText,
+                  ),
           ),
           const SizedBox(height: 16),
-          // 닉네임, 나이, 국기
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                '홍길동',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.titleText,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                '28세',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.subText,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text('🇰🇷'),
-            ],
+          Text(
+            user.nickname,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.titleText,
+            ),
           ),
           const SizedBox(height: 8),
-          // 소개글
-          const Text(
-            '농구 좋아하는 개발자입니다',
-            style: TextStyle(
+          Text(
+            user.email,
+            style: const TextStyle(
               fontSize: 12,
               color: AppColors.subText,
             ),
             textAlign: TextAlign.center,
           ),
+          if (user.phoneNumber != null && user.phoneNumber!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              user.phoneNumber!,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.subText,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: 16),
-          // 인증 배지
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -75,7 +85,6 @@ class ProfileHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          // 프로필 수정 버튼
           SizedBox(
             width: double.infinity,
             child: InkWell(

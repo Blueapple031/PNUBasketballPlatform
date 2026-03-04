@@ -15,5 +15,6 @@ class ApiEndpoints {
   static const String checkNickname = '/api/auth/check-nickname';
 
   // User endpoints
-  static const String userProfile = '/api/user/profile';
+  static const String userMe = '/api/users/me';
+  static const String userPassword = '/api/users/me/password';
 }

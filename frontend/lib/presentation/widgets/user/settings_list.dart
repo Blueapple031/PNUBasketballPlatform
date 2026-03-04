@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
 class SettingsList extends StatelessWidget {
-  const SettingsList({super.key});
+  final VoidCallback? onLogout;
+
+  const SettingsList({
+    super.key,
+    this.onLogout,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -43,11 +48,12 @@ class SettingsList extends StatelessWidget {
             subtitle: '',
           ),
           const Divider(height: 1, thickness: 1, color: AppColors.border),
-          const _SettingsMenuTile(
+          _SettingsMenuTile(
             icon: Icons.logout,
             title: '로그아웃',
             subtitle: '',
             isDestructive: true,
+            onTap: onLogout,
           ),
           const _SettingsMenuTile(
             icon: Icons.delete_forever,
@@ -66,21 +72,28 @@ class _SettingsMenuTile extends StatelessWidget {
   final String title;
   final String? subtitle;
   final bool isDestructive;
+  final VoidCallback? onTap;
 
   const _SettingsMenuTile({
     required this.icon,
     required this.title,
     this.subtitle,
     this.isDestructive = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final color = isDestructive ? AppColors.errorRed : AppColors.titleText;
     final iconColor = isDestructive ? AppColors.errorRed : AppColors.subText;
-    
+
     return InkWell(
-      onTap: () {},
+      onTap: onTap ??
+          () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('$title 클릭됨')),
+            );
+          },
       splashColor: AppColors.activeBlue.withValues(alpha: 0.1),
       highlightColor: AppColors.activeBlue.withValues(alpha: 0.05),
       child: Container(
@@ -123,7 +136,7 @@ class _SettingsMenuTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
+            const Icon(
               Icons.arrow_forward_ios,
               size: 16,
               color: AppColors.subText,
