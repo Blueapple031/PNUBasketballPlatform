@@ -13,6 +13,10 @@ class _MatchListScreenState extends State<MatchListScreen> {
   // 방 만들기 폼 상태
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  int _selectedMaxPlayers = 12; // 모집 인원 (기본값: 12명)
+  
+  // 필터 상태
+  String? _selectedFilter; // null = 전체, '남성매치', '여성매치', '친선매치', '남녀모두'
 
   // 스켈레톤을 위한 더미 데이터 (스타크래프트 방 목록 스타일)
   final List<Map<String, dynamic>> _dummyMatches = [
@@ -72,10 +76,11 @@ class _MatchListScreenState extends State<MatchListScreen> {
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.filter_list, color: AppColors.headerGrey),
-                  onPressed: () {
-                    // 필터 기능 
-                  },
+                  icon: Icon(
+                    Icons.filter_list,
+                    color: _selectedFilter != null ? AppColors.activeBlue : AppColors.headerGrey,
+                  ),
+                  onPressed: _showFilterDialog,
                 ),
               ],
             ),
@@ -101,9 +106,9 @@ class _MatchListScreenState extends State<MatchListScreen> {
           // 하단: 매치 리스트 (가이드라인 준수: 하단 실선 플랫 리스트)
           Expanded(
             child: ListView.builder(
-              itemCount: _dummyMatches.length,
+              itemCount: _getFilteredMatches().length,
               itemBuilder: (context, index) {
-                final match = _dummyMatches[index];
+                final match = _getFilteredMatches()[index];
                 final isFull = match['current'] == match['max'];
 
                 return InkWell( // 🎬 모션 가이드 적용: 터치 피드백
@@ -306,11 +311,20 @@ class _MatchListScreenState extends State<MatchListScreen> {
               // 4. 모집 인원
               const Text('모집 인원', style: TextStyle(fontSize: 13, color: AppColors.subText)),
               const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)),
-                child: const Text('12 명', style: TextStyle(color: AppColors.titleText)),
+              InkWell(
+                onTap: () => _selectMaxPlayers(context),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('$_selectedMaxPlayers 명', style: const TextStyle(color: AppColors.titleText)),
+                      const Icon(Icons.people, size: 18, color: AppColors.subText),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 32),
 
@@ -409,5 +423,92 @@ class _MatchListScreenState extends State<MatchListScreen> {
       // 파싱 실패 시 빈 문자열 반환
     }
     return '';
+  }
+
+  // 모집 인원 선택 다이얼로그
+  Future<void> _selectMaxPlayers(BuildContext context) async {
+    final List<int> playerOptions = [6, 8, 10, 12, 14, 16, 18, 20];
+    
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('모집 인원 선택', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: playerOptions.length,
+              itemBuilder: (context, index) {
+                final count = playerOptions[index];
+                return ListTile(
+                  title: Text('$count 명'),
+                  trailing: _selectedMaxPlayers == count
+                      ? const Icon(Icons.check, color: AppColors.activeBlue)
+                      : null,
+                  onTap: () {
+                    setState(() {
+                      _selectedMaxPlayers = count;
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 필터 다이얼로그 (임시 구현)
+  Future<void> _showFilterDialog() async {
+    final filters = [
+      {'label': '전체 보기', 'value': null},
+      {'label': '남성매치', 'value': '남성매치'},
+      {'label': '여성매치', 'value': '여성매치'},
+      {'label': '친선매치', 'value': '친선매치'},
+      {'label': '남녀모두', 'value': '남녀모두'},
+    ];
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('매치 필터', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: filters.length,
+              itemBuilder: (context, index) {
+                final filter = filters[index];
+                final isSelected = _selectedFilter == filter['value'];
+                return ListTile(
+                  title: Text(filter['label'] as String),
+                  trailing: isSelected
+                      ? const Icon(Icons.check, color: AppColors.activeBlue)
+                      : null,
+                  onTap: () {
+                    setState(() {
+                      _selectedFilter = filter['value'] as String?;
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 필터링된 매치 리스트 반환
+  List<Map<String, dynamic>> _getFilteredMatches() {
+    if (_selectedFilter == null) {
+      return _dummyMatches;
+    }
+    return _dummyMatches.where((match) => match['type'] == _selectedFilter).toList();
   }
 }
