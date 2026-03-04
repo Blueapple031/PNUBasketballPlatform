@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:basketball_frontend/core/theme/plato_theme.dart';
 import 'package:basketball_frontend/presentation/providers/auth_provider.dart';
 import 'package:basketball_frontend/presentation/widgets/user/profile_header.dart';
 import 'package:basketball_frontend/presentation/widgets/user/subscription_banner.dart';
 import 'package:basketball_frontend/presentation/widgets/user/settings_list.dart';
+import '../../../core/theme/app_colors.dart';
 
 class UserTab extends StatefulWidget {
   const UserTab({super.key});
@@ -72,12 +72,17 @@ class _UserTabState extends State<UserTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PlatoColors.pageBg,
+      backgroundColor: AppColors.pageBg,
       appBar: AppBar(
-        title: const Text('마이페이지'),
-        backgroundColor: PlatoColors.headerGrey,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.headerGrey,
         elevation: 0,
+        title: const Text(
+          '마이페이지',
+          style: TextStyle(
+            color: AppColors.backgroundWhite,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, _) {
@@ -102,7 +107,7 @@ class _UserTabState extends State<UserTab> {
                       errorText ?? '로그인 정보가 없습니다.',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        color: PlatoColors.subText,
+                        color: AppColors.subText,
                         fontSize: 14,
                       ),
                     ),
@@ -138,7 +143,7 @@ class _UserTabState extends State<UserTab> {
                     ProfileHeader(user: authProvider.currentUser!),
                     const SizedBox(height: 24),
                     SettingsList(onLogout: _handleLogout),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
