@@ -31,7 +31,8 @@ dependencies:
   # 구글 로그인
   google_sign_in: ^6.1.5
   
-  # 카카오 로그인
+  # 카카오 로그인 (common: KakaoSdk.init, isKakaoTalkInstalled / user: UserApi, OAuthToken)
+  kakao_flutter_sdk_common: ^1.10.0
   kakao_flutter_sdk_user: ^1.10.0
   
   # 보안 저장소 (토큰 저장)

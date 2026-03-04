@@ -50,10 +50,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleKakaoLogin() async {
     final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.kakaoLogin();
+    final authResponse = await authProvider.kakaoLogin();
 
-    if (success && mounted) {
-      Navigator.of(context).pushReplacementNamed('/home');
+    if (authResponse != null && mounted) {
+      if (authResponse.user.needsClubSelection == true) {
+        Navigator.of(context).pushReplacementNamed('/club-selection');
+      } else if (authResponse.user.isNewUser == true) {
+        Navigator.of(context).pushReplacementNamed('/complete-profile');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
