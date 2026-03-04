@@ -214,7 +214,7 @@ class _MatchListScreenState extends State<MatchListScreen> {
               const SizedBox(height: 8),
               TextField(
                 decoration: InputDecoration(
-                  hintText: 'ex) 1:1 투혼 초보만 (경암체육관 빡겜)',
+                  hintText: 'ex) 리브 6:6 넉터',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
