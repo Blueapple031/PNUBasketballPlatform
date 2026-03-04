@@ -3,6 +3,8 @@ package com.pnu.basketball.repository;
 import com.pnu.basketball.domain.Match;
 import com.pnu.basketball.domain.MatchState;
 import com.pnu.basketball.domain.MatchType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,4 +17,8 @@ public interface MatchRepository extends JpaRepository<Match, UUID> {
     List<Match> findByStateOrderByScheduledAtAsc(MatchState state);
     List<Match> findByMatchTypeOrderByScheduledAtDesc(MatchType matchType);
     List<Match> findByCreatedByUserIdOrderByScheduledAtDesc(Long userId);
+
+    Page<Match> findByStateOrderByScheduledAtDesc(MatchState state, Pageable pageable);
+
+    Page<Match> findAllByOrderByScheduledAtDesc(Pageable pageable);
 }

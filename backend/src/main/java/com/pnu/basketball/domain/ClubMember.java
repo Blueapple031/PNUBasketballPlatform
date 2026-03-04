@@ -38,4 +38,8 @@ public class ClubMember {
     @CreationTimestamp
     @Column(name = "joined_at", nullable = false, updatable = false)
     private LocalDateTime joinedAt;
+
+    public void setRole(ClubRole role) {
+        this.role = role;
+    }
 }
