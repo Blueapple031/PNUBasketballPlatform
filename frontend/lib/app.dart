@@ -19,12 +19,49 @@ class BasketballApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           useMaterial3: true,
         ),
-        home: const UserTab(), // 임시: UserTab 테스트용
+        home: const AuthGate(),
         routes: {
           '/login': (context) => const LoginScreen(),
           '/home': (context) => const UserTab(),
         },
       ),
+    );
+  }
+}
+
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  late final Future<bool> _initializeFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFuture = context.read<AuthProvider>().initialize();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _initializeFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.data == true) {
+          return const UserTab();
+        }
+
+        return const LoginScreen();
+      },
     );
   }
 }

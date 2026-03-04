@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:basketball_frontend/core/theme/plato_theme.dart';
 
 class SettingsList extends StatelessWidget {
-  const SettingsList({super.key});
+  final VoidCallback? onLogout;
+
+  const SettingsList({
+    super.key,
+    this.onLogout,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +42,11 @@ class SettingsList extends StatelessWidget {
           icon: Icons.info,
           title: '공지사항',
         ),
-        const _SettingsMenuTile(
+        _SettingsMenuTile(
           icon: Icons.logout,
           title: '로그아웃',
           isDestructive: true,
+          onTap: onLogout,
         ),
         const _SettingsMenuTile(
           icon: Icons.delete_forever,
@@ -58,12 +64,14 @@ class _SettingsMenuTile extends StatelessWidget {
   final String title;
   final String? subtitle;
   final bool isDestructive;
+  final VoidCallback? onTap;
 
   const _SettingsMenuTile({
     required this.icon,
     required this.title,
     this.subtitle,
     this.isDestructive = false,
+    this.onTap,
   });
 
   @override
@@ -103,11 +111,12 @@ class _SettingsMenuTile extends StatelessWidget {
           size: 16,
           color: PlatoColors.subText,
         ),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$title 클릭됨')),
-          );
-        },
+        onTap: onTap ??
+            () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('$title 클릭됨')),
+              );
+            },
       ),
     );
   }

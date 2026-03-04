@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:basketball_frontend/core/theme/plato_theme.dart';
+import 'package:basketball_frontend/data/models/user_model.dart';
 import '../../screens/user/edit_profile_screen.dart';
 
 class ProfileHeader extends StatelessWidget {
-  const ProfileHeader({super.key});
+  final UserModel user;
+
+  const ProfileHeader({
+    super.key,
+    required this.user,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,45 +30,52 @@ class ProfileHeader extends StatelessWidget {
               shape: BoxShape.circle,
               color: PlatoColors.border,
             ),
-            child: const Icon(
-              Icons.person,
-              size: 50,
-              color: PlatoColors.subText,
+            clipBehavior: Clip.antiAlias,
+            child: user.profileImageUrl != null && user.profileImageUrl!.isNotEmpty
+                ? Image.network(
+                    user.profileImageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.person,
+                      size: 50,
+                      color: PlatoColors.subText,
+                    ),
+                  )
+                : const Icon(
+                    Icons.person,
+                    size: 50,
+                    color: PlatoColors.subText,
+                  ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            user.nickname,
+            style: const TextStyle(
+              color: PlatoColors.titleText,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                '홍길동',
-                style: TextStyle(
-                  color: PlatoColors.titleText,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                '28세',
-                style: TextStyle(
-                  color: PlatoColors.subText,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text('🇰🇷'),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            '농구 좋아하는 개발자입니다',
-            style: TextStyle(
+          Text(
+            user.email,
+            style: const TextStyle(
               fontSize: 12,
               color: PlatoColors.subText,
             ),
             textAlign: TextAlign.center,
           ),
+          if (user.phoneNumber != null && user.phoneNumber!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              user.phoneNumber!,
+              style: const TextStyle(
+                fontSize: 12,
+                color: PlatoColors.subText,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
