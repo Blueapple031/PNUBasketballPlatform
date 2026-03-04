@@ -376,12 +376,12 @@ CREATE TABLE match_events (
 
 ---
 
-## 부록: 구현 마이그레이션
+## 부록: 구현 스키마
 
 | 파일 | 설명 |
 |------|------|
-| `V2__add_basketball_platform_tables.sql` | clubs, club_members, matches, match_participants 테이블 및 users 확장 컬럼 추가 |
+| `schema.sql` | 통합 스키마 (users, clubs, club_members, matches, match_participants) |
 
-**실행 순서**: `schema.sql` → `V1__add_user_timestamps.sql` → `V2__add_basketball_platform_tables.sql`
+**실행**: `psql -d basketball_db -f docs/database/schema.sql`
 
-**JPA 엔티티**: `Club`, `ClubMember`, `Match`, `MatchParticipant`, `MatchState` (domain 패키지)
+**JPA 엔티티**: `Club`, `ClubMember`, `Match`, `MatchParticipant`, `MatchState`, `ClubRole` (domain 패키지)

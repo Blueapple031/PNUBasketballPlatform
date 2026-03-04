@@ -1,5 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'user_model.dart';
 
 part 'auth_response_model.g.dart';
 
@@ -29,18 +28,20 @@ class AuthResponseModel {
 class UserInfo {
   final int userId;
   final String email;
-  final String nickname;
+  final String realName;
   final String? profileImageUrl;
   final String loginType;
   final bool? isNewUser;
+  final bool? needsClubSelection;
 
   UserInfo({
     required this.userId,
     required this.email,
-    required this.nickname,
+    required this.realName,
     this.profileImageUrl,
     required this.loginType,
     this.isNewUser,
+    this.needsClubSelection,
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) =>
