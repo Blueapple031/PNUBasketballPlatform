@@ -4,8 +4,8 @@ class ApiEndpoints {
   // Android 에뮬레이터: http://10.0.2.2:8080
   // 실제 기기: http://<PC IP>:8080
   static const String baseUrl =
-      //String.fromEnvironment('API_BASE_URL', defaultValue: 'https://ddalba.duckdns.org');
-      String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8080');
+      String.fromEnvironment('API_BASE_URL', defaultValue: 'https://ddalba.duckdns.org');
+      //String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8080');
   
   // Auth endpoints
   static const String signup = '/api/auth/signup';

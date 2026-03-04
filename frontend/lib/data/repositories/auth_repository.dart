@@ -279,13 +279,14 @@ class AuthRepository {
     throw Exception(response.error?['message'] ?? '동아리 목록 조회 실패');
   }
 
-  Future<ClubSelectResultModel> selectClub(String clubId) async {
+  Future<ClubSelectResultModel> selectClub(String clubId, {String? role}) async {
     final accessToken = await getAccessToken();
     if (accessToken == null) throw Exception('로그인이 필요합니다.');
 
     final response = await authService.selectClub(
       accessToken: accessToken,
       clubId: clubId,
+      role: role,
     );
 
     if (response.success && response.data != null) {

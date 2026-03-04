@@ -265,14 +265,15 @@ clubs
 
 **엔드포인트**: `POST /api/clubs/select`
 
-**설명**: 학생 사용자가 동아리를 선택하여 가입한다. 1 user : 1 club 제약 유지.
+**설명**: 학생 사용자가 동아리를 선택하여 가입한다. 1 user : 1 club 제약 유지. 동아리 내 역할(동아리원/매니저/OB)을 지정할 수 있다. **동아리장(PRESIDENT)은 백오피스에서만 지정 가능.**
 
 **인증 필요**: ✅ (Access Token)
 
 **요청 본문**:
 ```json
 {
-  "clubId": "550e8400-e29b-41d4-a716-446655440000"
+  "clubId": "550e8400-e29b-41d4-a716-446655440000",
+  "role": "MEMBER"
 }
 ```
 
@@ -280,6 +281,7 @@ clubs
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
 | `clubId` | UUID | ✅ | 가입할 동아리 ID |
+| `role` | string | ❌ | 동아리 내 역할. `MEMBER`(동아리원), `MANAGER`(매니저), `OB`(졸업생) 중 선택. 미지정 시 `MEMBER`. **`PRESIDENT`(동아리장)는 백오피스에서만 지정 가능** |
 
 **성공 응답 (200 OK)**:
 ```json
@@ -295,7 +297,7 @@ clubs
 ```
 
 **에러 응답**:
-- `400 Bad Request`: 이미 동아리에 가입된 사용자
+- `400 Bad Request`: 이미 동아리에 가입된 사용자, `role`이 `PRESIDENT`인 경우
 - `403 Forbidden`: 학생이 아닌 사용자 (외부인)
 - `404 Not Found`: 존재하지 않는 동아리
 
@@ -472,8 +474,8 @@ clubs
 
 | 항목 | 작업 |
 |------|------|
-| `club_selection_screen.dart` | 신규 - 동아리 목록, 선택 버튼 |
-| API | GET /api/clubs, POST /api/clubs/select |
+| `club_selection_screen.dart` | 신규 - 동아리 목록, 역할 선택(동아리원/매니저/OB), 선택 버튼 |
+| API | GET /api/clubs, POST /api/clubs/select (role 포함) |
 
 ### 4단계: 플로우 통합
 

@@ -158,11 +158,15 @@ class AuthService {
   Future<ApiResponseModel<ClubSelectResultModel>> selectClub({
     required String accessToken,
     required String clubId,
+    String? role,
   }) async {
     return await apiService.post<ClubSelectResultModel>(
       ApiEndpoints.clubSelect,
       headers: {'Authorization': 'Bearer $accessToken'},
-      body: {'clubId': clubId},
+      body: {
+        'clubId': clubId,
+        if (role != null) 'role': role,
+      },
       fromJson: (json) => ClubSelectResultModel.fromJson(json as Map<String, dynamic>),
     );
   }

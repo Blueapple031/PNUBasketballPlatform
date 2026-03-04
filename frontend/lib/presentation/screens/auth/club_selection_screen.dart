@@ -31,9 +31,51 @@ class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
     }
   }
 
-  Future<void> _selectClub(String clubId) async {
+  void _showRoleSelection(String clubId, String clubName) {
+    showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '$clubName 가입',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '동아리 내 역할을 선택해주세요',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildRoleOption(context, 'MEMBER', '동아리원', '재학생 멤버'),
+              _buildRoleOption(context, 'MANAGER', '매니저', '행정·운영 보조'),
+              _buildRoleOption(context, 'OB', 'OB', '졸업생/휴학생'),
+            ],
+          ),
+        ),
+      ),
+    ).then((role) {
+      if (role != null) _selectClub(clubId, role);
+    });
+  }
+
+  Widget _buildRoleOption(BuildContext context, String value, String roleName, String roleDesc) {
+    return ListTile(
+      title: Text(roleName),
+      subtitle: Text(roleDesc, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+      onTap: () => Navigator.of(context).pop(value),
+    );
+  }
+
+  Future<void> _selectClub(String clubId, [String role = 'MEMBER']) async {
     final authProvider = context.read<AuthProvider>();
-    final result = await authProvider.selectClub(clubId);
+    final result = await authProvider.selectClub(clubId, role: role);
 
     if (result != null && mounted) {
       Navigator.of(context).pushReplacementNamed('/home');
@@ -116,7 +158,7 @@ class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
             title: Text(club.name),
             subtitle: Text('${club.memberCount}명'),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () => _selectClub(club.clubId),
+            onTap: () => _showRoleSelection(club.clubId, club.name),
           ),
         );
       },

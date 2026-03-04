@@ -224,13 +224,13 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<ClubSelectResultModel?> selectClub(String clubId) async {
+  Future<ClubSelectResultModel?> selectClub(String clubId, {String? role}) async {
     try {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
 
-      final result = await authRepository.selectClub(clubId);
+      final result = await authRepository.selectClub(clubId, role: role);
 
       _isLoading = false;
       notifyListeners();

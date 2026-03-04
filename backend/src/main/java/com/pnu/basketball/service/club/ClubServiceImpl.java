@@ -58,17 +58,25 @@ public class ClubServiceImpl implements ClubService {
         Club club = clubRepository.findById(request.getClubId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CLUB_NOT_FOUND));
 
+        ClubRole role = request.getRole();
+        if (role == null) {
+            role = ClubRole.MEMBER;
+        }
+        if (role == ClubRole.PRESIDENT) {
+            throw new CustomException(ErrorCode.INVALID_INPUT, "동아리장은 백오피스에서 지정됩니다.");
+        }
+
         ClubMember member = ClubMember.builder()
                 .user(user)
                 .club(club)
-                .role(ClubRole.MEMBER)
+                .role(role)
                 .build();
         clubMemberRepository.save(member);
 
         return ClubSelectResponse.builder()
                 .clubId(club.getId())
                 .clubName(club.getName())
-                .role(ClubRole.MEMBER)
+                .role(role)
                 .build();
     }
 
