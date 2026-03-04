@@ -3,10 +3,12 @@ package com.pnu.basketball.controller.auth;
 import com.pnu.basketball.dto.request.*;
 import com.pnu.basketball.dto.response.ApiResponse;
 import com.pnu.basketball.dto.response.AuthResponse;
+import com.pnu.basketball.dto.response.ClubSelectionStatusResponse;
 import com.pnu.basketball.dto.response.UserResponse;
 import com.pnu.basketball.service.auth.AuthService;
 import com.pnu.basketball.service.auth.GoogleAuthService;
 import com.pnu.basketball.service.auth.KakaoAuthService;
+import com.pnu.basketball.service.club.ClubService;
 import com.pnu.basketball.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,8 @@ public class AuthController {
     private final GoogleAuthService googleAuthService;
     private final KakaoAuthService kakaoAuthService;
     private final UserService userService;
-    
+    private final ClubService clubService;
+
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<AuthResponse>> signup(@Valid @RequestBody SignupRequest request) {
         AuthResponse response = authService.signup(request);
@@ -52,7 +55,7 @@ public class AuthController {
         AuthResponse response = kakaoAuthService.authenticate(request);
         return ResponseEntity.ok(ApiResponse.success(response, "카카오 로그인 성공"));
     }
-    
+
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         AuthResponse response = authService.refreshToken(request.getRefreshToken());
@@ -73,25 +76,29 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 정보 조회 성공"));
     }
     
+    @PostMapping("/complete-profile")
+    public ResponseEntity<ApiResponse<UserResponse>> completeProfile(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody CompleteProfileRequest request) {
+        UserResponse response = userService.completeProfile(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "추가 정보가 저장되었습니다."));
+    }
+
+    @GetMapping("/club-selection/status")
+    public ResponseEntity<ApiResponse<ClubSelectionStatusResponse>> getClubSelectionStatus(
+            @AuthenticationPrincipal Long userId) {
+        ClubSelectionStatusResponse response = clubService.getClubSelectionStatus(userId);
+        return ResponseEntity.ok(ApiResponse.success(response, "동아리 선택 상태 조회 성공"));
+    }
+
     @GetMapping("/check-email")
     public ResponseEntity<ApiResponse<Map<String, Object>>> checkEmail(@RequestParam String email) {
         boolean available = userService.checkEmailAvailability(email);
         Map<String, Object> data = new HashMap<>();
         data.put("available", available);
         data.put("email", email);
-        
+
         String message = available ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.";
-        return ResponseEntity.ok(ApiResponse.success(data, message));
-    }
-    
-    @GetMapping("/check-nickname")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> checkNickname(@RequestParam String nickname) {
-        boolean available = userService.checkNicknameAvailability(nickname);
-        Map<String, Object> data = new HashMap<>();
-        data.put("available", available);
-        data.put("nickname", nickname);
-        
-        String message = available ? "사용 가능한 닉네임입니다." : "이미 사용 중인 닉네임입니다.";
         return ResponseEntity.ok(ApiResponse.success(data, message));
     }
 }

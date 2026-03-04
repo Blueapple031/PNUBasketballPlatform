@@ -45,10 +45,10 @@ public class SecurityConfig {
                                 "/api/auth/kakao",
                                 "/api/auth/refresh",
                                 "/api/auth/check-email",
-                                "/api/auth/check-nickname",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/admin/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

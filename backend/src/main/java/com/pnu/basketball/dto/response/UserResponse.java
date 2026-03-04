@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -15,11 +16,13 @@ import java.time.LocalDateTime;
 public class UserResponse {
     private Long userId;
     private String email;
-    private String nickname;
+    private String realName;
     private String phoneNumber;
     private String profileImageUrl;
     private LoginType loginType;
+    private LocalDate dateOfBirth;
+    private Boolean isPnuStudent;
+    private String department;
+    private String studentId;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
-

@@ -1,49 +1,134 @@
 -- PostgreSQL Database Schema for 딸바 (PNU Basketball Platform)
--- 생성일: 2026-01
+-- 통합 스키마 (2026-03)
 
--- Users 테이블 생성
-CREATE TABLE IF NOT EXISTS users (
-    user_id BIGSERIAL PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255),  -- NULL 가능 (구글 로그인 사용자)
-    nickname VARCHAR(50) NOT NULL UNIQUE,
-    phone_number VARCHAR(20),
-    profile_image_url VARCHAR(500),
-    login_type VARCHAR(20) NOT NULL DEFAULT 'EMAIL',  -- EMAIL, GOOGLE
-    google_id VARCHAR(255) UNIQUE,  -- 구글 사용자 ID
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ============================================================
+-- ENUM
+-- ============================================================
+CREATE TYPE match_state AS ENUM ('SCHEDULED', 'READY', 'ONGOING', 'DONE', 'CANCELLED');
+CREATE TYPE club_role AS ENUM ('PRESIDENT', 'MEMBER', 'OB', 'MANAGER');
+
+-- ============================================================
+-- users
+-- ============================================================
+CREATE TABLE users (
+    user_id                 BIGSERIAL PRIMARY KEY,
+    email                   VARCHAR(255) NOT NULL UNIQUE,
+    password                VARCHAR(255),
+    real_name               VARCHAR(50) NOT NULL,
+    phone_number            VARCHAR(20),
+    phone_number_verified_at TIMESTAMP,
+    profile_image_url       VARCHAR(500),
+    login_type              VARCHAR(20) NOT NULL DEFAULT 'EMAIL',
+    google_id               VARCHAR(255) UNIQUE,
+    kakao_id                VARCHAR(255) UNIQUE,
+    date_of_birth           DATE,
+    is_pnu_student          BOOLEAN NOT NULL DEFAULT false,
+    department              VARCHAR(100),
+    student_id              VARCHAR(20),
+    wins                    INTEGER NOT NULL DEFAULT 0,
+    games                   INTEGER NOT NULL DEFAULT 0,
+    total_score             INTEGER NOT NULL DEFAULT 0,
+    virtual_currency        INTEGER NOT NULL DEFAULT 0,
+    created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- 인덱스 생성
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
-CREATE INDEX IF NOT EXISTS idx_users_nickname ON users(nickname);
+CREATE UNIQUE INDEX idx_users_student_id_unique ON users(student_id) WHERE student_id IS NOT NULL AND student_id != '';
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_google_id ON users(google_id);
+CREATE INDEX idx_users_kakao_id ON users(kakao_id);
+CREATE INDEX idx_users_real_name ON users(real_name);
 
--- updated_at 자동 업데이트를 위한 트리거 함수
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
+-- ============================================================
+-- clubs
+-- ============================================================
+CREATE TABLE clubs (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name        VARCHAR(100) NOT NULL,
+    logo_url    VARCHAR(500),
+    captain_id  BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
--- updated_at 트리거 생성
-CREATE TRIGGER update_users_updated_at
-    BEFORE UPDATE ON users
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+CREATE INDEX idx_clubs_captain_id ON clubs(captain_id);
+CREATE INDEX idx_clubs_name ON clubs(name);
 
--- 코멘트 추가
-COMMENT ON TABLE users IS '사용자 정보 테이블';
-COMMENT ON COLUMN users.user_id IS '사용자 ID (Primary Key)';
-COMMENT ON COLUMN users.email IS '이메일 (Unique)';
-COMMENT ON COLUMN users.password IS '암호화된 비밀번호 (구글 로그인 사용자는 NULL)';
-COMMENT ON COLUMN users.nickname IS '닉네임 (Unique)';
-COMMENT ON COLUMN users.phone_number IS '전화번호';
-COMMENT ON COLUMN users.profile_image_url IS '프로필 이미지 URL';
-COMMENT ON COLUMN users.login_type IS '로그인 타입 (EMAIL, GOOGLE)';
-COMMENT ON COLUMN users.google_id IS '구글 사용자 ID (구글 로그인 사용자만)';
-COMMENT ON COLUMN users.created_at IS '생성일시';
-COMMENT ON COLUMN users.updated_at IS '수정일시';
+-- ============================================================
+-- club_members (1 user : 1 club)
+-- ============================================================
+CREATE TABLE club_members (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    club_id     UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
+    role        club_role NOT NULL DEFAULT 'MEMBER',
+    joined_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_club_members_user UNIQUE (user_id)
+);
+
+CREATE INDEX idx_club_members_user_id ON club_members(user_id);
+CREATE INDEX idx_club_members_club_id ON club_members(club_id);
+
+-- ============================================================
+-- matches
+-- ============================================================
+CREATE TABLE matches (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    home_club_id    UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
+    away_club_id    UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
+    scheduled_at    TIMESTAMP NOT NULL,
+    state           match_state NOT NULL DEFAULT 'SCHEDULED',
+    home_score      INTEGER,
+    away_score      INTEGER,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_match_clubs_different CHECK (home_club_id != away_club_id)
+);
+
+CREATE INDEX idx_matches_home_club ON matches(home_club_id);
+CREATE INDEX idx_matches_away_club ON matches(away_club_id);
+CREATE INDEX idx_matches_scheduled_at ON matches(scheduled_at);
+CREATE INDEX idx_matches_state ON matches(state);
+
+-- ============================================================
+-- match_participants
+-- ============================================================
+CREATE TABLE match_participants (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    match_id        UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
+    user_id         BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    club_id         UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
+    points_scored   INTEGER NOT NULL DEFAULT 0,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_match_participant UNIQUE (match_id, user_id),
+    CONSTRAINT chk_points_non_negative CHECK (points_scored >= 0)
+);
+
+CREATE INDEX idx_match_participants_match_id ON match_participants(match_id);
+CREATE INDEX idx_match_participants_user_id ON match_participants(user_id);
+CREATE INDEX idx_match_participants_club_id ON match_participants(club_id);
+
+-- ============================================================
+-- posts
+-- ============================================================
+CREATE TABLE posts (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id         BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    club_id         UUID REFERENCES clubs(id) ON DELETE SET NULL,
+    title           VARCHAR(200) NOT NULL,
+    content         TEXT NOT NULL,
+    view_count      INTEGER NOT NULL DEFAULT 0,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================================
+-- comments
+-- ============================================================
+CREATE TABLE comments (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    post_id         UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id         BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    content         TEXT NOT NULL,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

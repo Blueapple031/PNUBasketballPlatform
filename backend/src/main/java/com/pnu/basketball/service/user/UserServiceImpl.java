@@ -2,6 +2,7 @@ package com.pnu.basketball.service.user;
 
 import com.pnu.basketball.domain.LoginType;
 import com.pnu.basketball.domain.User;
+import com.pnu.basketball.dto.request.CompleteProfileRequest;
 import com.pnu.basketball.dto.request.UpdatePasswordRequest;
 import com.pnu.basketball.dto.request.UpdateProfileRequest;
 import com.pnu.basketball.dto.response.UserResponse;
@@ -37,19 +38,36 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         
-        // 닉네임 변경 요청이 있고, 기존 닉네임과 다를 때만 중복 체크
-        if (request.getNickname() != null && !request.getNickname().equals(user.getNickname())) {
-            if (userRepository.existsByNickname(request.getNickname())) {
-                throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
-            }
-        }
-        
         user.updateProfile(
-                request.getNickname(),
+                request.getRealName(),
                 request.getPhoneNumber(),
                 request.getProfileImageUrl()
         );
         
+        return toUserResponse(user);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse completeProfile(Long userId, CompleteProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (Boolean.TRUE.equals(request.getIsPnuStudent()) && request.getStudentId() != null && !request.getStudentId().isBlank()) {
+            if (userRepository.existsByStudentIdAndUserIdNot(request.getStudentId(), userId)) {
+                throw new CustomException(ErrorCode.STUDENT_ID_ALREADY_EXISTS);
+            }
+        }
+
+        user.completeProfile(
+                request.getRealName(),
+                request.getDateOfBirth(),
+                request.getIsPnuStudent(),
+                request.getIsPnuStudent() != null && request.getIsPnuStudent() ? request.getDepartment() : null,
+                request.getIsPnuStudent() != null && request.getIsPnuStudent() ? request.getStudentId() : null
+        );
+        userRepository.save(user);
+
         return toUserResponse(user);
     }
     
@@ -57,12 +75,15 @@ public class UserServiceImpl implements UserService {
         return UserResponse.builder()
                 .userId(user.getUserId())
                 .email(user.getEmail())
-                .nickname(user.getNickname())
+                .realName(user.getRealName())
                 .phoneNumber(user.getPhoneNumber())
                 .profileImageUrl(user.getProfileImageUrl())
                 .loginType(user.getLoginType())
+                .dateOfBirth(user.getDateOfBirth())
+                .isPnuStudent(user.getIsPnuStudent())
+                .department(user.getDepartment())
+                .studentId(user.getStudentId())
                 .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
                 .build();
     }
     
@@ -74,8 +95,8 @@ public class UserServiceImpl implements UserService {
     
     @Override
     @Transactional(readOnly = true)
-    public boolean checkNicknameAvailability(String nickname) {
-        return !userRepository.existsByNickname(nickname);
+    public boolean checkRealNameAvailability(String realName) {
+        return true;  // 본명은 동명이인 허용
     }
 
     @Override
@@ -105,10 +126,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        user.softDelete();
-        userRepository.save(user);
-
-        // 저장소에 있는 Refresh Token을 무효화합니다.
         tokenStorage.deleteRefreshToken(userId);
+        userRepository.delete(user);
     }
 }

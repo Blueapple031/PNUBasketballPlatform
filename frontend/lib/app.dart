@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/auth/complete_profile_screen.dart';
+import 'presentation/screens/auth/club_selection_screen.dart';
 import 'presentation/screens/user/user_tab.dart';
 
 class BasketballApp extends StatelessWidget {
@@ -19,13 +21,14 @@ class BasketballApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           useMaterial3: true,
         ),
-        home: const UserTab(), // 임시: UserTab 테스트용
+        home: const LoginScreen(),
         routes: {
           '/login': (context) => const LoginScreen(),
           '/home': (context) => const UserTab(),
+          '/complete-profile': (context) => const CompleteProfileScreen(),
+          '/club-selection': (context) => const ClubSelectionScreen(),
         },
       ),
     );
   }
 }
-  }
