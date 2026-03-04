@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/auth_response_model.dart';
 import '../../data/models/user_model.dart';
+import '../../data/models/club_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -39,11 +40,15 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> signup({
+  Future<AuthResponseModel?> signup({
     required String email,
     required String password,
-    required String nickname,
+    required String realName,
     String? phoneNumber,
+    required String dateOfBirth,
+    required bool isPnuStudent,
+    String? department,
+    String? studentId,
   }) async {
     try {
       _isLoading = true;
@@ -53,32 +58,35 @@ class AuthProvider with ChangeNotifier {
       final authResponse = await authRepository.signup(
         email: email,
         password: password,
-        nickname: nickname,
+        realName: realName,
         phoneNumber: phoneNumber,
+        dateOfBirth: dateOfBirth,
+        isPnuStudent: isPnuStudent,
+        department: department,
+        studentId: studentId,
       );
 
       _currentUser = UserModel(
         userId: authResponse.user.userId,
         email: authResponse.user.email,
-        nickname: authResponse.user.nickname,
+        realName: authResponse.user.realName,
         profileImageUrl: authResponse.user.profileImageUrl,
         loginType: authResponse.user.loginType,
         createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
       );
 
       _isLoading = false;
       notifyListeners();
-      return true;
+      return authResponse;
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      return false;
+      return null;
     }
   }
 
-  Future<bool> login({
+  Future<AuthResponseModel?> login({
     required String email,
     required String password,
   }) async {
@@ -95,25 +103,24 @@ class AuthProvider with ChangeNotifier {
       _currentUser = UserModel(
         userId: authResponse.user.userId,
         email: authResponse.user.email,
-        nickname: authResponse.user.nickname,
+        realName: authResponse.user.realName,
         profileImageUrl: authResponse.user.profileImageUrl,
         loginType: authResponse.user.loginType,
         createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
       );
 
       _isLoading = false;
       notifyListeners();
-      return true;
+      return authResponse;
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      return false;
+      return null;
     }
   }
 
-  Future<bool> googleLogin() async {
+  Future<AuthResponseModel?> googleLogin() async {
     try {
       _isLoading = true;
       _errorMessage = null;
@@ -124,21 +131,20 @@ class AuthProvider with ChangeNotifier {
       _currentUser = UserModel(
         userId: authResponse.user.userId,
         email: authResponse.user.email,
-        nickname: authResponse.user.nickname,
+        realName: authResponse.user.realName,
         profileImageUrl: authResponse.user.profileImageUrl,
         loginType: authResponse.user.loginType,
         createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
       );
 
       _isLoading = false;
       notifyListeners();
-      return true;
+      return authResponse;
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      return false;
+      return null;
     }
   }
 
@@ -168,11 +174,72 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> checkNicknameAvailability(String nickname) async {
+  Future<ClubSelectionStatusModel?> getClubSelectionStatus() async {
     try {
-      return await authRepository.checkNicknameAvailability(nickname);
+      return await authRepository.getClubSelectionStatus();
     } catch (e) {
-      return false;
+      return null;
+    }
+  }
+
+  Future<UserModel?> completeProfile({
+    required String? realName,
+    required String dateOfBirth,
+    required bool isPnuStudent,
+    String? department,
+    String? studentId,
+  }) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      final user = await authRepository.completeProfile(
+        realName: realName,
+        dateOfBirth: dateOfBirth,
+        isPnuStudent: isPnuStudent,
+        department: department,
+        studentId: studentId,
+      );
+
+      _currentUser = user;
+      _isLoading = false;
+      notifyListeners();
+      return user;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<List<ClubModel>?> getClubs() async {
+    try {
+      return await authRepository.getClubs();
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<ClubSelectResultModel?> selectClub(String clubId) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      final result = await authRepository.selectClub(clubId);
+
+      _isLoading = false;
+      notifyListeners();
+      return result;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return null;
     }
   }
 
