@@ -5,14 +5,12 @@ import 'app.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 카카오 SDK 초기화 (KAKAO_NATIVE_APP_KEY 환경변수 필요)
+  // 카카오 SDK 초기화 (run.ps1 사용 시 gradle.properties 키 전달)
   const nativeAppKey = String.fromEnvironment(
     'KAKAO_NATIVE_APP_KEY',
     defaultValue: '',
   );
-  if (nativeAppKey.isNotEmpty) {
-    KakaoSdk.init(nativeAppKey: nativeAppKey);
-  }
+  KakaoSdk.init(nativeAppKey: nativeAppKey);
 
   runApp(const BasketballApp());
 }

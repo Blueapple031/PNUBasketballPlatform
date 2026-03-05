@@ -53,4 +53,4 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
         run: |
-          ssh -o StrictHostKeyChecking=accept-new -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST 'cd ~/PNUBasketballPlatform && pkill -f app.jar || true && sleep 2 && nohup java -jar app.jar --spring.profiles.active=prod >> app.log 2>&1 &' && echo "배포 완료"
+          ssh -o StrictHostKeyChecking=accept-new -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST 'cd ~/PNUBasketballPlatform && pkill -f app.jar || true && sleep 2 && (nohup /usr/bin/java -jar app.jar --spring.profiles.active=prod > app.log 2>&1 &)' && echo "배포 완료"

@@ -2,6 +2,7 @@ import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
 import '../models/club_model.dart';
 import '../services/auth_service.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
@@ -96,7 +97,16 @@ class AuthRepository {
     try {
       OAuthToken token;
       if (await isKakaoTalkInstalled()) {
-        token = await UserApi.instance.loginWithKakaoTalk();
+        try {
+          token = await UserApi.instance.loginWithKakaoTalk();
+        } on PlatformException catch (e) {
+          // 카카오톡 설치됐지만 계정 미연결, 또는 사용자 취소 → 카카오계정 로그인으로 전환
+          if (e.code == 'NotSupportError' || e.code == 'CANCELED') {
+            token = await UserApi.instance.loginWithKakaoAccount();
+          } else {
+            rethrow;
+          }
+        }
       } else {
         token = await UserApi.instance.loginWithKakaoAccount();
       }

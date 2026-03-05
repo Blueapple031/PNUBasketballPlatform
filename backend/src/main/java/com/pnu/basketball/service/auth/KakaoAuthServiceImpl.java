@@ -116,6 +116,13 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return objectMapper.readTree(response.getBody());
             }
+            log.warn("카카오 API 비정상 응답: status={}, body={}", response.getStatusCode(), response.getBody());
+            return null;
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            log.error("카카오 API HTTP 오류: status={}, body={}, msg={}", e.getStatusCode(), e.getResponseBodyAsString(), e.getMessage());
+            return null;
+        } catch (org.springframework.web.client.RestClientException e) {
+            log.error("카카오 API 통신 실패: {}", e.getMessage());
             return null;
         } catch (Exception e) {
             log.error("카카오 사용자 정보 조회 실패: ", e);
