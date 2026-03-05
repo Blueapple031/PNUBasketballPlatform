@@ -152,6 +152,13 @@ class AuthRepository {
         throw Exception(response.error?['message'] ?? '구글 로그인 실패');
       }
     } catch (e) {
+      final msg = e.toString();
+      if (msg.contains('ApiException: 7') || msg.contains('network_error')) {
+        throw Exception(
+          '네트워크 연결을 확인해주세요. '
+          '인터넷이 연결되어 있는지, Wi-Fi/데이터를 전환해보세요.',
+        );
+      }
       throw Exception('구글 로그인 중 오류 발생: $e');
     }
   }
@@ -329,7 +336,7 @@ class AuthRepository {
     if (response.success && response.data != null) {
       return response.data!;
     }
-    throw Exception(response.error?['message'] ?? '동아리 가입 실패');
+    throw Exception(_buildErrorMessage(response.error, '동아리 가입 실패'));
   }
 }
 

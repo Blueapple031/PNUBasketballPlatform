@@ -264,11 +264,19 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return result;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = _extractErrorMessage(e);
       _isLoading = false;
       notifyListeners();
       return null;
     }
+  }
+
+  String _extractErrorMessage(Object e) {
+    final str = e.toString();
+    if (str.startsWith('Exception: ')) {
+      return str.substring('Exception: '.length);
+    }
+    return str;
   }
 
   void clearError() {

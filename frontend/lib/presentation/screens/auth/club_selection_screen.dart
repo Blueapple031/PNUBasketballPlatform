@@ -13,6 +13,7 @@ class ClubSelectionScreen extends StatefulWidget {
 class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
   List<ClubModel>? _clubs;
   String? _errorMessage;
+  bool _isSelecting = false;
 
   @override
   void initState() {
@@ -74,10 +75,16 @@ class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
   }
 
   Future<void> _selectClub(String clubId, [String role = 'MEMBER']) async {
+    if (!mounted) return;
     final authProvider = context.read<AuthProvider>();
+
+    setState(() => _isSelecting = true);
     final result = await authProvider.selectClub(clubId, role: role);
 
-    if (result != null && mounted) {
+    if (!mounted) return;
+    setState(() => _isSelecting = false);
+
+    if (result != null) {
       Navigator.of(context).pushReplacementNamed('/home');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -85,7 +92,7 @@ class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
           backgroundColor: Colors.green,
         ),
       );
-    } else if (mounted) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authProvider.errorMessage ?? '동아리 가입 실패'),
@@ -101,7 +108,24 @@ class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
       appBar: AppBar(
         title: const Text('동아리 선택'),
       ),
-      body: _buildBody(),
+      body: Stack(
+        children: [
+          _buildBody(),
+          if (_isSelecting)
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {},
+                child: Container(
+                  color: Colors.black26,
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
