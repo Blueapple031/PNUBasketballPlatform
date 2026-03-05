@@ -24,10 +24,11 @@ public class AuthResponse {
     public static class UserInfo {
         private Long userId;
         private String email;
-        private String nickname;
+        private String realName;
         private String profileImageUrl;
         private LoginType loginType;
-        private Boolean isNewUser;  // 구글 로그인 시 사용
+        private Boolean isNewUser;
+        private Boolean needsClubSelection;  // 학생 && 동아리 미가입 시 true
     }
 }
 

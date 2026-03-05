@@ -110,6 +110,10 @@ frontend/android/.idea/
 frontend/android/local.properties
 frontend/android/.metadata
 
+# 카카오 네이티브 앱 키 포함 (민감정보)
+frontend/android/gradle.properties
+frontend/dart_defines.json
+
 # Flutter generated files
 *.g.dart
 flutter_*.png

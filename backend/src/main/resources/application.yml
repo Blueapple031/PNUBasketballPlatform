@@ -14,3 +14,17 @@ spring:
 jwt:
   access-token-expiration: 3600000    # 1시간 (밀리초)
   refresh-token-expiration: 604800000  # 7일 (밀리초)
+
+# 로깅 설정 (디버깅 시 로그 확인용)
+logging:
+  level:
+    root: INFO
+    com.pnu.basketball: DEBUG                    # 우리 앱 전체 DEBUG
+    com.pnu.basketball.service.auth: DEBUG        # 인증 서비스 상세
+    org.springframework.web: DEBUG                # HTTP 요청/응답
+    org.springframework.security: DEBUG            # 인증/인가 흐름
+  file:
+    name: logs/application.log                   # 파일로도 저장 (backend/logs/)
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"

@@ -38,16 +38,12 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**", "/api/health").permitAll()
                         .requestMatchers(
-                                "/api/auth/signup",
-                                "/api/auth/login",
-                                "/api/auth/google",
-                                "/api/auth/refresh",
-                                "/api/auth/check-email",
-                                "/api/auth/check-nickname",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/admin/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
