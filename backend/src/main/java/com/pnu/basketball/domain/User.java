@@ -108,4 +108,10 @@ public class User {
         this.googleId = googleId;
         this.loginType = LoginType.GOOGLE;
     }
+
+    public void linkKakao(String profileImageUrl, String kakaoId) {
+        if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
+        this.kakaoId = kakaoId;
+        this.loginType = LoginType.KAKAO;
+    }
 }

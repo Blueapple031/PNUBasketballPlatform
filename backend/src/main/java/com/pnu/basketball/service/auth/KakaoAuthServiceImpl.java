@@ -8,6 +8,7 @@ import com.pnu.basketball.dto.request.KakaoLoginRequest;
 import com.pnu.basketball.dto.response.AuthResponse;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
+import com.pnu.basketball.repository.ClubMemberRepository;
 import com.pnu.basketball.repository.UserRepository;
 import com.pnu.basketball.storage.TokenStorage;
 import com.pnu.basketball.util.JwtUtil;
@@ -28,6 +29,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
     private static final String KAKAO_USER_ME_URL = "https://kapi.kakao.com/v2/user/me";
 
     private final UserRepository userRepository;
+    private final ClubMemberRepository clubMemberRepository;
     private final JwtUtil jwtUtil;
     private final TokenStorage tokenStorage;
     private final RestTemplate restTemplate;
@@ -54,38 +56,22 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
             User user = userRepository.findByKakaoId(kakaoId)
                     .orElseGet(() -> userRepository.findByEmail(email)
                             .map(existingUser -> {
-                                User updatedUser = User.builder()
-                                        .userId(existingUser.getUserId())
-                                        .email(existingUser.getEmail())
-                                        .password(existingUser.getPassword())
-                                        .nickname(existingUser.getNickname())
-                                        .phoneNumber(existingUser.getPhoneNumber())
-                                        .profileImageUrl(profileImageUrl)
-                                        .loginType(LoginType.KAKAO)
-                                        .googleId(existingUser.getGoogleId())
-                                        .kakaoId(kakaoId)
-                                        .build();
-                                return userRepository.save(updatedUser);
+                                existingUser.linkKakao(profileImageUrl, kakaoId);
+                                return userRepository.save(existingUser);
                             })
                             .orElseGet(() -> {
-                                String generatedNickname = generateNickname(nickname, email);
+                                String realName = (nickname != null && !nickname.isEmpty()) ? nickname : email.split("@")[0];
                                 User newUser = User.builder()
                                         .email(email)
-                                        .nickname(generatedNickname)
+                                        .realName(realName)
                                         .profileImageUrl(profileImageUrl)
                                         .loginType(LoginType.KAKAO)
                                         .kakaoId(kakaoId)
                                         .build();
-                                log.info("카카오 로그인 신규 사용자 생성: email={}, nickname={}", email, generatedNickname);
+                                log.info("카카오 로그인 신규 사용자 생성: email={}, realName={}", email, realName);
                                 return userRepository.save(newUser);
                             }));
 
-            if (user.getDeletedAt() != null) {
-                log.warn("탈퇴한 회원의 로그인 시도: userId={}, email={}", user.getUserId(), user.getEmail());
-                throw new CustomException(ErrorCode.USER_DEACTIVATED, "이미 탈퇴한 회원입니다.");
-            }
-
-            user.updateLastLoginTime();
             userRepository.save(user);
 
             log.info("카카오 로그인 성공: userId={}, email={}, isNewUser={}", user.getUserId(), email, isNewUser);
@@ -163,30 +149,20 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
         return null;
     }
 
-    private String generateNickname(String name, String email) {
-        String baseNickname = name != null && !name.isEmpty() ? name : email.split("@")[0];
-        String nickname = baseNickname;
-        int suffix = 1;
-
-        while (userRepository.existsByNickname(nickname)) {
-            nickname = baseNickname + suffix;
-            suffix++;
-        }
-
-        return nickname;
-    }
-
     private AuthResponse generateAuthResponse(User user, boolean isNewUser) {
         String accessToken = jwtUtil.generateAccessToken(
                 user.getUserId(),
                 user.getEmail(),
-                user.getNickname(),
+                user.getRealName(),
                 user.getLoginType().name()
         );
 
         String refreshToken = jwtUtil.generateRefreshToken(user.getUserId());
 
         tokenStorage.saveRefreshToken(user.getUserId(), refreshToken, 7, TimeUnit.DAYS);
+
+        boolean needsClubSelection = Boolean.TRUE.equals(user.getIsPnuStudent())
+                && !clubMemberRepository.existsByUserUserId(user.getUserId());
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
@@ -196,10 +172,11 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                 .user(AuthResponse.UserInfo.builder()
                         .userId(user.getUserId())
                         .email(user.getEmail())
-                        .nickname(user.getNickname())
+                        .realName(user.getRealName())
                         .profileImageUrl(user.getProfileImageUrl())
                         .loginType(user.getLoginType())
                         .isNewUser(isNewUser)
+                        .needsClubSelection(needsClubSelection)
                         .build())
                 .build();
     }
