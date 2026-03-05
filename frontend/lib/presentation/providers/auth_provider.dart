@@ -166,6 +166,22 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<void> fetchCurrentUser() async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      _currentUser = await authRepository.getCurrentUser();
+    } catch (e) {
+      _currentUser = null;
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> checkEmailAvailability(String email) async {
     try {
       return await authRepository.checkEmailAvailability(email);
