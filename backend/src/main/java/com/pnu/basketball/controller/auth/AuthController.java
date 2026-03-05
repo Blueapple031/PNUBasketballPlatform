@@ -7,6 +7,7 @@ import com.pnu.basketball.dto.response.ClubSelectionStatusResponse;
 import com.pnu.basketball.dto.response.UserResponse;
 import com.pnu.basketball.service.auth.AuthService;
 import com.pnu.basketball.service.auth.GoogleAuthService;
+import com.pnu.basketball.service.auth.KakaoAuthService;
 import com.pnu.basketball.service.club.ClubService;
 import com.pnu.basketball.service.user.UserService;
 import jakarta.validation.Valid;
@@ -26,9 +27,10 @@ public class AuthController {
     
     private final AuthService authService;
     private final GoogleAuthService googleAuthService;
+    private final KakaoAuthService kakaoAuthService;
     private final UserService userService;
     private final ClubService clubService;
-    
+
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<AuthResponse>> signup(@Valid @RequestBody SignupRequest request) {
         AuthResponse response = authService.signup(request);
@@ -47,7 +49,13 @@ public class AuthController {
         AuthResponse response = googleAuthService.authenticate(request);
         return ResponseEntity.ok(ApiResponse.success(response, "구글 로그인 성공"));
     }
-    
+
+    @PostMapping("/kakao")
+    public ResponseEntity<ApiResponse<AuthResponse>> kakaoLogin(@Valid @RequestBody KakaoLoginRequest request) {
+        AuthResponse response = kakaoAuthService.authenticate(request);
+        return ResponseEntity.ok(ApiResponse.success(response, "카카오 로그인 성공"));
+    }
+
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         AuthResponse response = authService.refreshToken(request.getRefreshToken());

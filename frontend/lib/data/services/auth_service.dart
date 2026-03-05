@@ -51,6 +51,18 @@ class AuthService {
     );
   }
 
+  Future<ApiResponseModel<AuthResponseModel>> kakaoLogin({
+    required String accessToken,
+  }) async {
+    return await apiService.post<AuthResponseModel>(
+      ApiEndpoints.kakaoLogin,
+      body: {
+        'accessToken': accessToken,
+      },
+      fromJson: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
   Future<ApiResponseModel<AuthResponseModel>> googleLogin({
     required String idToken,
   }) async {

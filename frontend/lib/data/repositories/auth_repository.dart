@@ -2,8 +2,10 @@ import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
 import '../models/club_model.dart';
 import '../services/auth_service.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 class AuthRepository {
   final AuthService authService;
@@ -90,6 +92,38 @@ class AuthRepository {
     }
   }
 
+  // 카카오 로그인
+  Future<AuthResponseModel> kakaoLogin() async {
+    try {
+      OAuthToken token;
+      if (await isKakaoTalkInstalled()) {
+        try {
+          token = await UserApi.instance.loginWithKakaoTalk();
+        } on PlatformException catch (e) {
+          // 카카오톡 설치됐지만 계정 미연결, 또는 사용자 취소 → 카카오계정 로그인으로 전환
+          if (e.code == 'NotSupportError' || e.code == 'CANCELED') {
+            token = await UserApi.instance.loginWithKakaoAccount();
+          } else {
+            rethrow;
+          }
+        }
+      } else {
+        token = await UserApi.instance.loginWithKakaoAccount();
+      }
+
+      final response = await authService.kakaoLogin(accessToken: token.accessToken);
+
+      if (response.success && response.data != null) {
+        await _saveTokens(response.data!);
+        return response.data!;
+      } else {
+        throw Exception(response.error?['message'] ?? '카카오 로그인 실패');
+      }
+    } catch (e) {
+      throw Exception('카카오 로그인 중 오류 발생: $e');
+    }
+  }
+
   // 구글 로그인
   Future<AuthResponseModel> googleLogin() async {
     try {
@@ -170,6 +204,9 @@ class AuthRepository {
     } finally {
       await clearTokens();
       await googleSignIn.signOut();
+      try {
+        await UserApi.instance.logout();
+      } catch (_) {}
     }
   }
 

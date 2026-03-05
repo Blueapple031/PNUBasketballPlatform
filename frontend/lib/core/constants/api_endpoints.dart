@@ -11,6 +11,7 @@ class ApiEndpoints {
   static const String signup = '/api/auth/signup';
   static const String login = '/api/auth/login';
   static const String googleLogin = '/api/auth/google';
+  static const String kakaoLogin = '/api/auth/kakao';
   static const String refreshToken = '/api/auth/refresh';
   static const String logout = '/api/auth/logout';
   static const String me = '/api/auth/me';
