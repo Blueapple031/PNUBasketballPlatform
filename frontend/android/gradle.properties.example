@@ -1,0 +1,6 @@
+org.gradle.jvmargs=-Xmx8G -XX:MaxMetaspaceSize=4G -XX:ReservedCodeCacheSize=512m -XX:+HeapDumpOnOutOfMemoryError
+android.useAndroidX=true
+
+# 카카오 로그인 (run.ps1에서 읽어 dart-define으로 전달)
+# gradle.properties.example을 gradle.properties로 복사 후 키 입력
+KAKAO_NATIVE_APP_KEY=여기에_네이티브_앱_키_입력
