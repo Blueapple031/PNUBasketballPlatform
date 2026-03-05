@@ -8,6 +8,8 @@ class AuthRepository {
   final AuthService authService;
   final FlutterSecureStorage secureStorage;
   final GoogleSignIn googleSignIn;
+  static const String _googleWebClientId =
+      String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 
   AuthRepository({
     AuthService? authService,
@@ -15,7 +17,11 @@ class AuthRepository {
     GoogleSignIn? googleSignIn,
   })  : authService = authService ?? AuthService(),
         secureStorage = secureStorage ?? const FlutterSecureStorage(),
-        googleSignIn = googleSignIn ?? GoogleSignIn();
+        googleSignIn = googleSignIn ??
+            GoogleSignIn(
+              serverClientId:
+                  _googleWebClientId.isEmpty ? null : _googleWebClientId,
+            );
 
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
@@ -72,7 +78,10 @@ class AuthRepository {
       final String? idToken = authentication.idToken;
 
       if (idToken == null) {
-        throw Exception('구글 ID 토큰을 가져올 수 없습니다.');
+        throw Exception(
+          '구글 ID 토큰을 가져올 수 없습니다. '
+          'Android OAuth 및 GOOGLE_WEB_CLIENT_ID 설정을 확인하세요.',
+        );
       }
 
       final response = await authService.googleLogin(idToken: idToken);
@@ -168,19 +177,32 @@ class AuthRepository {
   // 사용자 정보 조회
   Future<UserModel> getCurrentUser() async {
     final accessToken = await getAccessToken();
-    if (accessToken == null) {
+    if (accessToken == null || accessToken.isEmpty) {
       throw Exception('로그인이 필요합니다.');
     }
 
-    final response = await authService.getCurrentUser(
+    var response = await authService.getCurrentUser(
       accessToken: accessToken,
     );
 
     if (response.success && response.data != null) {
       return response.data!;
-    } else {
-      throw Exception(response.error?['message'] ?? '사용자 정보 조회 실패');
     }
+
+    final refreshedAccessToken = await refreshAccessToken();
+    if (refreshedAccessToken == null || refreshedAccessToken.isEmpty) {
+      throw Exception('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
+    response = await authService.getCurrentUser(
+      accessToken: refreshedAccessToken,
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+
+    throw Exception('인증이 만료되었습니다. 다시 로그인해주세요.');
   }
 
   // 중복 확인

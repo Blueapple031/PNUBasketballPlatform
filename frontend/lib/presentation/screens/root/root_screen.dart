@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
 import '../club/club_screen.dart';
+import '../home/home_screen.dart';
+import '../user/user_tab.dart';
 
 class RootScreen extends StatefulWidget {
   final int initialIndex;
@@ -19,11 +21,11 @@ class _RootScreenState extends State<RootScreen> {
   late int _selectedIndex;
 
   late final List<Widget> _screens = const [
-    PlaceholderScreen(title: '홈'),
+    HomeScreen(),
     ClubScreen(),
     PlaceholderScreen(title: '채팅'),
     PlaceholderScreen(title: '일정'),
-    PlaceholderScreen(title: 'MY'),
+    UserTab(),
   ];
 
   @override
@@ -41,9 +43,6 @@ class _RootScreenState extends State<RootScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        selectedItemColor: AppColors.activeBlue,
-        unselectedItemColor: AppColors.subText,
-        type: BottomNavigationBarType.fixed,
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
@@ -97,18 +96,33 @@ class PlaceholderScreen extends StatelessWidget {
         title: Text(
           title,
           style: const TextStyle(
-            color: AppColors.white,
-            fontWeight: FontWeight.w700,
+            color: AppColors.backgroundWhite,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
       body: Center(
-        child: Text(
-          '$title 화면 준비 중',
-          style: const TextStyle(
-            fontSize: 16,
-            color: AppColors.subText,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.construction,
+              size: 64,
+              color: AppColors.border,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '$title 화면',
+              style: Theme.of(context).textTheme.displayLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '준비 중입니다',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: AppColors.subText,
+              ),
+            ),
+          ],
         ),
       ),
     );

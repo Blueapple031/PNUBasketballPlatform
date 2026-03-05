@@ -1,5 +1,8 @@
 class ApiEndpoints {
-  static const String baseUrl = 'http://localhost:8080';
+  // Override with:
+  // flutter run --dart-define=API_BASE_URL=https://ddalba.duckdns.org
+  static const String baseUrl =
+      String.fromEnvironment('API_BASE_URL', defaultValue: 'https://ddalba.duckdns.org');
   
   // Auth endpoints
   static const String signup = '/api/auth/signup';
@@ -10,5 +13,8 @@ class ApiEndpoints {
   static const String me = '/api/auth/me';
   static const String checkEmail = '/api/auth/check-email';
   static const String checkNickname = '/api/auth/check-nickname';
-}
 
+  // User endpoints
+  static const String userMe = '/api/users/me';
+  static const String userPassword = '/api/users/me/password';
+}

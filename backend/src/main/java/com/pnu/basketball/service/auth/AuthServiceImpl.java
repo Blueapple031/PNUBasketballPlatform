@@ -8,10 +8,10 @@ import com.pnu.basketball.dto.response.AuthResponse;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
 import com.pnu.basketball.repository.UserRepository;
+import com.pnu.basketball.storage.TokenStorage;
 import com.pnu.basketball.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +26,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final RedisTemplate<String, String> redisTemplate;
-    
-    private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
+    private final TokenStorage tokenStorage;
     
     @Override
     @Transactional
@@ -64,15 +62,24 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         
+        // 탈퇴한 회원인지 확인.
+        if (user.getDeletedAt() != null) {
+            throw new CustomException(ErrorCode.USER_DEACTIVATED, "이미 탈퇴한 회원입니다.");
+        }        
         // 비밀번호 확인
         if (user.getPassword() == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
         }
-        
+
+         // 마지막 로그인 시간 업데이트
+        user.updateLastLoginTime();
+        userRepository.save(user);
+
         log.info("사용자 로그인: userId={}, email={}", user.getUserId(), user.getEmail());
         
         return generateAuthResponse(user, false);
@@ -88,8 +95,8 @@ public class AuthServiceImpl implements AuthService {
             
             Long userId = jwtUtil.extractUserId(refreshToken);
             
-            // Redis에서 Refresh Token 확인
-            String storedToken = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX + userId);
+            // 저장소에서 Refresh Token 확인
+            String storedToken = tokenStorage.getRefreshToken(userId);
             if (storedToken == null || !storedToken.equals(refreshToken)) {
                 throw new CustomException(ErrorCode.INVALID_TOKEN);
             }
@@ -122,8 +129,8 @@ public class AuthServiceImpl implements AuthService {
     
     @Override
     public void logout(Long userId, String refreshToken) {
-        // Redis에서 Refresh Token 삭제
-        redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
+        // 저장소에서 Refresh Token 삭제
+        tokenStorage.deleteRefreshToken(userId);
         log.info("사용자 로그아웃: userId={}", userId);
     }
     
@@ -137,13 +144,8 @@ public class AuthServiceImpl implements AuthService {
         
         String refreshToken = jwtUtil.generateRefreshToken(user.getUserId());
         
-        // Redis에 Refresh Token 저장 (7일)
-        redisTemplate.opsForValue().set(
-                REFRESH_TOKEN_PREFIX + user.getUserId(),
-                refreshToken,
-                7,
-                TimeUnit.DAYS
-        );
+        // Refresh Token 저장 (7일)
+        tokenStorage.saveRefreshToken(user.getUserId(), refreshToken, 7, TimeUnit.DAYS);
         
         return AuthResponse.builder()
                 .accessToken(accessToken)

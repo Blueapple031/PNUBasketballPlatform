@@ -11,11 +11,11 @@ import com.pnu.basketball.dto.response.AuthResponse;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
 import com.pnu.basketball.repository.UserRepository;
+import com.pnu.basketball.storage.TokenStorage;
 import com.pnu.basketball.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +29,10 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final TokenStorage tokenStorage;
     
     @Value("${google.oauth2.client-id}")
     private String googleClientId;
-    
-    private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
     
     @Override
     @Transactional
@@ -52,6 +50,10 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
             String name = (String) payload.get("name");
             String pictureUrl = (String) payload.get("picture");
             String googleId = payload.getSubject();
+            
+            // 신규 사용자 여부 확인 (사용자 조회 전에 확인)
+            boolean isNewUser = !userRepository.existsByGoogleId(googleId) && 
+                               !userRepository.existsByEmail(email);
             
             // 기존 사용자 조회 또는 신규 생성
             User user = userRepository.findByGoogleId(googleId)
@@ -86,10 +88,17 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
                                     return userRepository.save(newUser);
                                 });
                     });
-            
-            boolean isNewUser = user.getGoogleId() == null || 
-                               !userRepository.existsByGoogleId(googleId);
-            
+        
+            // 탈퇴한 회원인지 확인
+            if (user.getDeletedAt() != null) {
+                log.warn("탈퇴한 회원의 로그인 시도: userId={}, email={}", user.getUserId(), user.getEmail());
+                throw new CustomException(ErrorCode.USER_DEACTIVATED, "이미 탈퇴한 회원입니다.");
+            }
+
+             // 마지막 로그인 시간 업데이트
+            user.updateLastLoginTime();
+            userRepository.save(user);
+
             log.info("구글 로그인 성공: userId={}, email={}, isNewUser={}", user.getUserId(), email, isNewUser);
             
             return generateAuthResponse(user, isNewUser);
@@ -144,13 +153,8 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
         
         String refreshToken = jwtUtil.generateRefreshToken(user.getUserId());
         
-        // Redis에 Refresh Token 저장 (7일)
-        redisTemplate.opsForValue().set(
-                REFRESH_TOKEN_PREFIX + user.getUserId(),
-                refreshToken,
-                7,
-                TimeUnit.DAYS
-        );
+        // Refresh Token 저장 (7일)
+        tokenStorage.saveRefreshToken(user.getUserId(), refreshToken, 7, TimeUnit.DAYS);
         
         return AuthResponse.builder()
                 .accessToken(accessToken)
@@ -168,4 +172,3 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
                 .build();
     }
 }
-
