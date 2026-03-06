@@ -246,19 +246,32 @@ class AuthRepository {
   // 사용자 정보 조회
   Future<UserModel> getCurrentUser() async {
     final accessToken = await getAccessToken();
-    if (accessToken == null) {
+    if (accessToken == null || accessToken.isEmpty) {
       throw Exception('로그인이 필요합니다.');
     }
 
-    final response = await authService.getCurrentUser(
+    var response = await authService.getCurrentUser(
       accessToken: accessToken,
     );
 
     if (response.success && response.data != null) {
       return response.data!;
-    } else {
-      throw Exception(response.error?['message'] ?? '사용자 정보 조회 실패');
     }
+
+    final refreshedAccessToken = await refreshAccessToken();
+    if (refreshedAccessToken == null || refreshedAccessToken.isEmpty) {
+      throw Exception('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
+    response = await authService.getCurrentUser(
+      accessToken: refreshedAccessToken,
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+
+    throw Exception('인증이 만료되었습니다. 다시 로그인해주세요.');
   }
 
   // 중복 확인

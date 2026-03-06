@@ -1,31 +1,40 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/theme/app_colors.dart';
+import '../club/club_screen.dart';
 import '../home/home_screen.dart';
 import '../match/match_list_screen.dart';
 import '../user/user_tab.dart';
 
-/// RootScreen: BottomNavigationBar를 관리하는 루트 화면
-/// 
-/// 모든 탭 화면을 관리하고, 탭 전환 시 상태를 유지합니다.
-/// Design System: PNU Plato Modern UI 규칙 준수
 class RootScreen extends StatefulWidget {
-  const RootScreen({super.key});
+  final int initialIndex;
+
+  const RootScreen({
+    super.key,
+    this.initialIndex = 0,
+  });
 
   @override
   State<RootScreen> createState() => _RootScreenState();
 }
 
 class _RootScreenState extends State<RootScreen> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
 
   // 각 탭에 해당하는 화면들
   final List<Widget> _screens = [
     const HomeScreen(),           // 0: 홈 (프로필 피드)
-    const PlaceholderScreen(title: '커뮤니티'),      // 1: 커뮤니티
+    const ClubScreen(),      // 1: 커뮤니티
     const PlaceholderScreen(title: '채팅'),     // 2: 채팅
     const MatchListScreen(),      // 3: 매칭
     const UserTab(),              // 4: 마이페이지
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +89,6 @@ class _RootScreenState extends State<RootScreen> {
   }
 }
 
-/// 임시 Placeholder 화면 (다른 탭 화면 구현 전까지 사용)
 class PlaceholderScreen extends StatelessWidget {
   final String title;
 

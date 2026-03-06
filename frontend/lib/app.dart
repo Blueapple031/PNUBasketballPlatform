@@ -6,7 +6,6 @@ import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/auth/complete_profile_screen.dart';
 import 'presentation/screens/auth/club_selection_screen.dart';
 import 'presentation/screens/root/root_screen.dart';
-import 'presentation/screens/user/user_tab.dart';
 
 class BasketballApp extends StatelessWidget {
   const BasketballApp({super.key});
@@ -19,10 +18,7 @@ class BasketballApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: '딸바',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          useMaterial3: true,
-        ),
+        theme: AppTheme.theme,
         home: const LoginScreen(),
         routes: {
           '/login': (context) => const LoginScreen(),
@@ -31,6 +27,43 @@ class BasketballApp extends StatelessWidget {
           '/club-selection': (context) => const ClubSelectionScreen(),
         },
       ),
+    );
+  }
+}
+
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  late final Future<bool> _initializeFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFuture = context.read<AuthProvider>().initialize();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _initializeFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.data == true) {
+          return const RootScreen();
+        }
+
+        return const LoginScreen();
+      },
     );
   }
 }
