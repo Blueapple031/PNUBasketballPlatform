@@ -26,7 +26,7 @@ class BasketballApp extends StatelessWidget {
         home: const LoginScreen(),
         routes: {
           '/login': (context) => const LoginScreen(),
-          '/home': (context) => const UserTab(),
+          '/home': (context) => const RootScreen(),
           '/complete-profile': (context) => const CompleteProfileScreen(),
           '/club-selection': (context) => const ClubSelectionScreen(),
         },
