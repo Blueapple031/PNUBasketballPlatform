@@ -7,6 +7,7 @@ import com.pnu.basketball.dto.request.SignupRequest;
 import com.pnu.basketball.dto.response.AuthResponse;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
+import com.pnu.basketball.repository.ClubMemberRepository;
 import com.pnu.basketball.repository.UserRepository;
 import com.pnu.basketball.storage.TokenStorage;
 import com.pnu.basketball.util.JwtUtil;
@@ -22,98 +23,88 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-    
+
     private final UserRepository userRepository;
+    private final ClubMemberRepository clubMemberRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final TokenStorage tokenStorage;
-    
+
     @Override
     @Transactional
     public AuthResponse signup(SignupRequest request) {
-        // 이메일 중복 확인
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
-        
-        // 닉네임 중복 확인
-        if (userRepository.existsByNickname(request.getNickname())) {
-            throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+
+        if (Boolean.TRUE.equals(request.getIsPnuStudent()) && request.getStudentId() != null && !request.getStudentId().isBlank()) {
+            if (userRepository.existsByStudentId(request.getStudentId())) {
+                throw new CustomException(ErrorCode.STUDENT_ID_ALREADY_EXISTS);
+            }
         }
-        
-        // 비밀번호 암호화
+
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-        
-        // 사용자 생성
+
         User user = User.builder()
                 .email(request.getEmail())
                 .password(encodedPassword)
-                .nickname(request.getNickname())
+                .realName(request.getRealName())
                 .phoneNumber(request.getPhoneNumber())
+                .dateOfBirth(request.getDateOfBirth())
+                .isPnuStudent(request.getIsPnuStudent() != null ? request.getIsPnuStudent() : false)
+                .department(request.getIsPnuStudent() != null && request.getIsPnuStudent() ? request.getDepartment() : null)
+                .studentId(request.getIsPnuStudent() != null && request.getIsPnuStudent() ? request.getStudentId() : null)
                 .loginType(LoginType.EMAIL)
                 .build();
-        
+
         user = userRepository.save(user);
-        
+
         log.info("새 사용자 가입: userId={}, email={}", user.getUserId(), user.getEmail());
-        
-        // 토큰 발급
+
         return generateAuthResponse(user, false);
     }
-    
+
     @Override
     @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        
-        // 탈퇴한 회원인지 확인.
-        if (user.getDeletedAt() != null) {
-            throw new CustomException(ErrorCode.USER_DEACTIVATED, "이미 탈퇴한 회원입니다.");
-        }        
-        // 비밀번호 확인
+
         if (user.getPassword() == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
         }
 
-         // 마지막 로그인 시간 업데이트
-        user.updateLastLoginTime();
-        userRepository.save(user);
-
         log.info("사용자 로그인: userId={}, email={}", user.getUserId(), user.getEmail());
-        
+
         return generateAuthResponse(user, false);
     }
-    
+
     @Override
     public AuthResponse refreshToken(String refreshToken) {
         try {
-            // Refresh Token 검증
             if (jwtUtil.isTokenExpired(refreshToken)) {
                 throw new CustomException(ErrorCode.TOKEN_EXPIRED);
             }
-            
+
             Long userId = jwtUtil.extractUserId(refreshToken);
-            
-            // 저장소에서 Refresh Token 확인
+
             String storedToken = tokenStorage.getRefreshToken(userId);
             if (storedToken == null || !storedToken.equals(refreshToken)) {
                 throw new CustomException(ErrorCode.INVALID_TOKEN);
             }
-            
-            // 새로운 Access Token 발급
+
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-            
+
             String newAccessToken = jwtUtil.generateAccessToken(
                     user.getUserId(),
                     user.getEmail(),
-                    user.getNickname(),
+                    user.getRealName(),
                     user.getLoginType().name()
             );
-            
+
             log.info("토큰 갱신: userId={}", userId);
-            
+
             return AuthResponse.builder()
                     .accessToken(newAccessToken)
                     .tokenType("Bearer")
@@ -126,27 +117,27 @@ public class AuthServiceImpl implements AuthService {
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
     }
-    
+
     @Override
     public void logout(Long userId, String refreshToken) {
-        // 저장소에서 Refresh Token 삭제
         tokenStorage.deleteRefreshToken(userId);
         log.info("사용자 로그아웃: userId={}", userId);
     }
-    
+
     private AuthResponse generateAuthResponse(User user, boolean isNewUser) {
         String accessToken = jwtUtil.generateAccessToken(
                 user.getUserId(),
                 user.getEmail(),
-                user.getNickname(),
+                user.getRealName(),
                 user.getLoginType().name()
         );
-        
+
         String refreshToken = jwtUtil.generateRefreshToken(user.getUserId());
-        
-        // Refresh Token 저장 (7일)
         tokenStorage.saveRefreshToken(user.getUserId(), refreshToken, 7, TimeUnit.DAYS);
-        
+
+        boolean needsClubSelection = Boolean.TRUE.equals(user.getIsPnuStudent())
+                && !clubMemberRepository.existsByUserUserId(user.getUserId());
+
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -155,12 +146,12 @@ public class AuthServiceImpl implements AuthService {
                 .user(AuthResponse.UserInfo.builder()
                         .userId(user.getUserId())
                         .email(user.getEmail())
-                        .nickname(user.getNickname())
+                        .realName(user.getRealName())
                         .profileImageUrl(user.getProfileImageUrl())
                         .loginType(user.getLoginType())
                         .isNewUser(isNewUser)
+                        .needsClubSelection(needsClubSelection)
                         .build())
                 .build();
     }
 }
-
