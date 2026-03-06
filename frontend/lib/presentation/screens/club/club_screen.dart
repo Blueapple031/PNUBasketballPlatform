@@ -46,7 +46,7 @@ class ClubScreen extends StatelessWidget {
                   SingleChildScrollView(
                     child: ClubInfoSection(club: club),
                   ),
-                  ClubMemberList(members: club.members),
+                  ClubMemberList(members: club.members ?? []),
                 ],
               ),
             ),

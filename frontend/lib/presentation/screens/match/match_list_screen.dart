@@ -12,7 +12,8 @@ class MatchListScreen extends StatefulWidget {
 class _MatchListScreenState extends State<MatchListScreen> {
   // 방 만들기 폼 상태
   DateTime? _selectedDate;
-  TimeOfDay? _selectedTime;
+  TimeOfDay? _startTime;
+  TimeOfDay? _endTime;
   int _selectedMaxPlayers = 12; // 모집 인원 (기본값: 12명)
   
   // 필터 상태
@@ -238,17 +239,49 @@ class _MatchListScreenState extends State<MatchListScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 3. 날짜 및 시간 (Row로 배치)
+              // 3. 날짜 (전체 너비)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('날짜', style: TextStyle(fontSize: 13, color: AppColors.subText)),
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: () => _selectDate(context),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _selectedDate != null
+                                ? '${_selectedDate!.month.toString().padLeft(2, '0')}.${_selectedDate!.day.toString().padLeft(2, '0')} (${_getDayOfWeekFromDate(_selectedDate!)})'
+                                : '날짜 선택',
+                            style: TextStyle(
+                              color: _selectedDate != null ? AppColors.titleText : AppColors.subText,
+                            ),
+                          ),
+                          const Icon(Icons.calendar_today, size: 18, color: AppColors.subText),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // 4. 시간 (시작 ~ 종료)
               Row(
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('날짜', style: TextStyle(fontSize: 13, color: AppColors.subText)),
+                        const Text('시작 시간', style: TextStyle(fontSize: 13, color: AppColors.subText)),
                         const SizedBox(height: 8),
                         InkWell(
-                          onTap: () => _selectDate(context),
+                          onTap: () => _selectStartTime(context),
                           child: Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -257,14 +290,14 @@ class _MatchListScreenState extends State<MatchListScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  _selectedDate != null
-                                      ? '${_selectedDate!.month.toString().padLeft(2, '0')}.${_selectedDate!.day.toString().padLeft(2, '0')} (${_getDayOfWeekFromDate(_selectedDate!)})'
-                                      : '날짜 선택',
+                                  _startTime != null
+                                      ? '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}'
+                                      : '시작 시간',
                                   style: TextStyle(
-                                    color: _selectedDate != null ? AppColors.titleText : AppColors.subText,
+                                    color: _startTime != null ? AppColors.titleText : AppColors.subText,
                                   ),
                                 ),
-                                const Icon(Icons.calendar_today, size: 18, color: AppColors.subText),
+                                const Icon(Icons.access_time, size: 18, color: AppColors.subText),
                               ],
                             ),
                           ),
@@ -277,10 +310,10 @@ class _MatchListScreenState extends State<MatchListScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('시간', style: TextStyle(fontSize: 13, color: AppColors.subText)),
+                        const Text('종료 시간', style: TextStyle(fontSize: 13, color: AppColors.subText)),
                         const SizedBox(height: 8),
                         InkWell(
-                          onTap: () => _selectTime(context),
+                          onTap: () => _selectEndTime(context),
                           child: Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -289,11 +322,11 @@ class _MatchListScreenState extends State<MatchListScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  _selectedTime != null
-                                      ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
-                                      : '시간 선택',
+                                  _endTime != null
+                                      ? '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}'
+                                      : '종료 시간',
                                   style: TextStyle(
-                                    color: _selectedTime != null ? AppColors.titleText : AppColors.subText,
+                                    color: _endTime != null ? AppColors.titleText : AppColors.subText,
                                   ),
                                 ),
                                 const Icon(Icons.access_time, size: 18, color: AppColors.subText),
@@ -378,11 +411,11 @@ class _MatchListScreenState extends State<MatchListScreen> {
     }
   }
 
-  // 시간 선택기
-  Future<void> _selectTime(BuildContext context) async {
+  // 시작 시간 선택기
+  Future<void> _selectStartTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: _selectedTime ?? TimeOfDay.now(),
+      initialTime: _startTime ?? TimeOfDay.now(),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -396,9 +429,34 @@ class _MatchListScreenState extends State<MatchListScreen> {
         );
       },
     );
-    if (picked != null && picked != _selectedTime) {
+    if (picked != null && picked != _startTime) {
       setState(() {
-        _selectedTime = picked;
+        _startTime = picked;
+      });
+    }
+  }
+
+  // 종료 시간 선택기
+  Future<void> _selectEndTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _endTime ?? (_startTime ?? TimeOfDay.now()),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.activeBlue,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _endTime) {
+      setState(() {
+        _endTime = picked;
       });
     }
   }

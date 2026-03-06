@@ -23,7 +23,7 @@ class ClubHeader extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 32,
-            backgroundImage: NetworkImage(club.logoUrl),
+            backgroundImage: NetworkImage(club.logoUrl ?? ''),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -31,7 +31,7 @@ class ClubHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  club.clubName,
+                  club.clubName ?? club.name,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -40,7 +40,7 @@ class ClubHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  club.schoolName,
+                  club.schoolName ?? '',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.subText,
@@ -48,7 +48,7 @@ class ClubHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '회원 ${club.memberCount}명 · 창설 ${club.foundedYear}',
+                  '회원 ${club.memberCount}명 · 창설 ${club.foundedYear ?? 0}',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.subText,
@@ -63,7 +63,7 @@ class ClubHeader extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'Captain ${club.captain.name}',
+                    'Captain ${club.captain?.name ?? ''}',
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,

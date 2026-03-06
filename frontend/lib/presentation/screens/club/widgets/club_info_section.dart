@@ -24,7 +24,7 @@ class ClubInfoSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            club.intro,
+            club.intro ?? '',
             style: const TextStyle(
               fontSize: 14,
               color: AppColors.titleText,
@@ -53,26 +53,27 @@ class ClubInfoSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '홈코트: ${club.homeCourt}',
+                  '홈코트: ${club.homeCourt ?? ''}',
                   style:
                       const TextStyle(fontSize: 14, color: AppColors.titleText),
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundImage:
-                          NetworkImage(club.captain.profileImageUrl),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '주장: ${club.captain.name}',
-                      style: const TextStyle(
-                          fontSize: 14, color: AppColors.titleText),
-                    ),
-                  ],
-                ),
+                if (club.captain != null)
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundImage:
+                            NetworkImage(club.captain!.profileImageUrl),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '주장: ${club.captain!.name}',
+                        style: const TextStyle(
+                            fontSize: 14, color: AppColors.titleText),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -90,10 +91,10 @@ class ClubInfoSection extends StatelessWidget {
             height: 72,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: club.members.take(4).length,
+              itemCount: (club.members ?? []).take(4).length,
               separatorBuilder: (_, __) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
-                final member = club.members[index];
+                final member = (club.members ?? [])[index];
                 return Column(
                   children: [
                     CircleAvatar(

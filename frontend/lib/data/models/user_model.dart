@@ -7,6 +7,7 @@ class UserModel {
   final int userId;
   final String email;
   final String realName;
+  final String? nickname;
   final String? phoneNumber;
   final String? profileImageUrl;
   final String loginType;
@@ -20,6 +21,7 @@ class UserModel {
     required this.userId,
     required this.email,
     required this.realName,
+    this.nickname,
     this.phoneNumber,
     this.profileImageUrl,
     required this.loginType,

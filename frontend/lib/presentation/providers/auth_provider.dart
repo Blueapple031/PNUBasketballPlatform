@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/club_model.dart';
+import '../../data/models/auth_response_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
 class AuthProvider with ChangeNotifier {
