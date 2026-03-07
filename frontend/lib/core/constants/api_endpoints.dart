@@ -28,4 +28,12 @@ class ApiEndpoints {
   // User endpoints
   static const String userMe = '/api/users/me';
   static const String userPassword = '/api/users/me/password';
+
+  // Post (Community) endpoints
+  static const String posts = '/api/posts';
+  static String post(String postId) => '/api/posts/$postId';
+  static String postPin(String postId) => '/api/posts/$postId/pin';
+  static String postComments(String postId) => '/api/posts/$postId/comments';
+  static String postComment(String postId, String commentId) =>
+      '/api/posts/$postId/comments/$commentId';
 }

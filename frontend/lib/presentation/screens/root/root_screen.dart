@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../club/club_screen.dart';
+import '../community/community_screen.dart';
 import '../home/home_screen.dart';
 import '../user/user_tab.dart';
 
@@ -23,7 +24,7 @@ class _RootScreenState extends State<RootScreen> {
   late final List<Widget> _screens = const [
     HomeScreen(),
     ClubScreen(),
-    PlaceholderScreen(title: '채팅'),
+    CommunityScreen(),
     PlaceholderScreen(title: '일정'),
     UserTab(),
   ];
@@ -57,12 +58,12 @@ class _RootScreenState extends State<RootScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.stadium_outlined),
             activeIcon: Icon(Icons.stadium),
-            label: '커뮤니티',
+            label: '동아리',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
-            label: '채팅',
+            icon: Icon(Icons.forum_outlined),
+            activeIcon: Icon(Icons.forum),
+            label: '커뮤니티',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),

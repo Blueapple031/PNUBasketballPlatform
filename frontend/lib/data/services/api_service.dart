@@ -42,6 +42,35 @@ class ApiService {
     return _handleResponse<T>(response, fromJson);
   }
 
+  Future<ApiResponseModel<T>> put<T>(
+    String endpoint, {
+    Map<String, String>? headers,
+    Object? body,
+    T Function(Object?)? fromJson,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final response = await client.put(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        ...?headers,
+      },
+      body: body != null ? jsonEncode(body) : null,
+    );
+
+    return _handleResponse<T>(response, fromJson);
+  }
+
+  Future<ApiResponseModel<T>> delete<T>(
+    String endpoint, {
+    Map<String, String>? headers,
+    T Function(Object?)? fromJson,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final response = await client.delete(uri, headers: headers);
+    return _handleResponse<T>(response, fromJson);
+  }
+
   Future<ApiResponseModel<T>> patch<T>(
     String endpoint, {
     Map<String, String>? headers,
