@@ -45,6 +45,7 @@ class PostDetailModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<CommentModel> comments;
+  final PollModel? poll;
 
   PostDetailModel({
     required this.id,
@@ -58,15 +59,17 @@ class PostDetailModel {
     required this.createdAt,
     required this.updatedAt,
     required this.comments,
+    this.poll,
   });
 
   factory PostDetailModel.fromJson(Map<String, dynamic> json) {
     final commentsList = json['comments'] as List<dynamic>? ?? [];
+    final pollJson = json['poll'] as Map<String, dynamic>?;
     return PostDetailModel(
       id: json['id'] as String,
       title: json['title'] as String,
       content: json['content'] as String,
-      authorId: json['authorId'] as int,
+      authorId: (json['authorId'] as num?)?.toInt() ?? 0,
       authorName: json['authorName'] as String? ?? '',
       authorProfileImageUrl: json['authorProfileImageUrl'] as String? ?? '',
       viewCount: json['viewCount'] as int? ?? 0,
@@ -76,6 +79,76 @@ class PostDetailModel {
       comments: commentsList
           .map((e) => CommentModel.fromJson(e as Map<String, dynamic>))
           .toList(),
+      poll: pollJson != null ? PollModel.fromJson(pollJson) : null,
+    );
+  }
+}
+
+class PollModel {
+  final String id;
+  final String question;
+  final List<PollOptionModel> options;
+  final DateTime? expiresAt;
+  final int totalVotes;
+  final String? myVoteOptionId;
+
+  PollModel({
+    required this.id,
+    required this.question,
+    required this.options,
+    this.expiresAt,
+    required this.totalVotes,
+    this.myVoteOptionId,
+  });
+
+  factory PollModel.fromJson(Map<String, dynamic> json) {
+    final optionsList = json['options'] as List<dynamic>? ?? [];
+    return PollModel(
+      id: json['id']?.toString() ?? '',
+      question: json['question'] as String? ?? '',
+      options: optionsList
+          .map((e) => PollOptionModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      expiresAt: json['expiresAt'] != null
+          ? DateTime.tryParse(json['expiresAt'] as String)
+          : null,
+      totalVotes: json['totalVotes'] as int? ?? 0,
+      myVoteOptionId: json['myVoteOptionId']?.toString(),
+    );
+  }
+
+  bool get isExpired =>
+      expiresAt != null && DateTime.now().isAfter(expiresAt!);
+}
+
+class PollCreatePayload {
+  final String question;
+  final List<String> options;
+  final DateTime? expiresAt;
+
+  PollCreatePayload({
+    required this.question,
+    required this.options,
+    this.expiresAt,
+  });
+}
+
+class PollOptionModel {
+  final String id;
+  final String text;
+  final int voteCount;
+
+  PollOptionModel({
+    required this.id,
+    required this.text,
+    required this.voteCount,
+  });
+
+  factory PollOptionModel.fromJson(Map<String, dynamic> json) {
+    return PollOptionModel(
+      id: json['id']?.toString() ?? '',
+      text: json['text'] as String? ?? '',
+      voteCount: json['voteCount'] as int? ?? 0,
     );
   }
 }

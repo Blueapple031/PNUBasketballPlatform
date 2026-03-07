@@ -6,6 +6,7 @@ import com.pnu.basketball.dto.response.*;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
 import com.pnu.basketball.repository.*;
+import com.pnu.basketball.service.poll.PollService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,8 @@ public class AdminServiceImpl implements AdminService {
     private final MatchRepository matchRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final PollRepository pollRepository;
+    private final PollService pollService;
 
     @Override
     @Transactional(readOnly = true)
@@ -325,6 +328,9 @@ public class AdminServiceImpl implements AdminService {
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .comments(comments)
+                .poll(pollRepository.findByPost_Id(post.getId())
+                        .map(p -> pollService.getPollByPostId(post.getId(), null))
+                        .orElse(null))
                 .build();
     }
 

@@ -226,6 +226,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         _buildHeader(),
                         const SizedBox(height: 20),
                         _buildContent(),
+                        if (_post!.poll != null) ...[
+                          const SizedBox(height: 20),
+                          _buildPollSection(),
+                        ],
                         const SizedBox(height: 24),
                         const Divider(),
                         _buildCommentSection(),
@@ -370,6 +374,185 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         ),
       ),
     );
+  }
+
+  bool _isPollVoting = false;
+
+  Widget _buildPollSection() {
+    final poll = _post!.poll!;
+    final canVote = !poll.isExpired &&
+        poll.myVoteOptionId == null &&
+        context.read<AuthProvider>().currentUser != null;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.boxBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.poll, size: 20, color: AppColors.subText),
+              const SizedBox(width: 8),
+              Text(
+                poll.question,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.titleText,
+                ),
+              ),
+            ],
+          ),
+          if (poll.expiresAt != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                poll.isExpired
+                    ? '투표가 종료되었습니다.'
+                    : '만료: ${DateFormat('yyyy.MM.dd').format(poll.expiresAt!)}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: poll.isExpired
+                      ? AppColors.errorRed
+                      : AppColors.subText,
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+          ...poll.options.map((opt) {
+            final isMyVote = poll.myVoteOptionId == opt.id;
+            final ratio = poll.totalVotes > 0
+                ? opt.voteCount / poll.totalVotes
+                : 0.0;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: InkWell(
+                onTap: canVote && !_isPollVoting
+                    ? () => _vote(opt.id)
+                    : null,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isMyVote
+                        ? AppColors.activeBlue.withValues(alpha: 0.15)
+                        : AppColors.pageBg,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isMyVote
+                          ? AppColors.activeBlue
+                          : AppColors.boxBorder,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              opt.text,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight:
+                                    isMyVote ? FontWeight.w600 : null,
+                                color: AppColors.titleText,
+                              ),
+                            ),
+                            if (!canVote || poll.myVoteOptionId != null) ...[
+                              const SizedBox(height: 4),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: ratio,
+                                  minHeight: 6,
+                                  backgroundColor:
+                                      AppColors.boxBorder.withValues(alpha: 0.5),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    isMyVote
+                                        ? AppColors.activeBlue
+                                        : AppColors.subText,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${opt.voteCount}표',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.subText,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      if (canVote && !_isPollVoting)
+                        FilledButton(
+                          onPressed: () => _vote(opt.id),
+                          child: const Text('선택'),
+                        )
+                      else if (isMyVote)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8),
+                          child: Icon(
+                            Icons.check_circle,
+                            color: AppColors.activeBlue,
+                            size: 20,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+          if (poll.totalVotes > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                '총 ${poll.totalVotes}명 참여',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.subText,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _vote(String optionId) async {
+    setState(() => _isPollVoting = true);
+    final provider = context.read<CommunityProvider>();
+    final success = await provider.votePoll(
+      postId: widget.postId,
+      optionId: optionId,
+    );
+    if (mounted) {
+      setState(() => _isPollVoting = false);
+      if (success) {
+        await _loadPost();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('투표가 반영되었습니다.')),
+        );
+      } else if (provider.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(provider.errorMessage!)),
+        );
+      }
+    }
   }
 
   Widget _buildCommentSection() {

@@ -34,6 +34,7 @@ class PostRepository {
   Future<PostDetailModel> createPost({
     required String title,
     required String content,
+    PollCreatePayload? poll,
   }) async {
     final token = await _getAccessToken();
     if (token == null) throw Exception('로그인이 필요합니다.');
@@ -41,6 +42,20 @@ class PostRepository {
       accessToken: token,
       title: title,
       content: content,
+      poll: poll,
+    );
+  }
+
+  Future<void> votePoll({
+    required String postId,
+    required String optionId,
+  }) async {
+    final token = await _getAccessToken();
+    if (token == null) throw Exception('로그인이 필요합니다.');
+    await postService.votePoll(
+      accessToken: token,
+      postId: postId,
+      optionId: optionId,
     );
   }
 

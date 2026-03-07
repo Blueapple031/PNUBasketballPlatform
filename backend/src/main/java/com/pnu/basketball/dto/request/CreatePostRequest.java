@@ -1,5 +1,6 @@
 package com.pnu.basketball.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -17,4 +18,7 @@ public class CreatePostRequest {
 
     @NotBlank(message = "내용을 입력해주세요.")
     private String content;
+
+    @Valid
+    private PollCreateRequest poll;
 }

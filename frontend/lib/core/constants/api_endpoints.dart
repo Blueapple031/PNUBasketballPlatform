@@ -36,4 +36,6 @@ class ApiEndpoints {
   static String postComments(String postId) => '/api/posts/$postId/comments';
   static String postComment(String postId, String commentId) =>
       '/api/posts/$postId/comments/$commentId';
+  static String postPollVote(String postId) =>
+      '/api/posts/$postId/polls/vote';
 }

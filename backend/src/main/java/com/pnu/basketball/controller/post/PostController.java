@@ -5,11 +5,14 @@ import com.pnu.basketball.dto.request.CreatePostRequest;
 import com.pnu.basketball.dto.request.UpdateCommentRequest;
 import com.pnu.basketball.dto.request.TogglePinRequest;
 import com.pnu.basketball.dto.request.UpdatePostRequest;
+import com.pnu.basketball.dto.request.VoteRequest;
 import com.pnu.basketball.dto.response.ApiResponse;
 import com.pnu.basketball.dto.response.CommentResponse;
 import com.pnu.basketball.dto.response.PostDetailResponse;
 import com.pnu.basketball.dto.response.PostListResponse;
+import com.pnu.basketball.dto.response.VoteResultResponse;
 import com.pnu.basketball.service.comment.CommentService;
+import com.pnu.basketball.service.poll.PollService;
 import com.pnu.basketball.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +34,7 @@ public class PostController {
 
     private final PostService postService;
     private final CommentService commentService;
+    private final PollService pollService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Map<String, Object>>> getPosts(
@@ -53,7 +57,7 @@ public class PostController {
     public ResponseEntity<ApiResponse<PostDetailResponse>> getPost(
             @AuthenticationPrincipal Long userId,
             @PathVariable UUID postId) {
-        PostDetailResponse post = postService.getPost(postId);
+        PostDetailResponse post = postService.getPost(userId, postId);
         return ResponseEntity.ok(ApiResponse.success(post, "게시글 조회 성공"));
     }
 
@@ -80,6 +84,15 @@ public class PostController {
             @PathVariable UUID postId) {
         postService.deletePost(userId, postId);
         return ResponseEntity.ok(ApiResponse.success(null, "게시글이 삭제되었습니다."));
+    }
+
+    @PostMapping("/{postId}/polls/vote")
+    public ResponseEntity<ApiResponse<VoteResultResponse>> votePoll(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable UUID postId,
+            @Valid @RequestBody VoteRequest request) {
+        VoteResultResponse result = pollService.vote(userId, postId, request.getOptionId());
+        return ResponseEntity.ok(ApiResponse.success(result, result.getMessage()));
     }
 
     @PatchMapping("/{postId}/pin")

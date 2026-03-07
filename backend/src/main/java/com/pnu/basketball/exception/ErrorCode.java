@@ -38,6 +38,10 @@ public enum ErrorCode {
 
     // Post & Comment
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
+    POLL_NOT_FOUND(HttpStatus.NOT_FOUND, "투표를 찾을 수 없습니다."),
+    POLL_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "선택지를 찾을 수 없습니다."),
+    POLL_ALREADY_VOTED(HttpStatus.BAD_REQUEST, "이미 투표하셨습니다."),
+    POLL_EXPIRED(HttpStatus.BAD_REQUEST, "만료된 투표입니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
     UNAUTHORIZED_POST_EDIT(HttpStatus.FORBIDDEN, "본인의 게시글만 수정/삭제할 수 있습니다."),
     UNAUTHORIZED_COMMENT_EDIT(HttpStatus.FORBIDDEN, "본인의 댓글만 수정/삭제할 수 있습니다."),

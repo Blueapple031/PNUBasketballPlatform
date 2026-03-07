@@ -25,4 +25,5 @@ public class PostDetailResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<CommentResponse> comments;
+    private PollResponse poll;
 }

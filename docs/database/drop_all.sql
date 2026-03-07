@@ -2,6 +2,9 @@
 -- 실행: psql -U postgres -d ddalba_DB -f docs/database/drop_all.sql
 
 -- FK 때문에 자식 테이블부터 삭제
+DROP TABLE IF EXISTS poll_votes CASCADE;
+DROP TABLE IF EXISTS poll_options CASCADE;
+DROP TABLE IF EXISTS polls CASCADE;
 DROP TABLE IF EXISTS match_participants CASCADE;
 DROP TABLE IF EXISTS matches CASCADE;
 DROP TABLE IF EXISTS comments CASCADE;

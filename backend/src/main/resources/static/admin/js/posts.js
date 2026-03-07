@@ -185,6 +185,26 @@ function showPostDetail(postId) {
                 })
                 .join('');
 
+            var pollHtml = '';
+            if (p.poll) {
+                var opts = (p.poll.options || [])
+                    .map(function (o) {
+                        return (
+                            '<div style="padding:8px 12px;margin:4px 0;background:#f7fafc;border-radius:6px;display:flex;justify-content:space-between;align-items:center">' +
+                            '<span>' + (o.text || '-') + '</span>' +
+                            '<strong>' + (o.voteCount || 0) + '표</strong>' +
+                            '</div>'
+                        );
+                    })
+                    .join('');
+                pollHtml =
+                    '<div style="margin-bottom:24px;padding:16px;background:#edf2f7;border-radius:8px;">' +
+                    '<h4 style="margin-bottom:12px;">📊 투표: ' + (p.poll.question || '-') + '</h4>' +
+                    '<p style="font-size:13px;color:#718096;margin-bottom:12px;">총 ' + (p.poll.totalVotes || 0) + '명 참여</p>' +
+                    opts +
+                    '</div>';
+            }
+
             var html =
                 '<div class="post-detail">' +
                 (p.isPinned
@@ -203,6 +223,7 @@ function showPostDetail(postId) {
                 '<div style="white-space:pre-wrap;margin-bottom:24px;line-height:1.6;">' +
                 (p.content || '') +
                 '</div>' +
+                (pollHtml || '') +
                 '<hr style="margin:20px 0;">' +
                 '<h4 style="margin-bottom:12px;">댓글 ' +
                 (p.comments ? p.comments.length : 0) +

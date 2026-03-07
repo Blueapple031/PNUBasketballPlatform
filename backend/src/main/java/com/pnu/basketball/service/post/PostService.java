@@ -13,7 +13,7 @@ public interface PostService {
 
     Page<PostListResponse> getPosts(Pageable pageable);
 
-    PostDetailResponse getPost(UUID postId);
+    PostDetailResponse getPost(Long userId, UUID postId);
 
     PostDetailResponse createPost(Long userId, CreatePostRequest request);
 

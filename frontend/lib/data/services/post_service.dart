@@ -48,11 +48,27 @@ class PostService {
     required String accessToken,
     required String title,
     required String content,
+    PollCreatePayload? poll,
   }) async {
+    final body = <String, dynamic>{
+      'title': title,
+      'content': content,
+    };
+    if (poll != null) {
+      body['poll'] = {
+        'question': poll.question,
+        'options': poll.options,
+        if (poll.expiresAt != null)
+          'expiresAt':
+              DateTime(poll.expiresAt!.year, poll.expiresAt!.month, poll.expiresAt!.day, 23, 59, 59)
+                  .toIso8601String(),
+      };
+    }
+
     final response = await apiService.post<PostDetailModel>(
       ApiEndpoints.posts,
       headers: _authHeaders(accessToken),
-      body: {'title': title, 'content': content},
+      body: body,
       fromJson: (json) => PostDetailModel.fromJson(json as Map<String, dynamic>),
     );
 
@@ -60,6 +76,23 @@ class PostService {
       return response.data!;
     }
     throw Exception(response.error?['message'] ?? '게시글 작성 실패');
+  }
+
+  Future<void> votePoll({
+    required String accessToken,
+    required String postId,
+    required String optionId,
+  }) async {
+    final response = await apiService.post<Map<String, dynamic>>(
+      ApiEndpoints.postPollVote(postId),
+      headers: _authHeaders(accessToken),
+      body: {'optionId': optionId},
+      fromJson: (json) => json as Map<String, dynamic>,
+    );
+
+    if (!response.success) {
+      throw Exception(response.error?['message'] ?? '투표 실패');
+    }
   }
 
   Future<PostDetailModel> updatePost({

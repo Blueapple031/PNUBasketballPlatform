@@ -1,23 +1,31 @@
 package com.pnu.basketball.service.post;
 
+import com.pnu.basketball.domain.Poll;
+import com.pnu.basketball.domain.PollOption;
 import com.pnu.basketball.domain.Post;
 import com.pnu.basketball.domain.User;
 import com.pnu.basketball.dto.request.CreatePostRequest;
 import com.pnu.basketball.dto.request.UpdatePostRequest;
 import com.pnu.basketball.dto.response.CommentResponse;
+import com.pnu.basketball.dto.response.PollOptionResponse;
+import com.pnu.basketball.dto.response.PollResponse;
 import com.pnu.basketball.dto.response.PostDetailResponse;
 import com.pnu.basketball.dto.response.PostListResponse;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
 import com.pnu.basketball.repository.CommentRepository;
+import com.pnu.basketball.repository.PollOptionRepository;
+import com.pnu.basketball.repository.PollRepository;
 import com.pnu.basketball.repository.PostRepository;
 import com.pnu.basketball.repository.UserRepository;
+import com.pnu.basketball.service.poll.PollService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -29,6 +37,9 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final PollRepository pollRepository;
+    private final PollOptionRepository pollOptionRepository;
+    private final PollService pollService;
 
     @Override
     @Transactional(readOnly = true)
@@ -39,14 +50,14 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public PostDetailResponse getPost(UUID postId) {
+    public PostDetailResponse getPost(Long userId, UUID postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
         post.incrementViewCount();
         postRepository.save(post);
 
-        return toPostDetailResponse(post);
+        return toPostDetailResponse(post, userId);
     }
 
     @Override
@@ -62,7 +73,11 @@ public class PostServiceImpl implements PostService {
                 .build();
         postRepository.save(post);
 
-        return toPostDetailResponse(post);
+        if (request.getPoll() != null) {
+            createPoll(post, request.getPoll());
+        }
+
+        return toPostDetailResponse(post, userId);
     }
 
     @Override
@@ -78,7 +93,7 @@ public class PostServiceImpl implements PostService {
         post.update(request.getTitle(), request.getContent());
         postRepository.save(post);
 
-        return toPostDetailResponse(post);
+        return toPostDetailResponse(post, userId);
     }
 
     @Override
@@ -107,7 +122,28 @@ public class PostServiceImpl implements PostService {
         post.setPinned(isPinned);
         postRepository.save(post);
 
-        return toPostDetailResponse(post);
+        return toPostDetailResponse(post, userId);
+    }
+
+    private void createPoll(Post post, com.pnu.basketball.dto.request.PollCreateRequest pollReq) {
+        Poll poll = Poll.builder()
+                .post(post)
+                .question(pollReq.getQuestion())
+                .expiresAt(pollReq.getExpiresAt())
+                .build();
+        pollRepository.save(poll);
+
+        List<String> options = pollReq.getOptions() != null ? pollReq.getOptions() : new ArrayList<>();
+        for (int i = 0; i < options.size(); i++) {
+            String text = options.get(i);
+            if (text == null || text.isBlank()) continue;
+            PollOption option = PollOption.builder()
+                    .poll(poll)
+                    .optionText(text.trim())
+                    .sortOrder(i)
+                    .build();
+            pollOptionRepository.save(option);
+        }
     }
 
     private PostListResponse toPostListResponse(Post post) {
@@ -127,7 +163,7 @@ public class PostServiceImpl implements PostService {
                 .build();
     }
 
-    private PostDetailResponse toPostDetailResponse(Post post) {
+    private PostDetailResponse toPostDetailResponse(Post post, Long userId) {
         User author = post.getUser();
         String profileImageUrl = author.getProfileImageUrl() != null ? author.getProfileImageUrl() : "";
 
@@ -148,6 +184,9 @@ public class PostServiceImpl implements PostService {
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .comments(comments)
+                .poll(pollRepository.findByPost_Id(post.getId())
+                        .map(p -> pollService.getPollByPostId(post.getId(), userId))
+                        .orElse(null))
                 .build();
     }
 

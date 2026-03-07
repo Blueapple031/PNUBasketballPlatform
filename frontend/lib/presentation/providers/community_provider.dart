@@ -72,12 +72,14 @@ class CommunityProvider with ChangeNotifier {
   Future<PostDetailModel?> createPost({
     required String title,
     required String content,
+    PollCreatePayload? poll,
   }) async {
     try {
       _errorMessage = null;
       final post = await postRepository.createPost(
         title: title,
         content: content,
+        poll: poll,
       );
       await loadPosts(refresh: true);
       return post;
@@ -85,6 +87,24 @@ class CommunityProvider with ChangeNotifier {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
       notifyListeners();
       return null;
+    }
+  }
+
+  Future<bool> votePoll({
+    required String postId,
+    required String optionId,
+  }) async {
+    try {
+      _errorMessage = null;
+      await postRepository.votePoll(
+        postId: postId,
+        optionId: optionId,
+      );
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return false;
     }
   }
 
