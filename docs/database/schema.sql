@@ -121,6 +121,7 @@ CREATE TABLE posts (
     title           VARCHAR(200) NOT NULL,
     content         TEXT NOT NULL,
     view_count      INTEGER NOT NULL DEFAULT 0,
+    is_pinned       BOOLEAN NOT NULL DEFAULT false,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

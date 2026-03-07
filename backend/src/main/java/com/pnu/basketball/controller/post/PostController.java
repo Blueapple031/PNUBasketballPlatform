@@ -3,6 +3,7 @@ package com.pnu.basketball.controller.post;
 import com.pnu.basketball.dto.request.CreateCommentRequest;
 import com.pnu.basketball.dto.request.CreatePostRequest;
 import com.pnu.basketball.dto.request.UpdateCommentRequest;
+import com.pnu.basketball.dto.request.TogglePinRequest;
 import com.pnu.basketball.dto.request.UpdatePostRequest;
 import com.pnu.basketball.dto.response.ApiResponse;
 import com.pnu.basketball.dto.response.CommentResponse;
@@ -79,6 +80,16 @@ public class PostController {
             @PathVariable UUID postId) {
         postService.deletePost(userId, postId);
         return ResponseEntity.ok(ApiResponse.success(null, "게시글이 삭제되었습니다."));
+    }
+
+    @PatchMapping("/{postId}/pin")
+    public ResponseEntity<ApiResponse<PostDetailResponse>> pinPost(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable UUID postId,
+            @RequestBody TogglePinRequest request) {
+        boolean isPinned = request.getIsPinned() != null && request.getIsPinned();
+        PostDetailResponse post = postService.pinPost(userId, postId, isPinned);
+        return ResponseEntity.ok(ApiResponse.success(post, isPinned ? "게시글이 상단 고정되었습니다." : "상단 고정이 해제되었습니다."));
     }
 
     @PostMapping("/{postId}/comments")

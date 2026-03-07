@@ -20,4 +20,6 @@ public interface PostService {
     PostDetailResponse updatePost(Long userId, UUID postId, UpdatePostRequest request);
 
     void deletePost(Long userId, UUID postId);
+
+    PostDetailResponse pinPost(Long userId, UUID postId, boolean isPinned);
 }

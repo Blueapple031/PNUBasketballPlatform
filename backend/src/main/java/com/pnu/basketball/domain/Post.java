@@ -35,6 +35,10 @@ public class Post {
     @Builder.Default
     private Integer viewCount = 0;
 
+    @Column(name = "is_pinned", nullable = false)
+    @Builder.Default
+    private Boolean isPinned = false;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -50,5 +54,9 @@ public class Post {
 
     public void incrementViewCount() {
         this.viewCount++;
+    }
+
+    public void setPinned(boolean pinned) {
+        this.isPinned = pinned;
     }
 }

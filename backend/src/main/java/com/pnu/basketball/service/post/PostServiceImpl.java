@@ -33,7 +33,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional(readOnly = true)
     public Page<PostListResponse> getPosts(Pageable pageable) {
-        return postRepository.findAllByOrderByCreatedAtDesc(pageable)
+        return postRepository.findAllByOrderByIsPinnedDescCreatedAtDesc(pageable)
                 .map(this::toPostListResponse);
     }
 
@@ -94,6 +94,22 @@ public class PostServiceImpl implements PostService {
         postRepository.delete(post);
     }
 
+    @Override
+    @Transactional
+    public PostDetailResponse pinPost(Long userId, UUID postId, boolean isPinned) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+        if (!post.getUser().getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_POST_EDIT);
+        }
+
+        post.setPinned(isPinned);
+        postRepository.save(post);
+
+        return toPostDetailResponse(post);
+    }
+
     private PostListResponse toPostListResponse(Post post) {
         User author = post.getUser();
         int commentCount = (int) commentRepository.countByPost_Id(post.getId());
@@ -106,6 +122,7 @@ public class PostServiceImpl implements PostService {
                 .authorProfileImageUrl(profileImageUrl)
                 .viewCount(post.getViewCount())
                 .commentCount(commentCount)
+                .isPinned(post.getIsPinned())
                 .createdAt(post.getCreatedAt())
                 .build();
     }
@@ -127,6 +144,7 @@ public class PostServiceImpl implements PostService {
                 .authorName(author.getRealName())
                 .authorProfileImageUrl(profileImageUrl)
                 .viewCount(post.getViewCount())
+                .isPinned(post.getIsPinned())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .comments(comments)

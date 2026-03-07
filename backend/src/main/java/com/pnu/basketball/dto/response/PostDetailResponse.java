@@ -21,6 +21,7 @@ public class PostDetailResponse {
     private String authorName;
     private String authorProfileImageUrl;
     private Integer viewCount;
+    private Boolean isPinned;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<CommentResponse> comments;

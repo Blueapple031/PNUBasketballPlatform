@@ -11,5 +11,5 @@ import java.util.UUID;
 @Repository
 public interface PostRepository extends JpaRepository<Post, UUID> {
 
-    Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    Page<Post> findAllByOrderByIsPinnedDescCreatedAtDesc(Pageable pageable);
 }

@@ -19,5 +19,6 @@ public class PostListResponse {
     private String authorProfileImageUrl;
     private Integer viewCount;
     private Integer commentCount;
+    private Boolean isPinned;
     private LocalDateTime createdAt;
 }
