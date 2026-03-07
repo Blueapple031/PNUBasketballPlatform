@@ -33,14 +33,19 @@ class _ClubScreenState extends State<ClubScreen> {
 
     final authProvider = context.read<AuthProvider>();
 
-    // API 호출 (Provider에 해당 메서드들이 구현되어 있어야 함)
+    // API 호출: 내 동아리 조회
     final myClub = await authProvider.getMyClub();
-    // final allClubs = await authProvider.getAllClubs(); // 필요 시 구현
+
+    // 내 동아리가 없으면 전체 동아리 목록 조회 (탐색용)
+    List<ClubModel> allClubs = [];
+    if (myClub == null) {
+      allClubs = await authProvider.getClubs() ?? [];
+    }
 
     if (mounted) {
       setState(() {
         _myClub = myClub;
-        _allClubs = []; // 여기에 전체 동아리 리스트 할당
+        _allClubs = allClubs;
         _isLoading = false;
       });
     }
@@ -138,7 +143,7 @@ class _ClubScreenState extends State<ClubScreen> {
               data: sections[index - 1],
               onTapClub: (club) => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => ClubDetailScreen(clubId: club.clubId)),
+                MaterialPageRoute(builder: (_) => ClubDetailScreen(club: club)),
               ),
             );
           },

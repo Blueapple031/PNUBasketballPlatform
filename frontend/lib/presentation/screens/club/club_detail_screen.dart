@@ -7,46 +7,15 @@ import 'widgets/club_info_section.dart';
 import 'widgets/club_member_list.dart';
 
 class ClubDetailScreen extends StatelessWidget {
-  final int clubId;
-  final String slug;
+  final ClubModel club;
 
   const ClubDetailScreen({
     super.key,
-    required this.clubId,
-    required this.slug,
+    required this.club,
   });
 
   @override
   Widget build(BuildContext context) {
-    final clubs = ClubModel.dummyList();
-    final club = _findClub(clubs);
-
-    if (club == null) {
-      return Scaffold(
-        backgroundColor: AppColors.pageBg,
-        appBar: AppBar(
-          backgroundColor: AppColors.headerGrey,
-          title: const Text(
-            '동아리 상세',
-            style: TextStyle(
-              color: AppColors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        body: const Center(
-          child: Text(
-            '동아리 정보를 불러올 수 없습니다.',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.subText,
-            ),
-          ),
-        ),
-      );
-    }
-
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -55,7 +24,7 @@ class ClubDetailScreen extends StatelessWidget {
           backgroundColor: AppColors.headerGrey,
           elevation: 0,
           title: Text(
-            club.clubName,
+            club.name,
             style: const TextStyle(
               color: AppColors.white,
               fontSize: 16,
@@ -67,8 +36,8 @@ class ClubDetailScreen extends StatelessWidget {
             labelColor: AppColors.white,
             unselectedLabelColor: AppColors.subText,
             tabs: [
-              Tab(text: 'Overview'),
-              Tab(text: 'Members'),
+              Tab(text: '정보'),
+              Tab(text: '멤버'),
             ],
           ),
         ),
@@ -81,7 +50,7 @@ class ClubDetailScreen extends StatelessWidget {
                   SingleChildScrollView(
                     child: ClubInfoSection(club: club),
                   ),
-                  ClubMemberList(members: club.members),
+                  const ClubMemberList(members: []), // TODO: 멤버 API 연동 시 전달
                 ],
               ),
             ),
@@ -89,14 +58,5 @@ class ClubDetailScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  ClubModel? _findClub(List<ClubModel> clubs) {
-    for (final club in clubs) {
-      if (club.clubId == clubId || club.slug == slug) {
-        return club;
-      }
-    }
-    return null;
   }
 }
