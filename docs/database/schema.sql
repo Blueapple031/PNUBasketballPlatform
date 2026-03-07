@@ -118,7 +118,6 @@ CREATE INDEX idx_match_participants_club_id ON match_participants(club_id);
 CREATE TABLE posts (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id         BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    club_id         UUID REFERENCES clubs(id) ON DELETE SET NULL,
     title           VARCHAR(200) NOT NULL,
     content         TEXT NOT NULL,
     view_count      INTEGER NOT NULL DEFAULT 0,
