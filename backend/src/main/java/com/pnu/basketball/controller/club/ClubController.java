@@ -1,8 +1,10 @@
 package com.pnu.basketball.controller.club;
 
 import com.pnu.basketball.dto.request.ClubSelectRequest;
+import com.pnu.basketball.dto.request.ClubUpdateIntroductionRequest;
 import com.pnu.basketball.dto.response.ApiResponse;
 import com.pnu.basketball.dto.response.ClubListResponse;
+import com.pnu.basketball.dto.response.ClubMemberResponse;
 import com.pnu.basketball.dto.response.ClubSelectResponse;
 import com.pnu.basketball.service.club.ClubService;
 import jakarta.validation.Valid;
@@ -12,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/clubs")
@@ -30,6 +33,22 @@ public class ClubController {
     public ResponseEntity<ApiResponse<ClubListResponse>> getMyClub(@AuthenticationPrincipal Long userId) {
         ClubListResponse club = clubService.getMyClub(userId);
         return ResponseEntity.ok(ApiResponse.success(club, "내 동아리 조회 성공"));
+    }
+
+    @GetMapping("/{clubId}/members")
+    public ResponseEntity<ApiResponse<List<ClubMemberResponse>>> getClubMembers(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable UUID clubId) {
+        List<ClubMemberResponse> members = clubService.getClubMembers(clubId);
+        return ResponseEntity.ok(ApiResponse.success(members, "동아리 멤버 조회 성공"));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<ApiResponse<ClubListResponse>> updateMyClubIntroduction(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody ClubUpdateIntroductionRequest request) {
+        ClubListResponse club = clubService.updateMyClubIntroduction(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(club, "동아리 소개글이 수정되었습니다."));
     }
 
     @PostMapping("/select")

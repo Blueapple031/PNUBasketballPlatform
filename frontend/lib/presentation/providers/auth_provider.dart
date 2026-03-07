@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../data/models/auth_response_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/club_model.dart';
+import '../../data/models/member_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -287,6 +288,32 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = _extractErrorMessage(e);
       _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<ClubModel?> updateMyClubIntroduction(String introduction) async {
+    try {
+      _errorMessage = null;
+      final club = await authRepository.updateMyClubIntroduction(introduction);
+      notifyListeners();
+      return club;
+    } catch (e) {
+      _errorMessage = _extractErrorMessage(e);
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<List<MemberModel>?> getClubMembers(String clubId) async {
+    try {
+      _errorMessage = null;
+      final members = await authRepository.getClubMembers(clubId);
+      notifyListeners();
+      return members;
+    } catch (e) {
+      _errorMessage = _extractErrorMessage(e);
       notifyListeners();
       return null;
     }

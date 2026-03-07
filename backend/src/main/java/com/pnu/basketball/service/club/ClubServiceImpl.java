@@ -5,7 +5,9 @@ import com.pnu.basketball.domain.ClubMember;
 import com.pnu.basketball.domain.ClubRole;
 import com.pnu.basketball.domain.User;
 import com.pnu.basketball.dto.request.ClubSelectRequest;
+import com.pnu.basketball.dto.request.ClubUpdateIntroductionRequest;
 import com.pnu.basketball.dto.response.ClubListResponse;
+import com.pnu.basketball.dto.response.ClubMemberResponse;
 import com.pnu.basketball.dto.response.ClubSelectResponse;
 import com.pnu.basketball.dto.response.ClubSelectionStatusResponse;
 import com.pnu.basketball.exception.CustomException;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,7 +35,7 @@ public class ClubServiceImpl implements ClubService {
     @Transactional(readOnly = true)
     public List<ClubListResponse> getClubs() {
         return clubRepository.findAll().stream()
-                .map(club -> toClubListResponse(club))
+                .map(club -> toClubListResponse(club, null))
                 .collect(Collectors.toList());
     }
 
@@ -106,15 +109,69 @@ public class ClubServiceImpl implements ClubService {
         ClubMember member = clubMemberRepository.findByUserUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CLUB_NOT_FOUND));
         Club club = member.getClub();
-        return toClubListResponse(club);
+        return toClubListResponse(club, userId);
     }
 
-    private ClubListResponse toClubListResponse(Club club) {
+    @Override
+    @Transactional(readOnly = true)
+    public List<ClubMemberResponse> getClubMembers(UUID clubId) {
+        if (!clubRepository.existsById(clubId)) {
+            throw new CustomException(ErrorCode.CLUB_NOT_FOUND);
+        }
+        return clubMemberRepository.findByClub_Id(clubId).stream()
+                .map(this::toClubMemberResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public ClubListResponse updateMyClubIntroduction(Long userId, ClubUpdateIntroductionRequest request) {
+        ClubMember member = clubMemberRepository.findByUserUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CLUB_NOT_FOUND));
+        Club club = member.getClub();
+
+        if (club.getCaptain() == null || !club.getCaptain().getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.NOT_CLUB_CAPTAIN);
+        }
+
+        club.updateInfo(null, null, request.getIntroduction());
+        clubRepository.save(club);
+
+        return toClubListResponse(club, userId);
+    }
+
+    private ClubMemberResponse toClubMemberResponse(ClubMember clubMember) {
+        User user = clubMember.getUser();
+        String profileImageUrl = user.getProfileImageUrl();
+        if (profileImageUrl == null) {
+            profileImageUrl = "";
+        }
+        return ClubMemberResponse.builder()
+                .name(user.getRealName())
+                .role(toRoleDisplayName(clubMember.getRole()))
+                .profileImageUrl(profileImageUrl)
+                .build();
+    }
+
+    private String toRoleDisplayName(ClubRole role) {
+        return switch (role) {
+            case PRESIDENT -> "주장";
+            case MANAGER -> "매니저";
+            case OB -> "졸업생";
+            case MEMBER -> "동아리원";
+        };
+    }
+
+    private ClubListResponse toClubListResponse(Club club, Long currentUserId) {
         String captainName = null;
         String captainProfileImageUrl = null;
+        Boolean isCaptain = null;
         if (club.getCaptain() != null) {
             captainName = club.getCaptain().getRealName();
             captainProfileImageUrl = club.getCaptain().getProfileImageUrl();
+            if (currentUserId != null) {
+                isCaptain = club.getCaptain().getUserId().equals(currentUserId);
+            }
         }
         return ClubListResponse.builder()
                 .clubId(club.getId())
@@ -124,6 +181,7 @@ public class ClubServiceImpl implements ClubService {
                 .memberCount(clubMemberRepository.countByClub_Id(club.getId()))
                 .captainName(captainName)
                 .captainProfileImageUrl(captainProfileImageUrl)
+                .isCaptain(isCaptain)
                 .build();
     }
 }

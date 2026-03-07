@@ -39,7 +39,15 @@ class ClubMemberList extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(vertical: 8),
           leading: CircleAvatar(
             radius: 20,
-            backgroundImage: NetworkImage(member.profileImageUrl),
+            backgroundImage: member.profileImageUrl.isNotEmpty
+                ? NetworkImage(member.profileImageUrl)
+                : null,
+            child: member.profileImageUrl.isEmpty
+                ? Text(
+                    member.name.isNotEmpty ? member.name[0] : '?',
+                    style: const TextStyle(fontSize: 16),
+                  )
+                : null,
           ),
           title: Text(
             member.name,

@@ -42,6 +42,25 @@ class ApiService {
     return _handleResponse<T>(response, fromJson);
   }
 
+  Future<ApiResponseModel<T>> patch<T>(
+    String endpoint, {
+    Map<String, String>? headers,
+    Object? body,
+    T Function(Object?)? fromJson,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final response = await client.patch(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        ...?headers,
+      },
+      body: body != null ? jsonEncode(body) : null,
+    );
+
+    return _handleResponse<T>(response, fromJson);
+  }
+
   ApiResponseModel<T> _handleResponse<T>(
     http.Response response,
     T Function(Object?)? fromJson,

@@ -1,6 +1,7 @@
 import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
 import '../models/club_model.dart';
+import '../models/member_model.dart';
 import '../models/api_response_model.dart';
 import 'api_service.dart';
 import '../../core/constants/api_endpoints.dart';
@@ -190,6 +191,31 @@ class AuthService {
         if (role != null) 'role': role,
       },
       fromJson: (json) => ClubSelectResultModel.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  Future<ApiResponseModel<ClubModel>> updateMyClubIntroduction({
+    required String accessToken,
+    required String introduction,
+  }) async {
+    return await apiService.patch<ClubModel>(
+      ApiEndpoints.clubMe,
+      headers: {'Authorization': 'Bearer $accessToken'},
+      body: {'introduction': introduction},
+      fromJson: (json) => ClubModel.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  Future<ApiResponseModel<List<MemberModel>>> getClubMembers({
+    required String accessToken,
+    required String clubId,
+  }) async {
+    return await apiService.get<List<MemberModel>>(
+      ApiEndpoints.clubMembers(clubId),
+      headers: {'Authorization': 'Bearer $accessToken'},
+      fromJson: (json) => (json as List)
+          .map((e) => MemberModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 }
