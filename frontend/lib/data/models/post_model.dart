@@ -101,15 +101,31 @@ class CommentModel {
 
   factory CommentModel.fromJson(Map<String, dynamic> json) {
     return CommentModel(
-      id: json['id'] as String,
-      authorId: json['authorId'] as int,
-      authorName: json['authorName'] as String? ?? '',
-      authorProfileImageUrl: json['authorProfileImageUrl'] as String? ?? '',
-      content: json['content'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      id: json['id']?.toString() ?? '',
+      authorId: (json['authorId'] as num?)?.toInt() ?? 0,
+      authorName: json['authorName']?.toString() ?? '',
+      authorProfileImageUrl: json['authorProfileImageUrl']?.toString() ?? '',
+      content: json['content']?.toString() ?? '',
+      createdAt: _parseDateTime(json['createdAt']),
+      updatedAt: _parseDateTime(json['updatedAt']),
     );
   }
+}
+
+DateTime _parseDateTime(dynamic value) {
+  if (value == null) return DateTime.now();
+  if (value is String) return DateTime.parse(value);
+  if (value is List && value.length >= 6) {
+    return DateTime(
+      (value[0] as num).toInt(),
+      (value[1] as num).toInt(),
+      (value[2] as num).toInt(),
+      (value[3] as num).toInt(),
+      (value[4] as num).toInt(),
+      value.length > 5 ? (value[5] as num).toInt() : 0,
+    );
+  }
+  return DateTime.now();
 }
 
 class PostListPageModel {
