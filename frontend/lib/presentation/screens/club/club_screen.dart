@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/club_model.dart';
+import '../../../data/models/member_model.dart';
 import '../../providers/auth_provider.dart';
 import 'widgets/club_header.dart';
 import 'widgets/club_info_section.dart';
@@ -18,6 +19,7 @@ class ClubScreen extends StatefulWidget {
 class _ClubScreenState extends State<ClubScreen> {
   ClubModel? _myClub;
   List<ClubModel> _allClubs = [];
+  List<MemberModel> _myClubMembers = [];
   bool _isLoading = true;
 
   @override
@@ -38,14 +40,18 @@ class _ClubScreenState extends State<ClubScreen> {
 
     // 내 동아리가 없으면 전체 동아리 목록 조회 (탐색용)
     List<ClubModel> allClubs = [];
+    List<MemberModel> myClubMembers = [];
     if (myClub == null) {
       allClubs = await authProvider.getClubs() ?? [];
+    } else {
+      myClubMembers = await authProvider.getClubMembers(myClub.clubId) ?? [];
     }
 
     if (mounted) {
       setState(() {
         _myClub = myClub;
         _allClubs = allClubs;
+        _myClubMembers = myClubMembers;
         _isLoading = false;
       });
     }
@@ -98,7 +104,7 @@ class _ClubScreenState extends State<ClubScreen> {
               child: TabBarView(
                 children: [
                   SingleChildScrollView(child: ClubInfoSection(club: club)),
-                  const ClubMemberList(members: []), // 실제 멤버 리스트 전달 필요
+                  ClubMemberList(members: _myClubMembers),
                 ],
               ),
             ),

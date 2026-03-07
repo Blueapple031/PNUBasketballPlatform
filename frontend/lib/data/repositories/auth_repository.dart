@@ -1,6 +1,7 @@
 import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
 import '../models/club_model.dart';
+import '../models/member_model.dart';
 import '../services/auth_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -363,6 +364,21 @@ class AuthRepository {
       return response.data!;
     }
     throw Exception(_buildErrorMessage(response.error, '동아리 가입 실패'));
+  }
+
+  Future<List<MemberModel>> getClubMembers(String clubId) async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null) throw Exception('로그인이 필요합니다.');
+
+    final response = await authService.getClubMembers(
+      accessToken: accessToken,
+      clubId: clubId,
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+    throw Exception(response.error?['message'] ?? '동아리 멤버 조회 실패');
   }
 }
 
