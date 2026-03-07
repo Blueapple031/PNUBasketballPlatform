@@ -17,4 +17,8 @@ public class ClubListResponse {
     private String logoUrl;
     private String introduction;
     private long memberCount;
+    private String captainName;
+    private String captainProfileImageUrl;
+    /** 내 동아리 조회 시에만 설정. 현재 사용자가 동아리장인지 여부 */
+    private Boolean isCaptain;
 }

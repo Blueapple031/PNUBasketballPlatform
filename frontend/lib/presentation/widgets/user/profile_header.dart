@@ -1,91 +1,117 @@
 import 'package:flutter/material.dart';
+import 'package:basketball_frontend/data/models/user_model.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../screens/user/edit_profile_screen.dart';
 
 class ProfileHeader extends StatelessWidget {
-  const ProfileHeader({super.key});
+  final UserModel user;
+
+  const ProfileHeader({
+    super.key,
+    required this.user,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(24.0),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
-        ),
+        color: AppColors.backgroundWhite,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
-          // 프로필 아바타
           Container(
             width: 100,
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.grey.shade300,
+              color: AppColors.border,
             ),
-            child: Icon(
-              Icons.person,
-              size: 50,
-              color: Colors.grey.shade600,
-            ),
+            clipBehavior: Clip.antiAlias,
+            child: user.profileImageUrl != null && user.profileImageUrl!.isNotEmpty
+                ? Image.network(
+                    user.profileImageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.person,
+                      size: 50,
+                      color: AppColors.subText,
+                    ),
+                  )
+                : const Icon(
+                    Icons.person,
+                    size: 50,
+                    color: AppColors.subText,
+                  ),
           ),
           const SizedBox(height: 16),
-          // 닉네임, 나이, 국기
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '홍길동',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '28세',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(width: 8),
-              const Text('🇰🇷'),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // 소개글
           Text(
-            '농구 좋아하는 개발자입니다',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey.shade600,
-                ),
+            user.realName,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.titleText,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            user.email,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.subText,
+            ),
             textAlign: TextAlign.center,
           ),
+          if (user.phoneNumber != null && user.phoneNumber!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              user.phoneNumber!,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.subText,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: 16),
-          // 인증 배지
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _certificationBadge(context, '여권', Colors.green),
-              const SizedBox(width: 12),
-              _certificationBadge(context, '직업', Colors.orange),
+              _certificationBadge('여권', AppColors.classTeal),
+              const SizedBox(width: 8),
+              _certificationBadge('직업', AppColors.alertOrange),
             ],
           ),
-          const SizedBox(height: 20),
-          // 프로필 수정 버튼
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
+            child: InkWell(
+              onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => const EditProfileScreen(),
                   ),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.activeBlue,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: const Text(
+                  '프로필 수정',
+                  style: TextStyle(
+                    color: AppColors.backgroundWhite,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              child: const Text('프로필 수정'),
             ),
           ),
         ],
@@ -93,24 +119,24 @@ class ProfileHeader extends StatelessWidget {
     );
   }
 
-  Widget _certificationBadge(BuildContext context, String label, Color color) {
+  Widget _certificationBadge(String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color, width: 1),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle, size: 16, color: color),
+          Icon(Icons.check_circle, size: 14, color: color),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: color,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],

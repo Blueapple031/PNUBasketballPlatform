@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -28,8 +29,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.pageBg,
       appBar: AppBar(
-        title: const Text('프로필 수정'),
+        backgroundColor: AppColors.headerGrey,
+        elevation: 0,
+        title: const Text(
+          '프로필 수정',
+          style: TextStyle(
+            color: AppColors.backgroundWhite,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: AppColors.backgroundWhite),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -43,14 +54,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   Container(
                     width: 120,
                     height: 120,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.grey.shade300,
+                      color: AppColors.border,
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.person,
                       size: 60,
-                      color: Colors.grey.shade600,
+                      color: AppColors.subText,
                     ),
                   ),
                   Positioned(
@@ -59,12 +70,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     child: Container(
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.blue,
+                        color: AppColors.activeBlue,
                       ),
                       padding: const EdgeInsets.all(8),
                       child: const Icon(
                         Icons.camera_alt,
-                        color: Colors.white,
+                        color: AppColors.backgroundWhite,
                         size: 20,
                       ),
                     ),
@@ -74,11 +85,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             const SizedBox(height: 32),
             // 본명
-            Text(
+            const Text(
               '본명',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.titleText,
+              ),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -86,20 +99,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.activeBlue, width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
+                  horizontal: 16,
+                  vertical: 16,
                 ),
+                filled: true,
+                fillColor: AppColors.backgroundWhite,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             // 소개글
-            Text(
+            const Text(
               '소개글',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.titleText,
+              ),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -108,28 +134,49 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.activeBlue, width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
+                  horizontal: 16,
+                  vertical: 16,
                 ),
+                filled: true,
+                fillColor: AppColors.backgroundWhite,
               ),
             ),
             const SizedBox(height: 32),
             // 저장 버튼
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('프로필이 저장되었습니다')),
-                  );
+              child: InkWell(
+                onTap: () {
                   Navigator.of(context).pop();
                 },
-                style: ElevatedButton.styleFrom(
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.activeBlue,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    '저장',
+                    style: TextStyle(
+                      color: AppColors.backgroundWhite,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-                child: const Text('저장'),
               ),
             ),
           ],

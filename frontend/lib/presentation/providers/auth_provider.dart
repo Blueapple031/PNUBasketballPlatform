@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../data/models/auth_response_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/club_model.dart';
+import '../../data/models/member_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -20,19 +21,26 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _currentUser != null;
 
   Future<bool> initialize() async {
+    if (!await authRepository.isLoggedIn()) {
+      _currentUser = null;
+      _errorMessage = null;
+      notifyListeners();
+      return false;
+    }
+
+    return fetchCurrentUser();
+  }
+
+  Future<bool> fetchCurrentUser() async {
     try {
       _isLoading = true;
+      _errorMessage = null;
       notifyListeners();
 
-      if (await authRepository.isLoggedIn()) {
-        _currentUser = await authRepository.getCurrentUser();
-        notifyListeners();
-        return true;
-      }
-      return false;
+      _currentUser = await authRepository.getCurrentUser();
+      return true;
     } catch (e) {
-      _errorMessage = e.toString();
-      notifyListeners();
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
       return false;
     } finally {
       _isLoading = false;
@@ -252,6 +260,20 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// 내 동아리 조회. 동아리 미가입 시 null
+  Future<ClubModel?> getMyClub() async {
+    try {
+      _errorMessage = null;
+      final club = await authRepository.getMyClub();
+      notifyListeners();
+      return club;
+    } catch (e) {
+      _errorMessage = _extractErrorMessage(e);
+      notifyListeners();
+      return null;
+    }
+  }
+
   Future<ClubSelectResultModel?> selectClub(String clubId, {String? role}) async {
     try {
       _isLoading = true;
@@ -266,6 +288,32 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = _extractErrorMessage(e);
       _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<ClubModel?> updateMyClubIntroduction(String introduction) async {
+    try {
+      _errorMessage = null;
+      final club = await authRepository.updateMyClubIntroduction(introduction);
+      notifyListeners();
+      return club;
+    } catch (e) {
+      _errorMessage = _extractErrorMessage(e);
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<List<MemberModel>?> getClubMembers(String clubId) async {
+    try {
+      _errorMessage = null;
+      final members = await authRepository.getClubMembers(clubId);
+      notifyListeners();
+      return members;
+    } catch (e) {
+      _errorMessage = _extractErrorMessage(e);
       notifyListeners();
       return null;
     }

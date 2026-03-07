@@ -1,6 +1,7 @@
 import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
 import '../models/club_model.dart';
+import '../models/member_model.dart';
 import '../services/auth_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -246,19 +247,32 @@ class AuthRepository {
   // 사용자 정보 조회
   Future<UserModel> getCurrentUser() async {
     final accessToken = await getAccessToken();
-    if (accessToken == null) {
+    if (accessToken == null || accessToken.isEmpty) {
       throw Exception('로그인이 필요합니다.');
     }
 
-    final response = await authService.getCurrentUser(
+    var response = await authService.getCurrentUser(
       accessToken: accessToken,
     );
 
     if (response.success && response.data != null) {
       return response.data!;
-    } else {
-      throw Exception(response.error?['message'] ?? '사용자 정보 조회 실패');
     }
+
+    final refreshedAccessToken = await refreshAccessToken();
+    if (refreshedAccessToken == null || refreshedAccessToken.isEmpty) {
+      throw Exception('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
+    response = await authService.getCurrentUser(
+      accessToken: refreshedAccessToken,
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+
+    throw Exception('인증이 만료되었습니다. 다시 로그인해주세요.');
   }
 
   // 중복 확인
@@ -323,6 +337,19 @@ class AuthRepository {
     throw Exception(response.error?['message'] ?? '동아리 목록 조회 실패');
   }
 
+  /// 내 동아리 조회. 동아리 미가입 시 null 반환
+  Future<ClubModel?> getMyClub() async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null) throw Exception('로그인이 필요합니다.');
+
+    final response = await authService.getMyClub(accessToken: accessToken);
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+    return null;
+  }
+
   Future<ClubSelectResultModel> selectClub(String clubId, {String? role}) async {
     final accessToken = await getAccessToken();
     if (accessToken == null) throw Exception('로그인이 필요합니다.');
@@ -337,6 +364,36 @@ class AuthRepository {
       return response.data!;
     }
     throw Exception(_buildErrorMessage(response.error, '동아리 가입 실패'));
+  }
+
+  Future<ClubModel> updateMyClubIntroduction(String introduction) async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null) throw Exception('로그인이 필요합니다.');
+
+    final response = await authService.updateMyClubIntroduction(
+      accessToken: accessToken,
+      introduction: introduction,
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+    throw Exception(response.error?['message'] ?? '동아리 소개글 수정 실패');
+  }
+
+  Future<List<MemberModel>> getClubMembers(String clubId) async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null) throw Exception('로그인이 필요합니다.');
+
+    final response = await authService.getClubMembers(
+      accessToken: accessToken,
+      clubId: clubId,
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+    throw Exception(response.error?['message'] ?? '동아리 멤버 조회 실패');
   }
 }
 

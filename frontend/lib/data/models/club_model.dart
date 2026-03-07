@@ -1,14 +1,25 @@
+import 'member_model.dart';
+
 import 'package:json_annotation/json_annotation.dart';
 
 part 'club_model.g.dart';
+
+enum ClubCategory {
+  central,
+  department,
+  smallGroup,
+}
 
 @JsonSerializable()
 class ClubModel {
   final String clubId;
   final String name;
   final String? logoUrl;
-ㅎㅎ  final String? introduction;
+  final String? introduction;
   final int memberCount;
+  final String? captainName;
+  final String? captainProfileImageUrl;
+  final bool? isCaptain;
 
   ClubModel({
     required this.clubId,
@@ -16,7 +27,32 @@ class ClubModel {
     this.logoUrl,
     this.introduction,
     required this.memberCount,
+    this.captainName,
+    this.captainProfileImageUrl,
+    this.isCaptain,
   });
+
+  ClubModel copyWith({
+    String? clubId,
+    String? name,
+    String? logoUrl,
+    String? introduction,
+    int? memberCount,
+    String? captainName,
+    String? captainProfileImageUrl,
+    bool? isCaptain,
+  }) {
+    return ClubModel(
+      clubId: clubId ?? this.clubId,
+      name: name ?? this.name,
+      logoUrl: logoUrl ?? this.logoUrl,
+      introduction: introduction ?? this.introduction,
+      memberCount: memberCount ?? this.memberCount,
+      captainName: captainName ?? this.captainName,
+      captainProfileImageUrl: captainProfileImageUrl ?? this.captainProfileImageUrl,
+      isCaptain: isCaptain ?? this.isCaptain,
+    );
+  }
 
   factory ClubModel.fromJson(Map<String, dynamic> json) =>
       _$ClubModelFromJson(json);
