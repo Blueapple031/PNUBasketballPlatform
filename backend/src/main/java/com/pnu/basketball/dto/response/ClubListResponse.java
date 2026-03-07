@@ -15,5 +15,6 @@ public class ClubListResponse {
     private UUID clubId;
     private String name;
     private String logoUrl;
+    private String introduction;
     private long memberCount;
 }

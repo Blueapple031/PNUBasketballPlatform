@@ -15,6 +15,7 @@ public class AdminClubListResponse {
     private UUID clubId;
     private String name;
     private String logoUrl;
+    private String introduction;
     private String captainName;
     private Long captainId;
     private long memberCount;

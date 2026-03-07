@@ -86,6 +86,7 @@ public class AdminServiceImpl implements AdminService {
         Club club = Club.builder()
                 .name(request.getName())
                 .logoUrl(request.getLogoUrl())
+                .introduction(request.getIntroduction())
                 .build();
         club = clubRepository.save(club);
         return toAdminClubListResponse(club);
@@ -185,6 +186,7 @@ public class AdminServiceImpl implements AdminService {
                 .clubId(club.getId())
                 .name(club.getName())
                 .logoUrl(club.getLogoUrl())
+                .introduction(club.getIntroduction())
                 .captainName(captainName)
                 .captainId(captainId)
                 .memberCount(memberCount)

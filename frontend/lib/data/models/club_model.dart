@@ -7,12 +7,14 @@ class ClubModel {
   final String clubId;
   final String name;
   final String? logoUrl;
+ㅎㅎ  final String? introduction;
   final int memberCount;
 
   ClubModel({
     required this.clubId,
     required this.name,
     this.logoUrl,
+    this.introduction,
     required this.memberCount,
   });
 

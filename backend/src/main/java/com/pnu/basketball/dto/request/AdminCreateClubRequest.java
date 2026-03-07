@@ -14,4 +14,6 @@ public class AdminCreateClubRequest {
     private String name;
 
     private String logoUrl;
+
+    private String introduction;
 }

@@ -48,11 +48,12 @@ CREATE INDEX idx_users_real_name ON users(real_name);
 -- clubs
 -- ============================================================
 CREATE TABLE clubs (
-    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name        VARCHAR(100) NOT NULL,
-    logo_url    VARCHAR(500),
-    captain_id  BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
-    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name          VARCHAR(100) NOT NULL,
+    logo_url      VARCHAR(500),
+    introduction  TEXT,
+    captain_id    BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_clubs_captain_id ON clubs(captain_id);

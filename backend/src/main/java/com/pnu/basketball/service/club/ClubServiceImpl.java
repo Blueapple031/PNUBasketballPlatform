@@ -36,6 +36,7 @@ public class ClubServiceImpl implements ClubService {
                         .clubId(club.getId())
                         .name(club.getName())
                         .logoUrl(club.getLogoUrl())
+                        .introduction(club.getIntroduction())
                         .memberCount(clubMemberRepository.countByClub_Id(club.getId()))
                         .build())
                 .collect(Collectors.toList());

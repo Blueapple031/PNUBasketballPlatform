@@ -180,7 +180,24 @@ class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
                     child: Text(club.name.isNotEmpty ? club.name[0] : '?'),
                   ),
             title: Text(club.name),
-            subtitle: Text('${club.memberCount}명'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (club.introduction != null && club.introduction!.isNotEmpty)
+                  Text(
+                    club.introduction!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                Text('${club.memberCount}명'),
+              ],
+            ),
+            isThreeLine: (club.introduction != null && club.introduction!.isNotEmpty),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => _showRoleSelection(club.clubId, club.name),
           ),

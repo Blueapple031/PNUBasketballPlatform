@@ -26,6 +26,9 @@ public class Club {
     @Column(name = "logo_url", length = 500)
     private String logoUrl;
 
+    @Column(name = "introduction", columnDefinition = "TEXT")
+    private String introduction;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "captain_id", referencedColumnName = "user_id")
     private User captain;
@@ -34,9 +37,10 @@ public class Club {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    public void updateInfo(String name, String logoUrl) {
+    public void updateInfo(String name, String logoUrl, String introduction) {
         if (name != null) this.name = name;
         if (logoUrl != null) this.logoUrl = logoUrl;
+        if (introduction != null) this.introduction = introduction;
     }
 
     public void setCaptain(User captain) {

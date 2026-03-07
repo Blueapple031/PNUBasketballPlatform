@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
         btnCreate.addEventListener('click', function () {
             document.getElementById('club-name').value = '';
             document.getElementById('club-logo').value = '';
+            document.getElementById('club-introduction').value = '';
             document.getElementById('modal-create-club').classList.add('show');
         });
     }
@@ -110,13 +111,18 @@ document.addEventListener('DOMContentLoaded', function () {
         btnSubmitCreate.addEventListener('click', function () {
             var name = document.getElementById('club-name').value.trim();
             var logoUrl = document.getElementById('club-logo').value.trim();
+            var introduction = document.getElementById('club-introduction').value.trim();
             if (!name) {
                 alert('동아리명을 입력하세요.');
                 return;
             }
             Admin.apiRequest('/admin/clubs', {
                 method: 'POST',
-                body: JSON.stringify({ name: name, logoUrl: logoUrl || null }),
+                body: JSON.stringify({
+                    name: name,
+                    logoUrl: logoUrl || null,
+                    introduction: introduction || null
+                }),
             })
                 .then(function (res) {
                     if (res.success) {
