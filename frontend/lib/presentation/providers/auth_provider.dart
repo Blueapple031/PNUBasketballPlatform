@@ -293,6 +293,19 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<ClubModel?> updateMyClubIntroduction(String introduction) async {
+    try {
+      _errorMessage = null;
+      final club = await authRepository.updateMyClubIntroduction(introduction);
+      notifyListeners();
+      return club;
+    } catch (e) {
+      _errorMessage = _extractErrorMessage(e);
+      notifyListeners();
+      return null;
+    }
+  }
+
   Future<List<MemberModel>?> getClubMembers(String clubId) async {
     try {
       _errorMessage = null;

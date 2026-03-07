@@ -103,7 +103,13 @@ class _ClubScreenState extends State<ClubScreen> {
             Expanded(
               child: TabBarView(
                 children: [
-                  SingleChildScrollView(child: ClubInfoSection(club: club)),
+                  SingleChildScrollView(
+                    child: ClubInfoSection(
+                      club: club,
+                      onClubUpdated: (updated) =>
+                          setState(() => _myClub = updated),
+                    ),
+                  ),
                   ClubMemberList(members: _myClubMembers),
                 ],
               ),

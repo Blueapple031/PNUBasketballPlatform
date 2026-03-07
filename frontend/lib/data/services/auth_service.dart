@@ -194,6 +194,18 @@ class AuthService {
     );
   }
 
+  Future<ApiResponseModel<ClubModel>> updateMyClubIntroduction({
+    required String accessToken,
+    required String introduction,
+  }) async {
+    return await apiService.patch<ClubModel>(
+      ApiEndpoints.clubMe,
+      headers: {'Authorization': 'Bearer $accessToken'},
+      body: {'introduction': introduction},
+      fromJson: (json) => ClubModel.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
   Future<ApiResponseModel<List<MemberModel>>> getClubMembers({
     required String accessToken,
     required String clubId,

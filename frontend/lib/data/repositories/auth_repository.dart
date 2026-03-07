@@ -366,6 +366,21 @@ class AuthRepository {
     throw Exception(_buildErrorMessage(response.error, '동아리 가입 실패'));
   }
 
+  Future<ClubModel> updateMyClubIntroduction(String introduction) async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null) throw Exception('로그인이 필요합니다.');
+
+    final response = await authService.updateMyClubIntroduction(
+      accessToken: accessToken,
+      introduction: introduction,
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+    throw Exception(response.error?['message'] ?? '동아리 소개글 수정 실패');
+  }
+
   Future<List<MemberModel>> getClubMembers(String clubId) async {
     final accessToken = await getAccessToken();
     if (accessToken == null) throw Exception('로그인이 필요합니다.');

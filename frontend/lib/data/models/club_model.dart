@@ -19,6 +19,7 @@ class ClubModel {
   final int memberCount;
   final String? captainName;
   final String? captainProfileImageUrl;
+  final bool? isCaptain;
 
   ClubModel({
     required this.clubId,
@@ -28,7 +29,30 @@ class ClubModel {
     required this.memberCount,
     this.captainName,
     this.captainProfileImageUrl,
+    this.isCaptain,
   });
+
+  ClubModel copyWith({
+    String? clubId,
+    String? name,
+    String? logoUrl,
+    String? introduction,
+    int? memberCount,
+    String? captainName,
+    String? captainProfileImageUrl,
+    bool? isCaptain,
+  }) {
+    return ClubModel(
+      clubId: clubId ?? this.clubId,
+      name: name ?? this.name,
+      logoUrl: logoUrl ?? this.logoUrl,
+      introduction: introduction ?? this.introduction,
+      memberCount: memberCount ?? this.memberCount,
+      captainName: captainName ?? this.captainName,
+      captainProfileImageUrl: captainProfileImageUrl ?? this.captainProfileImageUrl,
+      isCaptain: isCaptain ?? this.isCaptain,
+    );
+  }
 
   factory ClubModel.fromJson(Map<String, dynamic> json) =>
       _$ClubModelFromJson(json);

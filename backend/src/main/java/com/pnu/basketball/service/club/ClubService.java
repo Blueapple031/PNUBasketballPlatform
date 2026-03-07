@@ -1,6 +1,7 @@
 package com.pnu.basketball.service.club;
 
 import com.pnu.basketball.dto.request.ClubSelectRequest;
+import com.pnu.basketball.dto.request.ClubUpdateIntroductionRequest;
 import com.pnu.basketball.dto.response.ClubListResponse;
 import com.pnu.basketball.dto.response.ClubMemberResponse;
 import com.pnu.basketball.dto.response.ClubSelectResponse;
@@ -15,4 +16,5 @@ public interface ClubService {
     ClubSelectionStatusResponse getClubSelectionStatus(Long userId);
     ClubListResponse getMyClub(Long userId);
     List<ClubMemberResponse> getClubMembers(UUID clubId);
+    ClubListResponse updateMyClubIntroduction(Long userId, ClubUpdateIntroductionRequest request);
 }
