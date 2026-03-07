@@ -1,5 +1,15 @@
 -- PostgreSQL Database Schema for 딸바 (PNU Basketball Platform)
 -- 통합 스키마 (2026-03)
+--
+-- 실행: psql -U postgres -d ddalba_DB -f schema.sql
+-- (docs/database/ 디렉터리에서 실행하거나, 프로젝트 루트에서 docs/database/schema.sql 지정)
+--
+-- 스키마는 schemas/ 폴더에 도메인별로 분리되어 있습니다:
+--   00_common.sql  - 확장, ENUM
+--   01_users.sql   - 회원
+--   02_clubs.sql   - 동아리, 동아리 멤버
+--   03_matches.sql - 매치, 매치 참가자
+--   04_posts.sql   - 게시글, 댓글
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
