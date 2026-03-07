@@ -1,9 +1,7 @@
 package com.pnu.basketball.service.admin;
 
 import com.pnu.basketball.domain.*;
-import com.pnu.basketball.dto.request.AdminCreateClubRequest;
-import com.pnu.basketball.dto.request.AdminSetCaptainRequest;
-import com.pnu.basketball.dto.request.AdminUpdateMatchRequest;
+import com.pnu.basketball.dto.request.*;
 import com.pnu.basketball.dto.response.*;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
@@ -26,6 +24,8 @@ public class AdminServiceImpl implements AdminService {
     private final ClubRepository clubRepository;
     private final ClubMemberRepository clubMemberRepository;
     private final MatchRepository matchRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -204,6 +204,141 @@ public class AdminServiceImpl implements AdminService {
                 .state(match.getState())
                 .homeScore(match.getHomeScore())
                 .awayScore(match.getAwayScore())
+                .build();
+    }
+
+    // ========== 게시글/댓글 관리 ==========
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PostListResponse> getPosts(Pageable pageable) {
+        return postRepository.findAllByOrderByIsPinnedDescCreatedAtDesc(pageable)
+                .map(this::toPostListResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PostDetailResponse getPost(UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        return toPostDetailResponse(post);
+    }
+
+    @Override
+    @Transactional
+    public PostDetailResponse createPost(Long userId, CreatePostRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        Post post = Post.builder()
+                .user(user)
+                .title(request.getTitle())
+                .content(request.getContent())
+                .build();
+        postRepository.save(post);
+        return toPostDetailResponse(post);
+    }
+
+    @Override
+    @Transactional
+    public PostDetailResponse updatePost(UUID postId, UpdatePostRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        post.update(request.getTitle(), request.getContent());
+        postRepository.save(post);
+        return toPostDetailResponse(post);
+    }
+
+    @Override
+    @Transactional
+    public void deletePost(UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        postRepository.delete(post);
+    }
+
+    @Override
+    @Transactional
+    public PostDetailResponse pinPost(UUID postId, boolean isPinned) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        post.setPinned(isPinned);
+        postRepository.save(post);
+        return toPostDetailResponse(post);
+    }
+
+    @Override
+    @Transactional
+    public CommentResponse createComment(Long userId, UUID postId, CreateCommentRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        Comment comment = Comment.builder()
+                .post(post)
+                .user(user)
+                .content(request.getContent())
+                .build();
+        commentRepository.save(comment);
+        return toCommentResponse(comment);
+    }
+
+    @Override
+    @Transactional
+    public void deleteComment(UUID commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+        commentRepository.delete(comment);
+    }
+
+    private PostListResponse toPostListResponse(Post post) {
+        User author = post.getUser();
+        int commentCount = (int) commentRepository.countByPost_Id(post.getId());
+        String profileImageUrl = author.getProfileImageUrl() != null ? author.getProfileImageUrl() : "";
+        return PostListResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .authorName(author.getRealName())
+                .authorProfileImageUrl(profileImageUrl)
+                .viewCount(post.getViewCount())
+                .commentCount(commentCount)
+                .isPinned(post.getIsPinned())
+                .createdAt(post.getCreatedAt())
+                .build();
+    }
+
+    private PostDetailResponse toPostDetailResponse(Post post) {
+        User author = post.getUser();
+        String profileImageUrl = author.getProfileImageUrl() != null ? author.getProfileImageUrl() : "";
+        List<CommentResponse> comments = commentRepository.findByPost_IdOrderByCreatedAtAsc(post.getId())
+                .stream()
+                .map(this::toCommentResponse)
+                .collect(Collectors.toList());
+        return PostDetailResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .authorId(author.getUserId())
+                .authorName(author.getRealName())
+                .authorProfileImageUrl(profileImageUrl)
+                .viewCount(post.getViewCount())
+                .isPinned(post.getIsPinned())
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .comments(comments)
+                .build();
+    }
+
+    private CommentResponse toCommentResponse(Comment comment) {
+        User author = comment.getUser();
+        String profileImageUrl = author.getProfileImageUrl() != null ? author.getProfileImageUrl() : "";
+        return CommentResponse.builder()
+                .id(comment.getId())
+                .authorId(author.getUserId())
+                .authorName(author.getRealName())
+                .authorProfileImageUrl(profileImageUrl)
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .updatedAt(comment.getUpdatedAt())
                 .build();
     }
 }

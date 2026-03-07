@@ -412,6 +412,10 @@ body {
     animation: modalSlideIn 0.3s ease;
 }
 
+.modal-content.modal-wide {
+    max-width: 700px;
+}
+
 @keyframes modalSlideIn {
     from {
         transform: translateY(-50px);
@@ -520,6 +524,24 @@ body {
 
 .btn-primary:hover {
     background: #5568d3;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e0;
+}
+
+.btn-danger {
+    background: #e53e3e;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c53030;
 }
 
 /* 탭 콘텐츠 */

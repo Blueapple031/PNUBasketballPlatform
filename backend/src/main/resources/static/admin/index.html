@@ -49,6 +49,10 @@
                     <span class="tab-icon">⚔️</span>
                     <span class="tab-text">매칭 관리</span>
                 </button>
+                <button type="button" class="nav-tab" data-tab="posts">
+                    <span class="tab-icon">📝</span>
+                    <span class="tab-text">게시글 관리</span>
+                </button>
             </nav>
             <button type="button" class="logout-btn" id="logout-btn">로그아웃</button>
         </aside>
@@ -152,6 +156,38 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- 게시글 관리 -->
+            <div id="tab-posts" class="tab-content">
+                <div class="content-header">
+                    <h1>게시글 관리</h1>
+                    <div class="header-info">
+                        <button type="button" class="action-btn" id="btn-create-post">+ 공지 작성</button>
+                        <span class="total-count" style="margin-left: 12px;">총 <strong id="posts-total">0</strong>건</span>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-wrapper">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>공지</th>
+                                    <th>제목</th>
+                                    <th>작성자</th>
+                                    <th>조회</th>
+                                    <th>댓글</th>
+                                    <th>작성일</th>
+                                    <th>액션</th>
+                                </tr>
+                            </thead>
+                            <tbody id="posts-tbody">
+                                <tr><td colspan="7" class="empty-state"><p>데이터를 불러오는 중...</p></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="posts-pagination"></div>
                 </div>
             </div>
 
@@ -266,6 +302,74 @@
         </div>
     </div>
 
+    <!-- 게시글 작성/수정 모달 -->
+    <div id="modal-edit-post" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-post-title">공지 작성</h3>
+                <button type="button" class="modal-close" data-close="modal-edit-post">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-post-id">
+                <div class="filter-item">
+                    <label>제목</label>
+                    <input type="text" id="edit-post-title" class="modal-input" required placeholder="제목을 입력하세요" maxlength="200">
+                </div>
+                <div class="filter-item">
+                    <label>내용</label>
+                    <textarea id="edit-post-content" class="modal-input" rows="8" required placeholder="내용을 입력하세요"></textarea>
+                </div>
+                <div class="filter-item" id="edit-post-pin-wrap" style="display: none;">
+                    <label><input type="checkbox" id="edit-post-pinned"> 상단 고정 (공지)</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="modal-edit-post">취소</button>
+                <button type="button" class="btn btn-primary" id="btn-submit-post">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 게시글 상세 모달 -->
+    <div id="modal-post-detail" class="modal">
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3>게시글 상세</h3>
+                <button type="button" class="modal-close" data-close="modal-post-detail">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-post-detail-body">
+                <p>로딩 중...</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="modal-post-detail">닫기</button>
+                <button type="button" class="btn btn-primary" id="btn-edit-post-from-detail">수정</button>
+                <button type="button" class="btn btn-secondary" id="btn-pin-post">공지 설정</button>
+                <button type="button" class="btn btn-danger" id="btn-delete-post">삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 댓글 작성 모달 -->
+    <div id="modal-add-comment" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>댓글 작성</h3>
+                <button type="button" class="modal-close" data-close="modal-add-comment">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="comment-post-id">
+                <div class="filter-item">
+                    <label>댓글 내용</label>
+                    <textarea id="comment-content" class="modal-input" rows="4" required placeholder="댓글을 입력하세요"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="modal-add-comment">취소</button>
+                <button type="button" class="btn btn-primary" id="btn-submit-comment">작성</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 매치 수정 모달 -->
     <div id="modal-edit-match" class="modal">
         <div class="modal-content">
@@ -310,6 +414,7 @@
     <script src="js/users.js"></script>
     <script src="js/clubs.js"></script>
     <script src="js/matches.js"></script>
+    <script src="js/posts.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (Admin.isLoggedIn()) {
