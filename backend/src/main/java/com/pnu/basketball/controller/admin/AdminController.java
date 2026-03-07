@@ -1,9 +1,7 @@
 package com.pnu.basketball.controller.admin;
 
 import com.pnu.basketball.domain.MatchState;
-import com.pnu.basketball.dto.request.AdminCreateClubRequest;
-import com.pnu.basketball.dto.request.AdminSetCaptainRequest;
-import com.pnu.basketball.dto.request.AdminUpdateMatchRequest;
+import com.pnu.basketball.dto.request.*;
 import com.pnu.basketball.dto.response.*;
 import com.pnu.basketball.service.admin.AdminService;
 import jakarta.validation.Valid;
@@ -12,10 +10,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -115,5 +113,73 @@ public class AdminController {
             @RequestBody AdminUpdateMatchRequest request) {
         AdminMatchListResponse response = adminService.updateMatch(id, request);
         return ResponseEntity.ok(ApiResponse.success(response, "매치 수정 완료"));
+    }
+
+    // ========== 게시글/댓글 관리 ==========
+
+    @GetMapping("/posts")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getPosts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page - 1, Math.min(size, 50));
+        Page<PostListResponse> result = adminService.getPosts(pageable);
+        Map<String, Object> data = new HashMap<>();
+        data.put("content", result.getContent());
+        data.put("totalPages", result.getTotalPages());
+        data.put("currentPage", page);
+        data.put("totalElements", result.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(data, "게시글 목록 조회 성공"));
+    }
+
+    @GetMapping("/posts/{id}")
+    public ResponseEntity<ApiResponse<PostDetailResponse>> getPost(@PathVariable UUID id) {
+        PostDetailResponse post = adminService.getPost(id);
+        return ResponseEntity.ok(ApiResponse.success(post, "게시글 조회 성공"));
+    }
+
+    @PostMapping("/posts")
+    public ResponseEntity<ApiResponse<PostDetailResponse>> createPost(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody CreatePostRequest request) {
+        PostDetailResponse post = adminService.createPost(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(post, "게시글이 작성되었습니다."));
+    }
+
+    @PutMapping("/posts/{id}")
+    public ResponseEntity<ApiResponse<PostDetailResponse>> updatePost(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdatePostRequest request) {
+        PostDetailResponse post = adminService.updatePost(id, request);
+        return ResponseEntity.ok(ApiResponse.success(post, "게시글이 수정되었습니다."));
+    }
+
+    @DeleteMapping("/posts/{id}")
+    public ResponseEntity<ApiResponse<Void>> deletePost(@PathVariable UUID id) {
+        adminService.deletePost(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "게시글이 삭제되었습니다."));
+    }
+
+    @PatchMapping("/posts/{id}/pin")
+    public ResponseEntity<ApiResponse<PostDetailResponse>> pinPost(
+            @PathVariable UUID id,
+            @RequestBody Map<String, Boolean> body) {
+        boolean isPinned = body != null && Boolean.TRUE.equals(body.get("isPinned"));
+        PostDetailResponse post = adminService.pinPost(id, isPinned);
+        return ResponseEntity.ok(ApiResponse.success(post, isPinned ? "상단 고정되었습니다." : "고정이 해제되었습니다."));
+    }
+
+    @PostMapping("/posts/{postId}/comments")
+    public ResponseEntity<ApiResponse<CommentResponse>> createComment(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable UUID postId,
+            @Valid @RequestBody CreateCommentRequest request) {
+        CommentResponse comment = adminService.createComment(userId, postId, request);
+        return ResponseEntity.ok(ApiResponse.success(comment, "댓글이 작성되었습니다."));
+    }
+
+    @DeleteMapping("/comments/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteComment(@PathVariable UUID id) {
+        adminService.deleteComment(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "댓글이 삭제되었습니다."));
     }
 }

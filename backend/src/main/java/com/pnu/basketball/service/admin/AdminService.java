@@ -1,9 +1,7 @@
 package com.pnu.basketball.service.admin;
 
 import com.pnu.basketball.domain.MatchState;
-import com.pnu.basketball.dto.request.AdminCreateClubRequest;
-import com.pnu.basketball.dto.request.AdminSetCaptainRequest;
-import com.pnu.basketball.dto.request.AdminUpdateMatchRequest;
+import com.pnu.basketball.dto.request.*;
 import com.pnu.basketball.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,4 +30,21 @@ public interface AdminService {
     AdminMatchListResponse getMatchDetail(UUID matchId);
 
     AdminMatchListResponse updateMatch(UUID matchId, AdminUpdateMatchRequest request);
+
+    // 게시글/댓글 관리
+    Page<PostListResponse> getPosts(Pageable pageable);
+
+    PostDetailResponse getPost(UUID postId);
+
+    PostDetailResponse createPost(Long userId, CreatePostRequest request);
+
+    PostDetailResponse updatePost(UUID postId, UpdatePostRequest request);
+
+    void deletePost(UUID postId);
+
+    PostDetailResponse pinPost(UUID postId, boolean isPinned);
+
+    CommentResponse createComment(Long userId, UUID postId, CreateCommentRequest request);
+
+    void deleteComment(UUID commentId);
 }

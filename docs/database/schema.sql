@@ -1,5 +1,15 @@
 -- PostgreSQL Database Schema for 딸바 (PNU Basketball Platform)
 -- 통합 스키마 (2026-03)
+--
+-- 실행: psql -U postgres -d ddalba_DB -f schema.sql
+-- (docs/database/ 디렉터리에서 실행하거나, 프로젝트 루트에서 docs/database/schema.sql 지정)
+--
+-- 스키마는 schemas/ 폴더에 도메인별로 분리되어 있습니다:
+--   00_common.sql  - 확장, ENUM
+--   01_users.sql   - 회원
+--   02_clubs.sql   - 동아리, 동아리 멤버
+--   03_matches.sql - 매치, 매치 참가자
+--   04_posts.sql   - 게시글, 댓글
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -118,10 +128,10 @@ CREATE INDEX idx_match_participants_club_id ON match_participants(club_id);
 CREATE TABLE posts (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id         BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    club_id         UUID REFERENCES clubs(id) ON DELETE SET NULL,
     title           VARCHAR(200) NOT NULL,
     content         TEXT NOT NULL,
     view_count      INTEGER NOT NULL DEFAULT 0,
+    is_pinned       BOOLEAN NOT NULL DEFAULT false,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -137,3 +147,44 @@ CREATE TABLE comments (
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ============================================================
+-- polls (투표)
+-- ============================================================
+CREATE TABLE polls (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    post_id         UUID NOT NULL UNIQUE REFERENCES posts(id) ON DELETE CASCADE,
+    question        VARCHAR(500) NOT NULL,
+    expires_at      TIMESTAMP,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_polls_post_id ON polls(post_id);
+
+-- ============================================================
+-- poll_options (투표 선택지)
+-- ============================================================
+CREATE TABLE poll_options (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    poll_id         UUID NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
+    option_text     VARCHAR(200) NOT NULL,
+    sort_order      INT NOT NULL DEFAULT 0,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_poll_options_poll_id ON poll_options(poll_id);
+
+-- ============================================================
+-- poll_votes (투표 참여 - 1인 1표)
+-- ============================================================
+CREATE TABLE poll_votes (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    poll_id         UUID NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
+    option_id       UUID NOT NULL REFERENCES poll_options(id) ON DELETE CASCADE,
+    user_id         BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_poll_votes_user UNIQUE (poll_id, user_id)
+);
+
+CREATE INDEX idx_poll_votes_poll_id ON poll_votes(poll_id);
+CREATE INDEX idx_poll_votes_user_id ON poll_votes(user_id);
