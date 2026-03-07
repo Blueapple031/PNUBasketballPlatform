@@ -17,7 +17,7 @@ class BasketballApp extends StatelessWidget {
       child: MaterialApp(
         title: '딸바',
         theme: AppTheme.theme,
-        home: const AuthGate(),
+        home: const RootScreen(initialIndex: 1),
         routes: {
           '/login': (context) => const LoginScreen(),
           '/home': (context) => const RootScreen(),
