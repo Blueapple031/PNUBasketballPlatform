@@ -9,19 +9,19 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  late TextEditingController _nicknameController;
+  late TextEditingController _realNameController;
   late TextEditingController _introController;
 
   @override
   void initState() {
     super.initState();
-    _nicknameController = TextEditingController(text: '홍길동');
+    _realNameController = TextEditingController(text: '홍길동');
     _introController = TextEditingController(text: '농구 좋아하는 개발자입니다');
   }
 
   @override
   void dispose() {
-    _nicknameController.dispose();
+    _realNameController.dispose();
     _introController.dispose();
     super.dispose();
   }
@@ -84,9 +84,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            // 닉네임
+            // 본명
             const Text(
-              '닉네임',
+              '본명',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -95,7 +95,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             const SizedBox(height: 8),
             TextField(
-              controller: _nicknameController,
+              controller: _realNameController,
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),

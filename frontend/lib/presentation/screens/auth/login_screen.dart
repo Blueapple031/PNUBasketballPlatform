@@ -24,18 +24,20 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.login(
+    final authResponse = await authProvider.login(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
 
-    if (success && mounted) {
-      Navigator.of(context).pushReplacementNamed('/home');
+    if (authResponse != null && mounted) {
+      if (authResponse.user.needsClubSelection == true) {
+        Navigator.of(context).pushReplacementNamed('/club-selection');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -46,12 +48,40 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleKakaoLogin() async {
+    final authProvider = context.read<AuthProvider>();
+    final authResponse = await authProvider.kakaoLogin();
+
+    if (authResponse != null && mounted) {
+      if (authResponse.user.needsClubSelection == true) {
+        Navigator.of(context).pushReplacementNamed('/club-selection');
+      } else if (authResponse.user.isNewUser == true) {
+        Navigator.of(context).pushReplacementNamed('/complete-profile');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage ?? '카카오 로그인 실패'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Future<void> _handleGoogleLogin() async {
     final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.googleLogin();
+    final authResponse = await authProvider.googleLogin();
 
-    if (success && mounted) {
-      Navigator.of(context).pushReplacementNamed('/home');
+    if (authResponse != null && mounted) {
+      if (authResponse.user.isNewUser == true) {
+        Navigator.of(context).pushReplacementNamed('/complete-profile');
+      } else if (authResponse.user.needsClubSelection == true) {
+        Navigator.of(context).pushReplacementNamed('/club-selection');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -155,6 +185,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     size: 24,
                   ),
                   label: const Text('구글로 로그인'),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: _handleKakaoLogin,
+                  icon: const Icon(
+                    Icons.chat_bubble_outline,
+                    size: 24,
+                  ),
+                  label: const Text('카카오로 로그인'),
                 ),
                 const SizedBox(height: 24),
                 Row(

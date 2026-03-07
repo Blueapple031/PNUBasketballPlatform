@@ -48,16 +48,9 @@ jobs:
           scp -P $SSH_PORT -o StrictHostKeyChecking=accept-new $JAR_FILE $SSH_USER@$SSH_HOST:~/PNUBasketballPlatform/app.jar
 
       - name: Restart Application
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          script: |
-            cd ~/PNUBasketballPlatform
-            PID=$(pgrep -f "app.jar" || true)
-            [ -n "$PID" ] && kill $PID 2>/dev/null || true
-            sleep 2
-            nohup java -jar app.jar --spring.profiles.active=prod > app.log 2>&1 &
-            echo "배포 완료"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+        run: |
+          ssh -o StrictHostKeyChecking=accept-new -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST 'cd ~/PNUBasketballPlatform && pkill -f app.jar || true && sleep 2 && (nohup /usr/bin/java -jar app.jar --spring.profiles.active=prod > app.log 2>&1 &)' && echo "배포 완료"

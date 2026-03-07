@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>딸바 백오피스</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <!-- 로그인 화면 -->
+    <div id="login-screen" class="login-container">
+        <div class="login-box">
+            <h1>딸바 백오피스</h1>
+            <form id="login-form" class="login-form">
+                <div class="filter-item">
+                    <label for="login-email">이메일</label>
+                    <input type="email" id="login-email" class="modal-input" placeholder="admin@example.com" required>
+                </div>
+                <div class="filter-item">
+                    <label for="login-password">비밀번호</label>
+                    <input type="password" id="login-password" class="modal-input" placeholder="비밀번호" required>
+                </div>
+                <p id="login-error" style="color: #991b1b; font-size: 14px; margin-bottom: 12px; display: none;"></p>
+                <button type="submit" class="btn btn-primary">로그인</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 관리자 화면 -->
+    <div id="admin-screen" class="admin-container hidden">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>딸바 관리</h2>
+            </div>
+            <nav class="nav-menu">
+                <button type="button" class="nav-tab active" data-tab="dashboard">
+                    <span class="tab-icon">📊</span>
+                    <span class="tab-text">대시보드</span>
+                </button>
+                <button type="button" class="nav-tab" data-tab="users">
+                    <span class="tab-icon">👥</span>
+                    <span class="tab-text">유저 관리</span>
+                </button>
+                <button type="button" class="nav-tab" data-tab="clubs">
+                    <span class="tab-icon">🏀</span>
+                    <span class="tab-text">동아리 관리</span>
+                </button>
+                <button type="button" class="nav-tab" data-tab="matches">
+                    <span class="tab-icon">⚔️</span>
+                    <span class="tab-text">매칭 관리</span>
+                </button>
+            </nav>
+            <button type="button" class="logout-btn" id="logout-btn">로그아웃</button>
+        </aside>
+
+        <main class="main-content">
+            <!-- 대시보드 -->
+            <div id="tab-dashboard" class="tab-content active">
+                <div class="content-header">
+                    <h1>대시보드</h1>
+                </div>
+                <div class="stats-grid" id="dashboard-stats">
+                    <div class="stat-card">
+                        <h3>전체 유저</h3>
+                        <div class="stat-value" id="stat-users">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>동아리 수</h3>
+                        <div class="stat-value" id="stat-clubs">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>매치 수</h3>
+                        <div class="stat-value" id="stat-matches">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 유저 관리 -->
+            <div id="tab-users" class="tab-content">
+                <div class="content-header">
+                    <h1>유저 관리</h1>
+                    <div class="header-info">
+                        <span class="total-count">총 <strong id="users-total">0</strong>명</span>
+                    </div>
+                </div>
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <div class="filter-item">
+                            <label>학생 여부</label>
+                            <select id="filter-student" class="filter-select">
+                                <option value="">전체</option>
+                                <option value="true">학생</option>
+                                <option value="false">외부인</option>
+                            </select>
+                        </div>
+                        <div class="filter-item search-box">
+                            <label>검색 (이메일, 본명, 학번)</label>
+                            <div class="search-wrapper">
+                                <input type="text" id="search-users" class="search-input" placeholder="검색어 입력">
+                                <button type="button" class="search-btn" id="btn-search-users">🔍</button>
+                                <button type="button" class="reset-btn" id="btn-reset-users">초기화</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-wrapper">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>번호</th>
+                                    <th>이메일</th>
+                                    <th>본명</th>
+                                    <th>학생</th>
+                                    <th>학과</th>
+                                    <th>학번</th>
+                                    <th>동아리</th>
+                                    <th>가입일</th>
+                                    <th>액션</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-tbody">
+                                <tr><td colspan="9" class="empty-state"><p>데이터를 불러오는 중...</p></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="users-pagination"></div>
+                </div>
+            </div>
+
+            <!-- 동아리 관리 -->
+            <div id="tab-clubs" class="tab-content">
+                <div class="content-header">
+                    <h1>동아리 관리</h1>
+                    <div class="header-info">
+                        <button type="button" class="action-btn" id="btn-create-club">+ 동아리 생성</button>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-wrapper">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>동아리명</th>
+                                    <th>동아리장</th>
+                                    <th>멤버 수</th>
+                                    <th>액션</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clubs-tbody">
+                                <tr><td colspan="4" class="empty-state"><p>데이터를 불러오는 중...</p></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 매칭 관리 -->
+            <div id="tab-matches" class="tab-content">
+                <div class="content-header">
+                    <h1>매칭 관리</h1>
+                    <div class="header-info">
+                        <span class="total-count">총 <strong id="matches-total">0</strong>건</span>
+                    </div>
+                </div>
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <div class="filter-item">
+                            <label>상태</label>
+                            <select id="filter-match-state" class="filter-select">
+                                <option value="">전체</option>
+                                <option value="SCHEDULED">예정</option>
+                                <option value="READY">준비</option>
+                                <option value="ONGOING">진행중</option>
+                                <option value="DONE">종료</option>
+                                <option value="CANCELLED">취소</option>
+                            </select>
+                        </div>
+                        <button type="button" class="search-btn" id="btn-search-matches">검색</button>
+                        <button type="button" class="reset-btn" id="btn-reset-matches">초기화</button>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-wrapper">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>홈팀</th>
+                                    <th>어웨이팀</th>
+                                    <th>일시</th>
+                                    <th>상태</th>
+                                    <th>점수</th>
+                                    <th>액션</th>
+                                </tr>
+                            </thead>
+                            <tbody id="matches-tbody">
+                                <tr><td colspan="6" class="empty-state"><p>데이터를 불러오는 중...</p></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="matches-pagination"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 유저 상세 모달 -->
+    <div id="modal-user-detail" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>유저 상세</h3>
+                <button type="button" class="modal-close" data-close="modal-user-detail">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-user-detail-body"></div>
+        </div>
+    </div>
+
+    <!-- 동아리 생성 모달 -->
+    <div id="modal-create-club" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>동아리 생성</h3>
+                <button type="button" class="modal-close" data-close="modal-create-club">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-create-club" class="modal-form">
+                    <div class="filter-item">
+                        <label>동아리명</label>
+                        <input type="text" id="club-name" class="modal-input" required placeholder="동아리 이름">
+                    </div>
+                    <div class="filter-item">
+                        <label>로고 URL (선택)</label>
+                        <input type="url" id="club-logo" class="modal-input" placeholder="https://...">
+                    </div>
+                    <div class="filter-item">
+                        <label>동아리 소개 (선택)</label>
+                        <textarea id="club-introduction" class="modal-input" rows="3" placeholder="동아리 소개를 입력하세요"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="modal-create-club">취소</button>
+                <button type="button" class="btn btn-primary" id="btn-submit-create-club">생성</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 동아리장 설정 모달 -->
+    <div id="modal-set-captain" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>동아리장 설정</h3>
+                <button type="button" class="modal-close" data-close="modal-set-captain">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-member-info" id="captain-club-name"></p>
+                <div class="filter-item">
+                    <label>동아리장 선택</label>
+                    <select id="captain-user-select" class="modal-select"></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="modal-set-captain">취소</button>
+                <button type="button" class="btn btn-primary" id="btn-submit-captain">설정</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 매치 수정 모달 -->
+    <div id="modal-edit-match" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>매치 수정</h3>
+                <button type="button" class="modal-close" data-close="modal-edit-match">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-match-id">
+                <div class="filter-item">
+                    <label>상태</label>
+                    <select id="edit-match-state" class="modal-select">
+                        <option value="SCHEDULED">예정</option>
+                        <option value="READY">준비</option>
+                        <option value="ONGOING">진행중</option>
+                        <option value="DONE">종료</option>
+                        <option value="CANCELLED">취소</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>홈팀 점수</label>
+                    <input type="number" id="edit-home-score" class="modal-input" min="0" placeholder="0">
+                </div>
+                <div class="filter-item">
+                    <label>어웨이팀 점수</label>
+                    <input type="number" id="edit-away-score" class="modal-input" min="0" placeholder="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="modal-edit-match">취소</button>
+                <button type="button" class="btn btn-primary" id="btn-submit-edit-match">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .hidden { display: none !important; }
+    </style>
+
+    <script src="js/admin.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/users.js"></script>
+    <script src="js/clubs.js"></script>
+    <script src="js/matches.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (Admin.isLoggedIn()) {
+                Admin.showAdminScreen();
+                Admin.switchTab('dashboard');
+            } else {
+                Admin.showLoginScreen();
+            }
+
+            Admin.initTabs();
+
+            document.getElementById('login-form').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value.trim();
+                const password = document.getElementById('login-password').value;
+                const errEl = document.getElementById('login-error');
+                errEl.style.display = 'none';
+                try {
+                    await Admin.login(email, password);
+                } catch (err) {
+                    errEl.textContent = err.message || '로그인에 실패했습니다.';
+                    errEl.style.display = 'block';
+                }
+            });
+
+            document.getElementById('logout-btn').addEventListener('click', Admin.logout);
+
+            document.querySelectorAll('[data-close]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const modalId = this.getAttribute('data-close');
+                    document.getElementById(modalId).classList.remove('show');
+                });
+            });
+
+            document.querySelectorAll('.modal').forEach(function (modal) {
+                modal.addEventListener('click', function (e) {
+                    if (e.target === modal) modal.classList.remove('show');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

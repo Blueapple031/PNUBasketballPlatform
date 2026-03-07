@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/auth/complete_profile_screen.dart';
+import 'presentation/screens/auth/club_selection_screen.dart';
+import 'presentation/screens/user/user_tab.dart';
 import 'presentation/screens/root/root_screen.dart';
 
 class BasketballApp extends StatelessWidget {
@@ -23,12 +26,14 @@ class BasketballApp extends StatelessWidget {
           '/home': (context) => const RootScreen(),
           '/club': (context) => const RootScreen(initialIndex: 1),
           '/root': (context) => const RootScreen(),
+          '/complete-profile': (context) => const CompleteProfileScreen(),
+          '/club-selection': (context) => const ClubSelectionScreen(),
         },
       ),
     );
   }
 }
-
+//login했는지 확인하는 Gate 토큰 확인시 메인화면/확인불가시 로그인화면
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
