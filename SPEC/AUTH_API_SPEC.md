@@ -12,10 +12,11 @@
 2. [공통 사항](#공통-사항)
 3. [자체 로그인 API](#자체-로그인-api)
 4. [구글 로그인 API](#구글-로그인-api)
-5. [토큰 관리 API](#토큰-관리-api)
-6. [사용자 관리 API](#-사용자-관리-api-user-management-api)
-7. [에러 응답](#에러-응답)
-8. [데이터 모델](#데이터-모델)
+5. [카카오 로그인 API](#카카오-로그인-api)
+6. [토큰 관리 API](#토큰-관리-api)
+7. [사용자 관리 API](#-사용자-관리-api-user-management-api)
+8. [에러 응답](#에러-응답)
+9. [데이터 모델](#데이터-모델)
 
 ---
 
@@ -24,6 +25,7 @@
 ### 인증 방식
 - **자체 로그인**: 이메일/비밀번호 기반 JWT 인증
 - **구글 로그인**: OAuth2.0 기반 소셜 로그인 (Google Sign-In)
+- **카카오 로그인**: OAuth2.0 기반 소셜 로그인 (Kakao Login)
 
 ### 보안 정책
 - **JWT 토큰**: Access Token + Refresh Token 방식
@@ -332,6 +334,78 @@ Authorization: Bearer {access_token}
 
 ---
 
+## 💬 카카오 로그인 API
+
+### 1. 카카오 로그인 (토큰 검증 및 사용자 생성/조회)
+
+**엔드포인트**: `POST /api/auth/kakao`
+
+**설명**: 카카오 OAuth2.0 Access Token을 검증하고, 사용자가 없으면 자동 회원가입 후 JWT 토큰을 발급합니다.
+
+**인증 필요**: ❌
+
+**요청 본문**:
+```json
+{
+  "accessToken": "qR26HSXspbg-d65MBQJHFV1pOzdm2FiHAAAAAQoNH5cAAAGcgKuoo8TTXs9KIG_V"
+}
+```
+
+**요청 필드**:
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `accessToken` | string | ✅ | 카카오 OAuth2.0 Access Token |
+
+**처리 흐름**:
+1. 카카오 `/v2/user/me` API 호출로 Access Token 검증 및 사용자 정보 조회
+2. 카카오 사용자 정보 추출 (카카오 ID, 이메일, 닉네임, 프로필 이미지)
+3. DB에서 카카오 ID로 사용자 조회
+   - 존재하지 않으면: 이메일로도 조회 후
+     - 이메일 사용자 존재: 기존 계정에 카카오 연동
+     - 없으면: 자동 회원가입 (카카오 로그인 타입으로 저장)
+4. JWT 토큰 발급 및 반환
+
+**성공 응답 (200 OK)**:
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "tokenType": "Bearer",
+    "expiresIn": 3600,
+    "user": {
+      "userId": 10,
+      "email": "user@kakao.com",
+      "nickname": "카카오사용자",
+      "profileImageUrl": "https://k.kakaocdn.net/...",
+      "loginType": "KAKAO",
+      "isNewUser": true
+    }
+  },
+  "message": "카카오 로그인 성공"
+}
+```
+
+**응답 필드**:
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `isNewUser` | boolean | 신규 가입 여부 (true: 신규, false: 기존) |
+
+**참고**:
+- 이메일 미동의 시: `kakao_{카카오ID}@kakao.user` 형식으로 저장
+- 프로필 미동의 시: 닉네임은 이메일 기반으로 생성, 프로필 이미지는 null
+
+**에러 응답**:
+- `400 Bad Request`: Access Token 누락
+- `401 Unauthorized`: 카카오 토큰 검증 실패
+- `403 Forbidden`: 탈퇴한 회원의 로그인 시도
+- `500 Internal Server Error`: 카카오 API 통신 오류
+
+**참고**: Flutter에서는 `kakao_flutter_sdk_user` 패키지를 사용하여 클라이언트에서 카카오 로그인 후 Access Token을 전달합니다.
+
+---
+
 ## 🔄 토큰 관리 API
 
 ### 1. 토큰 갱신 (Refresh Token)
@@ -487,7 +561,7 @@ Authorization: Bearer {access_token}
 
 **엔드포인트**: `PUT /api/users/me/password`
 
-**설명**: 자체 로그인 사용자의 비밀번호를 변경합니다. (구글 로그인 사용자는 접근 불가)
+**설명**: 자체 로그인 사용자의 비밀번호를 변경합니다. (구글/카카오 소셜 로그인 사용자는 접근 불가)
 
 **인증 필요**: ✅ (Access Token 필요)
 
@@ -511,7 +585,7 @@ Authorization: Bearer {access_token}
 **에러 응답**:
 - `400 Bad Request`: 현재 비밀번호 불일치 또는 새 비밀번호 유효성 오류
 - `401 Unauthorized`: 유효하지 않은 Access Token
-- `403 Forbidden`: 구글 로그인 사용자가 접근 시도
+- `403 Forbidden`: 구글/카카오 소셜 로그인 사용자가 접근 시도
 
 ---
 
@@ -551,11 +625,13 @@ Authorization: Bearer {access_token}
 | 401 | `INVALID_CREDENTIALS` | 이메일 또는 비밀번호 불일치 |
 | 401 | `TOKEN_EXPIRED` | 토큰 만료 |
 | 401 | `GOOGLE_TOKEN_INVALID` | 구글 토큰 검증 실패 |
+| 401 | `KAKAO_TOKEN_INVALID` | 카카오 토큰 검증 실패 |
 | 404 | `USER_NOT_FOUND` | 사용자를 찾을 수 없음 |
 | 409 | `EMAIL_ALREADY_EXISTS` | 이미 존재하는 이메일 |
 | 409 | `NICKNAME_ALREADY_EXISTS` | 이미 존재하는 닉네임 |
 | 500 | `INTERNAL_SERVER_ERROR` | 서버 내부 오류 |
 | 500 | `GOOGLE_API_ERROR` | 구글 API 통신 오류 |
+| 500 | `KAKAO_API_ERROR` | 카카오 API 통신 오류 |
 
 ### 에러 응답 예시
 
@@ -587,8 +663,9 @@ Authorization: Bearer {access_token}
   "nickname": "농구왕",
   "phoneNumber": "010-1234-5678",
   "profileImageUrl": "https://...",
-  "loginType": "EMAIL",  // EMAIL, GOOGLE
+  "loginType": "EMAIL",  // EMAIL, GOOGLE, KAKAO
   "googleId": null,  // 구글 로그인 시 Google User ID
+  "kakaoId": null,   // 카카오 로그인 시 Kakao User ID
   "createdAt": "2026-01-15T10:30:00",
   "updatedAt": "2026-01-15T10:30:00"
 }
@@ -649,6 +726,7 @@ Authorization: Bearer {access_token}
 |------|------|----------|--------|
 | 1.0.0 | 2026-01 | 초기 API 명세서 작성 | 팀 |
 | 1.0.1 | 2026-02 | User API 명세서 작성 | 팀 |
+| 1.0.2 | 2026-02 | 카카오 로그인 API 추가 | 팀 |
 
 ---
 

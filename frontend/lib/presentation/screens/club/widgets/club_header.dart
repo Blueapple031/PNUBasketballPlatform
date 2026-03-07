@@ -23,7 +23,15 @@ class ClubHeader extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 32,
-            backgroundImage: NetworkImage(club.logoUrl),
+            backgroundImage: club.logoUrl != null && club.logoUrl!.isNotEmpty
+                ? NetworkImage(club.logoUrl!)
+                : null,
+            child: club.logoUrl == null || club.logoUrl!.isEmpty
+                ? Text(
+                    club.name.isNotEmpty ? club.name[0] : '?',
+                    style: const TextStyle(fontSize: 24),
+                  )
+                : null,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -31,7 +39,7 @@ class ClubHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  club.clubName,
+                  club.name,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -40,7 +48,7 @@ class ClubHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  club.schoolName,
+                  '부산대학교',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.subText,
@@ -48,29 +56,54 @@ class ClubHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '회원 ${club.memberCount}명 · 창설 ${club.foundedYear}',
+                  '회원 ${club.memberCount}명',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.subText,
                   ),
                 ),
-                const SizedBox(height: 12),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.classTeal.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Captain ${club.captain.name}',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.classTeal,
+                if (club.captainName != null && club.captainName!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.classTeal.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (club.captainProfileImageUrl != null &&
+                            club.captainProfileImageUrl!.isNotEmpty)
+                          CircleAvatar(
+                            radius: 10,
+                            backgroundImage:
+                                NetworkImage(club.captainProfileImageUrl!),
+                          )
+                        else
+                          CircleAvatar(
+                            radius: 10,
+                            child: Text(
+                              club.captainName!.isNotEmpty
+                                  ? club.captainName![0]
+                                  : '?',
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '동아리장 ${club.captainName}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.classTeal,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

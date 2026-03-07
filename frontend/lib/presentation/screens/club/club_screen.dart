@@ -1,49 +1,123 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/club_model.dart';
+import '../../providers/auth_provider.dart';
+import 'widgets/club_header.dart';
+import 'widgets/club_info_section.dart';
+import 'widgets/club_member_list.dart';
 import 'club_detail_screen.dart';
 
-class ClubScreen extends StatelessWidget {
+class ClubScreen extends StatefulWidget {
   const ClubScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final clubs = ClubModel.dummyList();
+  State<ClubScreen> createState() => _ClubScreenState();
+}
 
-    final sections = <_ClubSectionData>[
+class _ClubScreenState extends State<ClubScreen> {
+  ClubModel? _myClub;
+  List<ClubModel> _allClubs = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  // 데이터 로드: 내 동아리 정보와 탐색용 동아리 목록을 가져옵니다.
+  Future<void> _loadData() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+
+    final authProvider = context.read<AuthProvider>();
+
+    // API 호출 (Provider에 해당 메서드들이 구현되어 있어야 함)
+    final myClub = await authProvider.getMyClub();
+    // final allClubs = await authProvider.getAllClubs(); // 필요 시 구현
+
+    if (mounted) {
+      setState(() {
+        _myClub = myClub;
+        _allClubs = []; // 여기에 전체 동아리 리스트 할당
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // 내 동아리가 있다면 탭 뷰를 포함한 상세 화면을 보여줌
+    if (_myClub != null) {
+      return _buildMyClubDetailView(_myClub!);
+    }
+
+    // 내 동아리가 없다면 동아리 탐색 목록을 보여줌
+    return _buildClubDiscoveryView();
+  }
+
+  // --- 1. 내 동아리 상세 뷰 (가입된 경우) ---
+  Widget _buildMyClubDetailView(ClubModel club) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: AppColors.pageBg,
+        appBar: AppBar(
+          backgroundColor: AppColors.headerGrey,
+          elevation: 0,
+          title: const Text(
+            '내 동아리',
+            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          bottom: const TabBar(
+            indicatorColor: AppColors.activeBlue,
+            labelColor: Colors.white,
+            unselectedLabelColor: AppColors.subText,
+            tabs: [
+              Tab(text: '정보'),
+              Tab(text: '멤버'),
+            ],
+          ),
+        ),
+        body: Column(
+          children: [
+            ClubHeader(club: club), // 별도 구현된 위젯
+            Expanded(
+              child: TabBarView(
+                children: [
+                  SingleChildScrollView(child: ClubInfoSection(club: club)),
+                  const ClubMemberList(members: []), // 실제 멤버 리스트 전달 필요
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- 2. 동아리 탐색 뷰 (가입 안 된 경우) ---
+  Widget _buildClubDiscoveryView() {
+    final sections = [
       _ClubSectionData(
         title: '중앙동아리',
         subtitle: '학교 대표 동아리',
         accentColor: AppColors.activeBlue,
         icon: Icons.verified,
-        clubs: clubs
-            .where((club) => club.category == ClubCategory.central)
-            .toList(growable: false),
+        clubs: _allClubs, // 실제로는 필터링 로직 추가 (e.g. .where(...) 사용)
       ),
       _ClubSectionData(
         title: '과동아리',
         subtitle: '학과 중심 동아리',
-        accentColor: AppColors.classTeal,
+        accentColor: Colors.teal,
         icon: Icons.school,
-        clubs: clubs
-            .where((club) => club.category == ClubCategory.department)
-            .toList(growable: false),
-      ),
-      _ClubSectionData(
-        title: '소모임',
-        subtitle: '소규모 친목 모임',
-        accentColor: AppColors.alertOrange,
-        icon: Icons.groups_2,
-        clubs: clubs
-            .where((club) => club.category == ClubCategory.smallGroup)
-            .toList(growable: false),
-      ),
-      const _ClubSectionData(
-        title: '외부 동아리',
-        subtitle: '외부 리그 및 교류 팀',
-        accentColor: AppColors.subText,
-        icon: Icons.public,
         clubs: [],
       ),
     ];
@@ -52,96 +126,52 @@ class ClubScreen extends StatelessWidget {
       backgroundColor: AppColors.pageBg,
       appBar: AppBar(
         backgroundColor: AppColors.headerGrey,
-        elevation: 0,
-        title: const Text(
-          '동아리',
-          style: TextStyle(
-            color: AppColors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+        title: const Text('동아리 탐색', style: TextStyle(color: Colors.white)),
+      ),
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        child: ListView.builder(
+          itemCount: sections.length + 1,
+          itemBuilder: (context, index) {
+            if (index == 0) return _buildDiscoveryHeader();
+            return _ClubSection(
+              data: sections[index - 1],
+              onTapClub: (club) => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ClubDetailScreen(clubId: club.clubId)),
+              ),
+            );
+          },
         ),
       ),
-      body: clubs.isEmpty
-          ? const Center(
-              child: Text(
-                '표시할 동아리가 없습니다.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.subText,
-                ),
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              itemCount: sections.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return Container(
-                    margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                    decoration: BoxDecoration(
-                      color: AppColors.headerGrey.withValues(alpha: 0.15),
-                    ),
-                    child: const Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.info_outline,
-                          size: 18,
-                          color: AppColors.headerGrey,
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '이 곳에서 중앙동아리, 과동아리, 소모임, 외부 동아리의 정보를 확인할 수 있습니다.',
-                            style: TextStyle(
-                              color: AppColors.titleText,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              height: 1.35,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                final section = sections[index - 1];
-                return _ClubSection(
-                  title: section.title,
-                  subtitle: section.subtitle,
-                  accentColor: section.accentColor,
-                  icon: section.icon,
-                  clubs: section.clubs,
-                  onTapClub: (club) => _openClubDetail(context, club),
-                );
-              },
-            ),
     );
   }
 
-  void _openClubDetail(BuildContext context, ClubModel club) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => ClubDetailScreen(
-          clubId: club.clubId,
-          slug: club.slug,
-        ),
+  Widget _buildDiscoveryHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.headerGrey.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Text(
+        '가입된 동아리가 없습니다.\n아래 카테고리에서 새로운 팀을 찾아보세요!',
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
     );
   }
 }
 
+// --- 보조 위젯 및 데이터 모델 ---
+
 class _ClubSectionData {
-  final String title;
-  final String subtitle;
+  final String title, subtitle;
   final Color accentColor;
   final IconData icon;
   final List<ClubModel> clubs;
 
-  const _ClubSectionData({
+  _ClubSectionData({
     required this.title,
     required this.subtitle,
     required this.accentColor,
@@ -151,112 +181,51 @@ class _ClubSectionData {
 }
 
 class _ClubSection extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final Color accentColor;
-  final IconData icon;
-  final List<ClubModel> clubs;
+  final _ClubSectionData data;
   final ValueChanged<ClubModel> onTapClub;
 
-  const _ClubSection({
-    required this.title,
-    required this.subtitle,
-    required this.accentColor,
-    required this.icon,
-    required this.clubs,
-    required this.onTapClub,
-  });
+  const _ClubSection({required this.data, required this.onTapClub});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              accentColor.withValues(alpha: 0.14),
-              accentColor.withValues(alpha: 0.06),
-            ],
-          ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [data.accentColor.withValues(alpha: 0.15), Colors.transparent],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
               children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 16,
-                    color: accentColor,
-                  ),
-                ),
+                Icon(data.icon, color: data.accentColor),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          color: AppColors.titleText,
-                          fontSize: 19,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          color: AppColors.subText,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                Text(data.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ],
             ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 128,
-              child: clubs.isEmpty
-                  ? const Center(
-                      child: Text(
-                        '등록된 동아리가 없습니다.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.subText,
-                        ),
-                      ),
-                    )
-                  : ListView.separated(
-                      padding: EdgeInsets.zero,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: clubs.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 10),
-                      itemBuilder: (context, index) {
-                        final club = clubs[index];
-                        return _ClubTile(
-                          club: club,
-                          accentColor: accentColor,
-                          onTap: () => onTapClub(club),
-                        );
-                      },
-                    ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 130,
+            child: data.clubs.isEmpty
+                ? const Center(child: Text('해당 카테고리에 동아리가 없습니다.'))
+                : ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: data.clubs.length,
+              itemBuilder: (context, i) => _ClubTile(
+                club: data.clubs[i],
+                color: data.accentColor,
+                onTap: () => onTapClub(data.clubs[i]),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -264,63 +233,38 @@ class _ClubSection extends StatelessWidget {
 
 class _ClubTile extends StatelessWidget {
   final ClubModel club;
-  final Color accentColor;
+  final Color color;
   final VoidCallback onTap;
 
-  const _ClubTile({
-    required this.club,
-    required this.accentColor,
-    required this.onTap,
-  });
+  const _ClubTile({required this.club, required this.color, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: '${club.clubName} 상세 보기',
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 110,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          onTap: onTap,
-          child: Ink(
-            width: 110,
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: accentColor.withValues(alpha: 0.45)),
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: 0.12),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 25,
+              backgroundImage: club.logoUrl != null ? NetworkImage(club.logoUrl!) : null,
+              child: club.logoUrl == null ? const Icon(Icons.group) : null,
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: accentColor.withValues(alpha: 0.18),
-                  backgroundImage: NetworkImage(club.logoUrl),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  club.clubName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.titleText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+            const SizedBox(height: 8),
+            Text(
+              club.name, // 모델의 name 필드 사용
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
+          ],
         ),
       ),
     );

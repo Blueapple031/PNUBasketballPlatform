@@ -3,8 +3,8 @@ package com.pnu.basketball.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,69 +14,104 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class User {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long userId;
-    
+
     @Column(nullable = false, unique = true)
     private String email;
-    
-    private String password;  // 구글 로그인 사용자는 NULL
-    
-    @Column(nullable = false, unique = true, length = 50)
-    private String nickname;
-    
+
+    private String password;
+
+    @Column(name = "real_name", nullable = false, length = 50)
+    private String realName;
+
     @Column(name = "phone_number")
     private String phoneNumber;
-    
+
+    @Column(name = "phone_number_verified_at")
+    private LocalDateTime phoneNumberVerifiedAt;
+
     @Column(name = "profile_image_url", length = 500)
     private String profileImageUrl;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "login_type", nullable = false)
     @Builder.Default
     private LoginType loginType = LoginType.EMAIL;
-    
+
     @Column(name = "google_id", unique = true)
     private String googleId;
-    
+
+    @Column(name = "kakao_id", unique = true)
+    private String kakaoId;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "is_pnu_student", nullable = false)
+    @Builder.Default
+    private Boolean isPnuStudent = false;
+
+    @Column(name = "department", length = 100)
+    private String department;
+
+    @Column(name = "student_id", length = 20)
+    private String studentId;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer wins = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer games = 0;
+
+    @Column(name = "total_score", nullable = false)
+    @Builder.Default
+    private Integer totalScore = 0;
+
+    @Column(name = "virtual_currency", nullable = false)
+    @Builder.Default
+    private Integer virtualCurrency = 0;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 
-    @Column(name = "last_login_at")
-    private LocalDateTime lastLoginAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-    
-    public void updateProfile(String nickname, String phoneNumber, String profileImageUrl) {
-        if (nickname != null) {
-            this.nickname = nickname;
-        }
-        if (phoneNumber != null) {
-            this.phoneNumber = phoneNumber;
-        }
-        if (profileImageUrl != null) {
-            this.profileImageUrl = profileImageUrl;
-        }
+    public void updateProfile(String realName, String phoneNumber, String profileImageUrl) {
+        if (realName != null) this.realName = realName;
+        if (phoneNumber != null) this.phoneNumber = phoneNumber;
+        if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
     }
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
     }
 
-    public void softDelete() {
-        this.deletedAt = LocalDateTime.now();
+    public void completeProfile(String realName, LocalDate dateOfBirth, Boolean isPnuStudent, String department, String studentId) {
+        if (realName != null) this.realName = realName;
+        if (dateOfBirth != null) this.dateOfBirth = dateOfBirth;
+        if (isPnuStudent != null) this.isPnuStudent = isPnuStudent;
+        if (department != null) this.department = department;
+        if (studentId != null) this.studentId = studentId;
     }
 
-    public void updateLastLoginTime() {
-        this.lastLoginAt = LocalDateTime.now();
+    public void verifyPhoneNumber() {
+        this.phoneNumberVerifiedAt = LocalDateTime.now();
+    }
+
+    public void linkGoogle(String profileImageUrl, String googleId) {
+        if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
+        this.googleId = googleId;
+        this.loginType = LoginType.GOOGLE;
+    }
+
+    public void linkKakao(String profileImageUrl, String kakaoId) {
+        if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
+        this.kakaoId = kakaoId;
+        this.loginType = LoginType.KAKAO;
     }
 }

@@ -1,0 +1,30 @@
+# 메인 설정 파일
+# application-secret.yml은 spring.profiles.include로 로드됩니다.
+# application-secret.yml에는 jwt.secret, DB 비밀번호 등 민감 정보를 두세요.
+#
+# 기본값: local 프로파일 (Redis 없이 인메모리 토큰 저장)
+# 운영 배포 시: --spring.profiles.active=prod 또는 SPRING_PROFILES_ACTIVE=prod
+
+spring:
+  profiles:
+    active: local
+    include: secret
+
+# JWT 토큰 만료 시간 (민감하지 않은 값 - application-secret.yml에 jwt.secret 필요)
+jwt:
+  access-token-expiration: 3600000    # 1시간 (밀리초)
+  refresh-token-expiration: 604800000  # 7일 (밀리초)
+
+# 로깅 설정 (디버깅 시 로그 확인용)
+logging:
+  level:
+    root: INFO
+    com.pnu.basketball: DEBUG                    # 우리 앱 전체 DEBUG
+    com.pnu.basketball.service.auth: DEBUG        # 인증 서비스 상세
+    org.springframework.web: DEBUG                # HTTP 요청/응답
+    org.springframework.security: DEBUG            # 인증/인가 흐름
+  file:
+    name: logs/application.log                   # 파일로도 저장 (backend/logs/)
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"

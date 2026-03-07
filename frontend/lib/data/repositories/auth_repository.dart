@@ -1,15 +1,21 @@
 import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
+import '../models/club_model.dart';
 import '../services/auth_service.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 class AuthRepository {
   final AuthService authService;
   final FlutterSecureStorage secureStorage;
   final GoogleSignIn googleSignIn;
   static const String _googleWebClientId =
-      String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
+      String.fromEnvironment(
+        'GOOGLE_WEB_CLIENT_ID',
+        defaultValue: '234779227231-11ip2gu9o7bt1absesjmh1u58ovno9hv.apps.googleusercontent.com',
+      );
 
   AuthRepository({
     AuthService? authService,
@@ -30,22 +36,43 @@ class AuthRepository {
   Future<AuthResponseModel> signup({
     required String email,
     required String password,
-    required String nickname,
+    required String realName,
     String? phoneNumber,
+    required String dateOfBirth,
+    required bool isPnuStudent,
+    String? department,
+    String? studentId,
   }) async {
     final response = await authService.signup(
       email: email,
       password: password,
-      nickname: nickname,
+      realName: realName,
       phoneNumber: phoneNumber,
+      dateOfBirth: dateOfBirth,
+      isPnuStudent: isPnuStudent,
+      department: department,
+      studentId: studentId,
     );
 
     if (response.success && response.data != null) {
       await _saveTokens(response.data!);
       return response.data!;
     } else {
-      throw Exception(response.error?['message'] ?? '회원가입 실패');
+      throw Exception(_buildErrorMessage(response.error, '회원가입 실패'));
     }
+  }
+
+  String _buildErrorMessage(Map<String, dynamic>? error, String fallback) {
+    if (error == null) return fallback;
+    final details = error['details'] as Map<String, dynamic>?;
+    if (details != null && details.isNotEmpty) {
+      final messages = details.values
+          .where((v) => v != null && v.toString().isNotEmpty)
+          .map((v) => v.toString())
+          .toList();
+      if (messages.isNotEmpty) return messages.join(' ');
+    }
+    return error['message']?.toString() ?? fallback;
   }
 
   Future<AuthResponseModel> login({
@@ -61,7 +88,39 @@ class AuthRepository {
       await _saveTokens(response.data!);
       return response.data!;
     } else {
-      throw Exception(response.error?['message'] ?? '로그인 실패');
+      throw Exception(_buildErrorMessage(response.error, '로그인 실패'));
+    }
+  }
+
+  // 카카오 로그인
+  Future<AuthResponseModel> kakaoLogin() async {
+    try {
+      OAuthToken token;
+      if (await isKakaoTalkInstalled()) {
+        try {
+          token = await UserApi.instance.loginWithKakaoTalk();
+        } on PlatformException catch (e) {
+          // 카카오톡 설치됐지만 계정 미연결, 또는 사용자 취소 → 카카오계정 로그인으로 전환
+          if (e.code == 'NotSupportError' || e.code == 'CANCELED') {
+            token = await UserApi.instance.loginWithKakaoAccount();
+          } else {
+            rethrow;
+          }
+        }
+      } else {
+        token = await UserApi.instance.loginWithKakaoAccount();
+      }
+
+      final response = await authService.kakaoLogin(accessToken: token.accessToken);
+
+      if (response.success && response.data != null) {
+        await _saveTokens(response.data!);
+        return response.data!;
+      } else {
+        throw Exception(response.error?['message'] ?? '카카오 로그인 실패');
+      }
+    } catch (e) {
+      throw Exception('카카오 로그인 중 오류 발생: $e');
     }
   }
 
@@ -93,6 +152,13 @@ class AuthRepository {
         throw Exception(response.error?['message'] ?? '구글 로그인 실패');
       }
     } catch (e) {
+      final msg = e.toString();
+      if (msg.contains('ApiException: 7') || msg.contains('network_error')) {
+        throw Exception(
+          '네트워크 연결을 확인해주세요. '
+          '인터넷이 연결되어 있는지, Wi-Fi/데이터를 전환해보세요.',
+        );
+      }
       throw Exception('구글 로그인 중 오류 발생: $e');
     }
   }
@@ -145,6 +211,9 @@ class AuthRepository {
     } finally {
       await clearTokens();
       await googleSignIn.signOut();
+      try {
+        await UserApi.instance.logout();
+      } catch (_) {}
     }
   }
 
@@ -214,12 +283,86 @@ class AuthRepository {
     return false;
   }
 
-  Future<bool> checkNicknameAvailability(String nickname) async {
-    final response = await authService.checkNickname(nickname: nickname);
+  // 추가 정보 입력 (구글 신규 사용자)
+  Future<UserModel> completeProfile({
+    required String? realName,
+    required String dateOfBirth,
+    required bool isPnuStudent,
+    String? department,
+    String? studentId,
+  }) async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null) throw Exception('로그인이 필요합니다.');
+
+    final response = await authService.completeProfile(
+      accessToken: accessToken,
+      realName: realName,
+      dateOfBirth: dateOfBirth,
+      isPnuStudent: isPnuStudent,
+      department: department,
+      studentId: studentId,
+    );
+
     if (response.success && response.data != null) {
-      return response.data!['available'] as bool;
+      return response.data!;
     }
-    return false;
+    throw Exception(response.error?['message'] ?? '추가 정보 저장 실패');
+  }
+
+  // 동아리 선택
+  Future<ClubSelectionStatusModel> getClubSelectionStatus() async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null) throw Exception('로그인이 필요합니다.');
+
+    final response = await authService.getClubSelectionStatus(
+      accessToken: accessToken,
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+    throw Exception(response.error?['message'] ?? '동아리 선택 상태 조회 실패');
+  }
+
+  Future<List<ClubModel>> getClubs() async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null) throw Exception('로그인이 필요합니다.');
+
+    final response = await authService.getClubs(accessToken: accessToken);
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+    throw Exception(response.error?['message'] ?? '동아리 목록 조회 실패');
+  }
+
+  /// 내 동아리 조회. 동아리 미가입 시 null 반환
+  Future<ClubModel?> getMyClub() async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null) throw Exception('로그인이 필요합니다.');
+
+    final response = await authService.getMyClub(accessToken: accessToken);
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+    return null;
+  }
+
+  Future<ClubSelectResultModel> selectClub(String clubId, {String? role}) async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null) throw Exception('로그인이 필요합니다.');
+
+    final response = await authService.selectClub(
+      accessToken: accessToken,
+      clubId: clubId,
+      role: role,
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+    throw Exception(_buildErrorMessage(response.error, '동아리 가입 실패'));
   }
 }
 
