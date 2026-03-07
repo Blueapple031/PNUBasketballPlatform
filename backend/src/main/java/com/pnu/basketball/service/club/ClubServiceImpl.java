@@ -6,6 +6,7 @@ import com.pnu.basketball.domain.ClubRole;
 import com.pnu.basketball.domain.User;
 import com.pnu.basketball.dto.request.ClubSelectRequest;
 import com.pnu.basketball.dto.response.ClubListResponse;
+import com.pnu.basketball.dto.response.ClubMemberResponse;
 import com.pnu.basketball.dto.response.ClubSelectResponse;
 import com.pnu.basketball.dto.response.ClubSelectionStatusResponse;
 import com.pnu.basketball.exception.CustomException;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -107,6 +109,39 @@ public class ClubServiceImpl implements ClubService {
                 .orElseThrow(() -> new CustomException(ErrorCode.CLUB_NOT_FOUND));
         Club club = member.getClub();
         return toClubListResponse(club);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ClubMemberResponse> getClubMembers(UUID clubId) {
+        if (!clubRepository.existsById(clubId)) {
+            throw new CustomException(ErrorCode.CLUB_NOT_FOUND);
+        }
+        return clubMemberRepository.findByClub_Id(clubId).stream()
+                .map(this::toClubMemberResponse)
+                .collect(Collectors.toList());
+    }
+
+    private ClubMemberResponse toClubMemberResponse(ClubMember clubMember) {
+        User user = clubMember.getUser();
+        String profileImageUrl = user.getProfileImageUrl();
+        if (profileImageUrl == null) {
+            profileImageUrl = "";
+        }
+        return ClubMemberResponse.builder()
+                .name(user.getRealName())
+                .role(toRoleDisplayName(clubMember.getRole()))
+                .profileImageUrl(profileImageUrl)
+                .build();
+    }
+
+    private String toRoleDisplayName(ClubRole role) {
+        return switch (role) {
+            case PRESIDENT -> "주장";
+            case MANAGER -> "매니저";
+            case OB -> "졸업생";
+            case MEMBER -> "동아리원";
+        };
     }
 
     private ClubListResponse toClubListResponse(Club club) {
