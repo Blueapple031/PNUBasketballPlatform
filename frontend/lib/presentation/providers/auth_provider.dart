@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../data/models/auth_response_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/club_model.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -253,6 +254,20 @@ class AuthProvider with ChangeNotifier {
       return await authRepository.getClubs();
     } catch (e) {
       _errorMessage = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// 내 동아리 조회. 동아리 미가입 시 null
+  Future<ClubModel?> getMyClub() async {
+    try {
+      _errorMessage = null;
+      final club = await authRepository.getMyClub();
+      notifyListeners();
+      return club;
+    } catch (e) {
+      _errorMessage = _extractErrorMessage(e);
       notifyListeners();
       return null;
     }

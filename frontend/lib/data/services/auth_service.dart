@@ -167,6 +167,16 @@ class AuthService {
     );
   }
 
+  Future<ApiResponseModel<ClubModel>> getMyClub({
+    required String accessToken,
+  }) async {
+    return await apiService.get<ClubModel>(
+      ApiEndpoints.clubMe,
+      headers: {'Authorization': 'Bearer $accessToken'},
+      fromJson: (json) => ClubModel.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
   Future<ApiResponseModel<ClubSelectResultModel>> selectClub({
     required String accessToken,
     required String clubId,

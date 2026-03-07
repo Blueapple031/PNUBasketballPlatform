@@ -21,6 +21,7 @@ class ApiEndpoints {
 
   // Club endpoints
   static const String clubs = '/api/clubs';
+  static const String clubMe = '/api/clubs/me';
   static const String clubSelect = '/api/clubs/select';
 
   // User endpoints

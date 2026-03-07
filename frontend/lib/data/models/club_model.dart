@@ -11,6 +11,8 @@ class ClubModel {
   final String? logoUrl;
   final String? introduction;
   final int memberCount;
+  final String? captainName;
+  final String? captainProfileImageUrl;
 
   ClubModel({
     required this.clubId,
@@ -18,6 +20,8 @@ class ClubModel {
     this.logoUrl,
     this.introduction,
     required this.memberCount,
+    this.captainName,
+    this.captainProfileImageUrl,
   });
 
   factory ClubModel.fromJson(Map<String, dynamic> json) =>

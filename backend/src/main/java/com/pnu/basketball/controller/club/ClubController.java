@@ -26,6 +26,12 @@ public class ClubController {
         return ResponseEntity.ok(ApiResponse.success(clubs, "동아리 목록 조회 성공"));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<ClubListResponse>> getMyClub(@AuthenticationPrincipal Long userId) {
+        ClubListResponse club = clubService.getMyClub(userId);
+        return ResponseEntity.ok(ApiResponse.success(club, "내 동아리 조회 성공"));
+    }
+
     @PostMapping("/select")
     public ResponseEntity<ApiResponse<ClubSelectResponse>> selectClub(
             @AuthenticationPrincipal Long userId,

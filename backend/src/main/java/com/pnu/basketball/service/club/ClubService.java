@@ -11,4 +11,5 @@ public interface ClubService {
     List<ClubListResponse> getClubs();
     ClubSelectResponse selectClub(Long userId, ClubSelectRequest request);
     ClubSelectionStatusResponse getClubSelectionStatus(Long userId);
+    ClubListResponse getMyClub(Long userId);
 }

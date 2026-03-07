@@ -32,13 +32,7 @@ public class ClubServiceImpl implements ClubService {
     @Transactional(readOnly = true)
     public List<ClubListResponse> getClubs() {
         return clubRepository.findAll().stream()
-                .map(club -> ClubListResponse.builder()
-                        .clubId(club.getId())
-                        .name(club.getName())
-                        .logoUrl(club.getLogoUrl())
-                        .introduction(club.getIntroduction())
-                        .memberCount(clubMemberRepository.countByClub_Id(club.getId()))
-                        .build())
+                .map(club -> toClubListResponse(club))
                 .collect(Collectors.toList());
     }
 
@@ -103,6 +97,33 @@ public class ClubServiceImpl implements ClubService {
                 .needsClubSelection(needsClubSelection)
                 .isPnuStudent(user.getIsPnuStudent())
                 .currentClub(currentClub)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ClubListResponse getMyClub(Long userId) {
+        ClubMember member = clubMemberRepository.findByUserUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CLUB_NOT_FOUND));
+        Club club = member.getClub();
+        return toClubListResponse(club);
+    }
+
+    private ClubListResponse toClubListResponse(Club club) {
+        String captainName = null;
+        String captainProfileImageUrl = null;
+        if (club.getCaptain() != null) {
+            captainName = club.getCaptain().getRealName();
+            captainProfileImageUrl = club.getCaptain().getProfileImageUrl();
+        }
+        return ClubListResponse.builder()
+                .clubId(club.getId())
+                .name(club.getName())
+                .logoUrl(club.getLogoUrl())
+                .introduction(club.getIntroduction())
+                .memberCount(clubMemberRepository.countByClub_Id(club.getId()))
+                .captainName(captainName)
+                .captainProfileImageUrl(captainProfileImageUrl)
                 .build();
     }
 }

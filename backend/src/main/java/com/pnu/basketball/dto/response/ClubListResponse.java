@@ -17,4 +17,6 @@ public class ClubListResponse {
     private String logoUrl;
     private String introduction;
     private long memberCount;
+    private String captainName;
+    private String captainProfileImageUrl;
 }
