@@ -55,6 +55,10 @@ public class User {
     @Builder.Default
     private Boolean isPnuStudent = false;
 
+    @Column(name = "is_admin", nullable = false)
+    @Builder.Default
+    private Boolean isAdmin = false;
+
     @Column(name = "department", length = 100)
     private String department;
 
