@@ -4,6 +4,7 @@ import com.pnu.basketball.domain.MatchState;
 import com.pnu.basketball.dto.request.*;
 import com.pnu.basketball.dto.response.*;
 import com.pnu.basketball.service.admin.AdminService;
+import com.pnu.basketball.service.clubcourt.ClubCourtSlotService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class AdminController {
 
     private final AdminService adminService;
+    private final ClubCourtSlotService clubCourtSlotService;
 
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<AdminStatsResponse>> getStats() {
@@ -84,6 +86,37 @@ public class AdminController {
             @Valid @RequestBody AdminSetCaptainRequest request) {
         adminService.setCaptain(id, request);
         return ResponseEntity.ok(ApiResponse.success(null, "동아리장 설정 완료"));
+    }
+
+    @GetMapping("/clubs/{id}/court-slots")
+    public ResponseEntity<ApiResponse<java.util.List<ClubCourtSlotResponse>>> getCourtSlots(@PathVariable UUID id) {
+        java.util.List<ClubCourtSlotResponse> slots = clubCourtSlotService.getCourtSlotsByClub(id);
+        return ResponseEntity.ok(ApiResponse.success(slots, "코트 사용시간 조회 성공"));
+    }
+
+    @PostMapping("/clubs/{id}/court-slots")
+    public ResponseEntity<ApiResponse<ClubCourtSlotResponse>> createCourtSlot(
+            @PathVariable UUID id,
+            @Valid @RequestBody ClubCourtSlotCreateRequest request) {
+        ClubCourtSlotResponse response = clubCourtSlotService.createCourtSlotByAdmin(id, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "코트 사용시간이 등록되었습니다."));
+    }
+
+    @PutMapping("/clubs/{id}/court-slots/{slotId}")
+    public ResponseEntity<ApiResponse<ClubCourtSlotResponse>> updateCourtSlot(
+            @PathVariable UUID id,
+            @PathVariable UUID slotId,
+            @Valid @RequestBody ClubCourtSlotUpdateRequest request) {
+        ClubCourtSlotResponse response = clubCourtSlotService.updateCourtSlotByAdmin(id, slotId, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "코트 사용시간이 수정되었습니다."));
+    }
+
+    @DeleteMapping("/clubs/{id}/court-slots/{slotId}")
+    public ResponseEntity<ApiResponse<Void>> deleteCourtSlot(
+            @PathVariable UUID id,
+            @PathVariable UUID slotId) {
+        clubCourtSlotService.deleteCourtSlotByAdmin(id, slotId);
+        return ResponseEntity.ok(ApiResponse.success(null, "코트 사용시간이 삭제되었습니다."));
     }
 
     @GetMapping("/matches")

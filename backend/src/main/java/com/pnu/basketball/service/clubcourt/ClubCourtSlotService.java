@@ -9,7 +9,11 @@ import java.util.UUID;
 
 public interface ClubCourtSlotService {
     List<ClubCourtSlotResponse> getCourtSlotsByClub(UUID clubId);
-    ClubCourtSlotResponse createCourtSlot(Long userId, UUID clubId, ClubCourtSlotCreateRequest request);
-    ClubCourtSlotResponse updateCourtSlot(Long userId, UUID clubId, UUID slotId, ClubCourtSlotUpdateRequest request);
-    void deleteCourtSlot(Long userId, UUID clubId, UUID slotId);
+
+    /** 관리자 전용: 동아리장/매니저 검증 없이 생성 */
+    ClubCourtSlotResponse createCourtSlotByAdmin(UUID clubId, ClubCourtSlotCreateRequest request);
+    /** 관리자 전용: 동아리장/매니저 검증 없이 수정 */
+    ClubCourtSlotResponse updateCourtSlotByAdmin(UUID clubId, UUID slotId, ClubCourtSlotUpdateRequest request);
+    /** 관리자 전용: 동아리장/매니저 검증 없이 삭제 */
+    void deleteCourtSlotByAdmin(UUID clubId, UUID slotId);
 }
