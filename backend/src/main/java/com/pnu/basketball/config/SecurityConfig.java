@@ -1,5 +1,6 @@
 package com.pnu.basketball.config;
 
+import com.pnu.basketball.config.filter.AdminAccessFilter;
 import com.pnu.basketball.config.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,7 @@ import java.util.List;
 public class SecurityConfig {
     
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AdminAccessFilter adminAccessFilter;
     
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -47,7 +49,8 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(adminAccessFilter, JwtAuthenticationFilter.class);
         
         return http.build();
     }

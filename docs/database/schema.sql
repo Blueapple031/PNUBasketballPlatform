@@ -41,6 +41,7 @@ CREATE TABLE users (
     kakao_id                VARCHAR(255) UNIQUE,
     date_of_birth           DATE,
     is_pnu_student          BOOLEAN NOT NULL DEFAULT false,
+    is_admin                BOOLEAN NOT NULL DEFAULT false,
     department              VARCHAR(100),
     student_id              VARCHAR(20),
     wins                    INTEGER NOT NULL DEFAULT 0,
