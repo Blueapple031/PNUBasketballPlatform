@@ -16,8 +16,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ============================================================
 -- ENUM
 -- ============================================================
-CREATE TYPE match_state AS ENUM ('SCHEDULED', 'READY', 'ONGOING', 'DONE', 'CANCELLED');
+CREATE TYPE match_state AS ENUM ('SCHEDULED', 'PENDING', 'CONFIRMED', 'READY', 'ONGOING', 'DONE', 'CANCELLED');
 CREATE TYPE club_role AS ENUM ('PRESIDENT', 'MEMBER', 'OB', 'MANAGER');
+CREATE TYPE game_format AS ENUM ('THREE_VS_THREE', 'FOUR_VS_FOUR', 'FIVE_VS_FIVE');
+CREATE TYPE match_purpose AS ENUM ('CLUB_PRACTICE', 'CASUAL', 'GUEST_NEEDED', 'FRIENDLY');
 
 -- Hibernate @Enumerated(EnumType.STRING)이 VARCHAR로 전송하므로,
 -- PostgreSQL이 자동으로 club_role로 캐스팅할 수 있도록 implicit cast 등록
@@ -85,6 +87,34 @@ CREATE INDEX idx_club_members_user_id ON club_members(user_id);
 CREATE INDEX idx_club_members_club_id ON club_members(club_id);
 
 -- ============================================================
+-- venues (경기장/코트)
+-- ============================================================
+CREATE TABLE venues (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name            VARCHAR(100) NOT NULL UNIQUE,
+    description     TEXT,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_venues_name ON venues(name);
+
+-- ============================================================
+-- club_court_slots (동아리별 코트 사용시간 - 매주 반복)
+-- ============================================================
+CREATE TABLE club_court_slots (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id         UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
+    venue_id        UUID NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
+    day_of_week     SMALLINT NOT NULL CHECK (day_of_week BETWEEN 0 AND 6),
+    start_time      TIME NOT NULL,
+    end_time        TIME NOT NULL,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_court_slot_time CHECK (start_time < end_time)
+);
+CREATE INDEX idx_club_court_slots_club ON club_court_slots(club_id);
+CREATE INDEX idx_club_court_slots_venue ON club_court_slots(venue_id);
+CREATE INDEX idx_club_court_slots_day ON club_court_slots(day_of_week);
+
+-- ============================================================
 -- matches
 -- ============================================================
 CREATE TABLE matches (
@@ -95,6 +125,10 @@ CREATE TABLE matches (
     state           match_state NOT NULL DEFAULT 'SCHEDULED',
     home_score      INTEGER,
     away_score      INTEGER,
+    game_format     game_format NOT NULL DEFAULT 'FIVE_VS_FIVE',
+    venue_id        UUID REFERENCES venues(id) ON DELETE SET NULL,
+    match_purpose   match_purpose NOT NULL DEFAULT 'CASUAL',
+    end_at          TIMESTAMP,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_match_clubs_different CHECK (home_club_id != away_club_id)
 );
@@ -121,6 +155,13 @@ CREATE TABLE match_participants (
 CREATE INDEX idx_match_participants_match_id ON match_participants(match_id);
 CREATE INDEX idx_match_participants_user_id ON match_participants(user_id);
 CREATE INDEX idx_match_participants_club_id ON match_participants(club_id);
+
+-- venues 시드 데이터
+INSERT INTO venues (name, description) VALUES
+    ('넉넉한터 본관코트', '부산대학교 넉넉한터 본관 실내 코트'),
+    ('넉넉한터 공원코트', '부산대학교 넉넉한터 야외 공원 코트'),
+    ('부산대역 농구코트', '부산대역 인근 농구 코트')
+ON CONFLICT (name) DO NOTHING;
 
 -- ============================================================
 -- posts

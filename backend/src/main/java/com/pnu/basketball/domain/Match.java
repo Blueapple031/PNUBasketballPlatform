@@ -48,6 +48,23 @@ public class Match {
     private Integer maxPlayersPerTeam = 5;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "game_format")
+    @Builder.Default
+    private GameFormat gameFormat = GameFormat.FIVE_VS_FIVE;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "venue_id")
+    private Venue venue;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "match_purpose")
+    @Builder.Default
+    private MatchPurpose matchPurpose = MatchPurpose.CASUAL;
+
+    @Column(name = "end_at")
+    private LocalDateTime endAt;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
     private MatchState state = MatchState.SCHEDULED;

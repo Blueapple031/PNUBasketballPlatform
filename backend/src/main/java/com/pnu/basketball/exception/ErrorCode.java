@@ -46,6 +46,11 @@ public enum ErrorCode {
     UNAUTHORIZED_POST_EDIT(HttpStatus.FORBIDDEN, "본인의 게시글만 수정/삭제할 수 있습니다."),
     UNAUTHORIZED_COMMENT_EDIT(HttpStatus.FORBIDDEN, "본인의 댓글만 수정/삭제할 수 있습니다."),
 
+    // Venue & Court Slot
+    VENUE_NOT_FOUND(HttpStatus.NOT_FOUND, "경기장을 찾을 수 없습니다."),
+    CLUB_COURT_SLOT_NOT_FOUND(HttpStatus.NOT_FOUND, "코트 사용시간을 찾을 수 없습니다."),
+    NOT_CLUB_MEMBER(HttpStatus.FORBIDDEN, "동아리원만 접근할 수 있습니다."),
+
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
     GOOGLE_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "구글 API 통신 중 오류가 발생했습니다."),

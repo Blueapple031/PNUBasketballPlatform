@@ -22,4 +22,7 @@ public interface MatchRepository extends JpaRepository<Match, UUID> {
     Page<Match> findByStateOrderByScheduledAtDesc(MatchState state, Pageable pageable);
 
     Page<Match> findAllByOrderByScheduledAtDesc(Pageable pageable);
+
+    List<Match> findByStateAndScheduledAtBetweenOrderByScheduledAtAsc(
+            MatchState state, LocalDateTime start, LocalDateTime end);
 }

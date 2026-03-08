@@ -2,6 +2,8 @@
 -- 실행: psql -U postgres -d ddalba_DB -f docs/database/drop_all.sql
 
 -- FK 때문에 자식 테이블부터 삭제
+DROP TABLE IF EXISTS club_court_slots CASCADE;
+DROP TABLE IF EXISTS venues CASCADE;
 DROP TABLE IF EXISTS poll_votes CASCADE;
 DROP TABLE IF EXISTS poll_options CASCADE;
 DROP TABLE IF EXISTS polls CASCADE;
@@ -16,3 +18,5 @@ DROP TABLE IF EXISTS users CASCADE;
 -- ENUM 삭제
 DROP TYPE IF EXISTS match_state CASCADE;
 DROP TYPE IF EXISTS club_role CASCADE;
+DROP TYPE IF EXISTS game_format CASCADE;
+DROP TYPE IF EXISTS match_purpose CASCADE;
