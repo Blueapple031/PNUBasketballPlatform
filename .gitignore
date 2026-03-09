@@ -181,6 +181,7 @@ obj/
 
 # Google Services
 google-services.json
+firebase-service-account.json
 
 # Fastlane
 **/fastlane/report.xml

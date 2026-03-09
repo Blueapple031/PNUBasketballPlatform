@@ -13,4 +13,6 @@ public interface UserService {
     boolean checkRealNameAvailability(String realName);
     void updatePassword(Long userId, UpdatePasswordRequest request);
     void withdraw(Long userId);
+    void updateFcmToken(Long userId, String fcmToken);
+    void clearFcmToken(Long userId);
 }

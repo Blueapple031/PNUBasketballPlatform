@@ -206,6 +206,26 @@ class AuthService {
     );
   }
 
+  Future<ApiResponseModel<void>> registerFcmToken({
+    required String accessToken,
+    required String fcmToken,
+  }) async {
+    return await apiService.post<void>(
+      ApiEndpoints.fcmToken,
+      headers: {'Authorization': 'Bearer $accessToken'},
+      body: {'fcmToken': fcmToken},
+    );
+  }
+
+  Future<ApiResponseModel<void>> removeFcmToken({
+    required String accessToken,
+  }) async {
+    return await apiService.delete<void>(
+      ApiEndpoints.fcmToken,
+      headers: {'Authorization': 'Bearer $accessToken'},
+    );
+  }
+
   Future<ApiResponseModel<List<MemberModel>>> getClubMembers({
     required String accessToken,
     required String clubId,

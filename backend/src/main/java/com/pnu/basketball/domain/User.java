@@ -85,6 +85,12 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "fcm_token", length = 500)
+    private String fcmToken;
+
+    @Column(name = "fcm_token_updated_at")
+    private LocalDateTime fcmTokenUpdatedAt;
+
     public void updateProfile(String realName, String phoneNumber, String profileImageUrl) {
         if (realName != null) this.realName = realName;
         if (phoneNumber != null) this.phoneNumber = phoneNumber;
@@ -117,5 +123,15 @@ public class User {
         if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
         this.kakaoId = kakaoId;
         this.loginType = LoginType.KAKAO;
+    }
+
+    public void updateFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+        this.fcmTokenUpdatedAt = LocalDateTime.now();
+    }
+
+    public void clearFcmToken() {
+        this.fcmToken = null;
+        this.fcmTokenUpdatedAt = null;
     }
 }
