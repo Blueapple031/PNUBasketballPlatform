@@ -24,7 +24,6 @@ public class AdminServiceImpl implements AdminService {
     private final UserRepository userRepository;
     private final ClubRepository clubRepository;
     private final ClubMemberRepository clubMemberRepository;
-    private final MatchRepository matchRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PollRepository pollRepository;
@@ -35,11 +34,9 @@ public class AdminServiceImpl implements AdminService {
     public AdminStatsResponse getStats() {
         long userCount = userRepository.count();
         long clubCount = clubRepository.count();
-        long matchCount = matchRepository.count();
         return AdminStatsResponse.builder()
                 .userCount(userCount)
                 .clubCount(clubCount)
-                .matchCount(matchCount)
                 .build();
     }
 
@@ -130,41 +127,6 @@ public class AdminServiceImpl implements AdminService {
         clubRepository.save(club);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Page<AdminMatchListResponse> getMatches(MatchState state, Pageable pageable) {
-        Page<Match> matches = state != null
-                ? matchRepository.findByStateOrderByScheduledAtDesc(state, pageable)
-                : matchRepository.findAllByOrderByScheduledAtDesc(pageable);
-        return matches.map(this::toAdminMatchListResponse);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public AdminMatchListResponse getMatchDetail(UUID matchId) {
-        Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT, "매치를 찾을 수 없습니다."));
-        return toAdminMatchListResponse(match);
-    }
-
-    @Override
-    @Transactional
-    public AdminMatchListResponse updateMatch(UUID matchId, AdminUpdateMatchRequest request) {
-        Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT, "매치를 찾을 수 없습니다."));
-        if (request.getState() != null) {
-            match.updateState(request.getState());
-        }
-        if (request.getHomeScore() != null || request.getAwayScore() != null) {
-            match.updateScore(
-                    request.getHomeScore() != null ? request.getHomeScore() : match.getHomeScore(),
-                    request.getAwayScore() != null ? request.getAwayScore() : match.getAwayScore()
-            );
-        }
-        match = matchRepository.save(match);
-        return toAdminMatchListResponse(match);
-    }
-
     private AdminUserListResponse toAdminUserListResponse(User user) {
         String clubName = clubMemberRepository.findByUserUserId(user.getUserId())
                 .map(cm -> cm.getClub().getName())
@@ -193,20 +155,6 @@ public class AdminServiceImpl implements AdminService {
                 .captainName(captainName)
                 .captainId(captainId)
                 .memberCount(memberCount)
-                .build();
-    }
-
-    private AdminMatchListResponse toAdminMatchListResponse(Match match) {
-        String homeName = match.getHomeClub() != null ? match.getHomeClub().getName() : "-";
-        String awayName = match.getAwayClub() != null ? match.getAwayClub().getName() : "-";
-        return AdminMatchListResponse.builder()
-                .matchId(match.getId())
-                .homeClubName(homeName)
-                .awayClubName(awayName)
-                .scheduledAt(match.getScheduledAt())
-                .state(match.getState())
-                .homeScore(match.getHomeScore())
-                .awayScore(match.getAwayScore())
                 .build();
     }
 
