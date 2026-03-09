@@ -90,4 +90,13 @@ public class FcmService {
                 .filter(u -> u.getFcmToken() != null)
                 .forEach(u -> sendToToken(u.getFcmToken(), title, body));
     }
+
+    /**
+     * FCM 토큰이 등록된 모든 사용자에게 푸시 알림 발송
+     */
+    public void sendToAllUsers(String title, String body) {
+        List<Long> userIds = userRepository.findUserIdsWithFcmToken();
+        if (userIds.isEmpty()) return;
+        sendToMultipleUsers(userIds, title, body);
+    }
 }

@@ -6,6 +6,7 @@ import com.pnu.basketball.dto.response.*;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
 import com.pnu.basketball.repository.*;
+import com.pnu.basketball.service.notification.FcmService;
 import com.pnu.basketball.service.poll.PollService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ public class AdminServiceImpl implements AdminService {
     private final CommentRepository commentRepository;
     private final PollRepository pollRepository;
     private final PollService pollService;
+    private final FcmService fcmService;
 
     @Override
     @Transactional(readOnly = true)
@@ -214,6 +216,11 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
         post.setPinned(isPinned);
         postRepository.save(post);
+
+        if (isPinned) {
+            fcmService.sendToAllUsers("공지", "새 공지: " + post.getTitle());
+        }
+
         return toPostDetailResponse(post);
     }
 
