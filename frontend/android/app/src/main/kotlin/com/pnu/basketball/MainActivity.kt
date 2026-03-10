@@ -1,4 +1,4 @@
-package com.example.basketball_frontend
+package com.pnu.basketball
 
 import io.flutter.embedding.android.FlutterActivity
 
