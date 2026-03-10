@@ -28,6 +28,7 @@ class ApiEndpoints {
   // User endpoints
   static const String userMe = '/api/users/me';
   static const String userPassword = '/api/users/me/password';
+  static const String fcmToken = '/api/users/me/fcm-token';
 
   // Post (Community) endpoints
   static const String posts = '/api/posts';

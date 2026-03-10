@@ -28,7 +28,12 @@ class AuthProvider with ChangeNotifier {
       return false;
     }
 
-    return fetchCurrentUser();
+    final success = await fetchCurrentUser();
+    if (success) {
+      authRepository.registerFcmToken();
+      authRepository.setupFcmTokenRefreshListener();
+    }
+    return success;
   }
 
   Future<bool> fetchCurrentUser() async {
@@ -318,7 +323,7 @@ class AuthProvider with ChangeNotifier {
       return null;
     }
   }
-y
+
   String _extractErrorMessage(Object e) {
     final str = e.toString();
     if (str.startsWith('Exception: ')) {

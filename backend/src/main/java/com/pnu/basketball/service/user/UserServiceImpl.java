@@ -129,4 +129,22 @@ public class UserServiceImpl implements UserService {
         tokenStorage.deleteRefreshToken(userId);
         userRepository.delete(user);
     }
+
+    @Override
+    @Transactional
+    public void updateFcmToken(Long userId, String fcmToken) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        user.updateFcmToken(fcmToken);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void clearFcmToken(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        user.clearFcmToken();
+        userRepository.save(user);
+    }
 }

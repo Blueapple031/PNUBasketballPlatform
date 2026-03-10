@@ -3,6 +3,7 @@ import '../models/user_model.dart';
 import '../models/club_model.dart';
 import '../models/member_model.dart';
 import '../services/auth_service.dart';
+import '../../services/fcm_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -57,6 +58,8 @@ class AuthRepository {
 
     if (response.success && response.data != null) {
       await _saveTokens(response.data!);
+      await registerFcmToken();
+      setupFcmTokenRefreshListener();
       return response.data!;
     } else {
       throw Exception(_buildErrorMessage(response.error, '회원가입 실패'));
@@ -87,6 +90,8 @@ class AuthRepository {
 
     if (response.success && response.data != null) {
       await _saveTokens(response.data!);
+      await registerFcmToken();
+      setupFcmTokenRefreshListener();
       return response.data!;
     } else {
       throw Exception(_buildErrorMessage(response.error, '로그인 실패'));
@@ -116,6 +121,8 @@ class AuthRepository {
 
       if (response.success && response.data != null) {
         await _saveTokens(response.data!);
+        await registerFcmToken();
+        setupFcmTokenRefreshListener();
         return response.data!;
       } else {
         throw Exception(response.error?['message'] ?? '카카오 로그인 실패');
@@ -148,6 +155,8 @@ class AuthRepository {
 
       if (response.success && response.data != null) {
         await _saveTokens(response.data!);
+        await registerFcmToken();
+        setupFcmTokenRefreshListener();
         return response.data!;
       } else {
         throw Exception(response.error?['message'] ?? '구글 로그인 실패');
@@ -194,11 +203,42 @@ class AuthRepository {
     return token != null && token.isNotEmpty;
   }
 
+  /// FCM 토큰을 백엔드에 등록
+  Future<void> registerFcmToken() async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null) return;
+
+    final token = await FcmService.getToken();
+    if (token == null) return;
+
+    try {
+      await authService.registerFcmToken(
+        accessToken: accessToken,
+        fcmToken: token,
+      );
+    } catch (e) {
+      print('FCM 토큰 등록 실패: $e');
+    }
+  }
+
+  /// FCM 토큰 갱신 시 자동 재등록
+  void setupFcmTokenRefreshListener() {
+    FcmService.onTokenRefresh.listen((_) async {
+      await registerFcmToken();
+    });
+  }
+
   // 로그아웃
   Future<void> logout() async {
     try {
       final accessToken = await getAccessToken();
       final refreshToken = await getRefreshToken();
+
+      if (accessToken != null) {
+        try {
+          await authService.removeFcmToken(accessToken: accessToken);
+        } catch (_) {}
+      }
 
       if (accessToken != null && refreshToken != null) {
         await authService.logout(

@@ -4,7 +4,6 @@
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TYPE match_state AS ENUM ('SCHEDULED', 'READY', 'ONGOING', 'DONE', 'CANCELLED');
 CREATE TYPE club_role AS ENUM ('PRESIDENT', 'MEMBER', 'OB', 'MANAGER');
 
 -- Hibernate @Enumerated(EnumType.STRING)이 VARCHAR로 전송하므로,

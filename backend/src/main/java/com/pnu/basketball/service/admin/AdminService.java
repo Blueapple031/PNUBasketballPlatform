@@ -1,6 +1,5 @@
 package com.pnu.basketball.service.admin;
 
-import com.pnu.basketball.domain.MatchState;
 import com.pnu.basketball.dto.request.*;
 import com.pnu.basketball.dto.response.*;
 import org.springframework.data.domain.Page;
@@ -24,12 +23,6 @@ public interface AdminService {
     List<AdminUserListResponse> getClubMembers(UUID clubId);
 
     void setCaptain(UUID clubId, AdminSetCaptainRequest request);
-
-    Page<AdminMatchListResponse> getMatches(MatchState state, Pageable pageable);
-
-    AdminMatchListResponse getMatchDetail(UUID matchId);
-
-    AdminMatchListResponse updateMatch(UUID matchId, AdminUpdateMatchRequest request);
 
     // 게시글/댓글 관리
     Page<PostListResponse> getPosts(Pageable pageable);

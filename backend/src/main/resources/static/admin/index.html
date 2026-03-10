@@ -45,10 +45,6 @@
                     <span class="tab-icon">🏀</span>
                     <span class="tab-text">동아리 관리</span>
                 </button>
-                <button type="button" class="nav-tab" data-tab="matches">
-                    <span class="tab-icon">⚔️</span>
-                    <span class="tab-text">매칭 관리</span>
-                </button>
                 <button type="button" class="nav-tab" data-tab="posts">
                     <span class="tab-icon">📝</span>
                     <span class="tab-text">게시글 관리</span>
@@ -71,10 +67,6 @@
                     <div class="stat-card">
                         <h3>동아리 수</h3>
                         <div class="stat-value" id="stat-clubs">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>매치 수</h3>
-                        <div class="stat-value" id="stat-matches">-</div>
                     </div>
                 </div>
             </div>
@@ -191,52 +183,6 @@
                 </div>
             </div>
 
-            <!-- 매칭 관리 -->
-            <div id="tab-matches" class="tab-content">
-                <div class="content-header">
-                    <h1>매칭 관리</h1>
-                    <div class="header-info">
-                        <span class="total-count">총 <strong id="matches-total">0</strong>건</span>
-                    </div>
-                </div>
-                <div class="filter-section">
-                    <div class="filter-group">
-                        <div class="filter-item">
-                            <label>상태</label>
-                            <select id="filter-match-state" class="filter-select">
-                                <option value="">전체</option>
-                                <option value="SCHEDULED">예정</option>
-                                <option value="READY">준비</option>
-                                <option value="ONGOING">진행중</option>
-                                <option value="DONE">종료</option>
-                                <option value="CANCELLED">취소</option>
-                            </select>
-                        </div>
-                        <button type="button" class="search-btn" id="btn-search-matches">검색</button>
-                        <button type="button" class="reset-btn" id="btn-reset-matches">초기화</button>
-                    </div>
-                </div>
-                <div class="table-section">
-                    <div class="table-wrapper">
-                        <table class="member-table">
-                            <thead>
-                                <tr>
-                                    <th>홈팀</th>
-                                    <th>어웨이팀</th>
-                                    <th>일시</th>
-                                    <th>상태</th>
-                                    <th>점수</th>
-                                    <th>액션</th>
-                                </tr>
-                            </thead>
-                            <tbody id="matches-tbody">
-                                <tr><td colspan="6" class="empty-state"><p>데이터를 불러오는 중...</p></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="pagination" id="matches-pagination"></div>
-                </div>
-            </div>
         </main>
     </div>
 
@@ -370,41 +316,6 @@
         </div>
     </div>
 
-    <!-- 매치 수정 모달 -->
-    <div id="modal-edit-match" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>매치 수정</h3>
-                <button type="button" class="modal-close" data-close="modal-edit-match">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="edit-match-id">
-                <div class="filter-item">
-                    <label>상태</label>
-                    <select id="edit-match-state" class="modal-select">
-                        <option value="SCHEDULED">예정</option>
-                        <option value="READY">준비</option>
-                        <option value="ONGOING">진행중</option>
-                        <option value="DONE">종료</option>
-                        <option value="CANCELLED">취소</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label>홈팀 점수</label>
-                    <input type="number" id="edit-home-score" class="modal-input" min="0" placeholder="0">
-                </div>
-                <div class="filter-item">
-                    <label>어웨이팀 점수</label>
-                    <input type="number" id="edit-away-score" class="modal-input" min="0" placeholder="0">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-cancel" data-close="modal-edit-match">취소</button>
-                <button type="button" class="btn btn-primary" id="btn-submit-edit-match">저장</button>
-            </div>
-        </div>
-    </div>
-
     <style>
         .hidden { display: none !important; }
     </style>
@@ -413,7 +324,6 @@
     <script src="js/dashboard.js"></script>
     <script src="js/users.js"></script>
     <script src="js/clubs.js"></script>
-    <script src="js/matches.js"></script>
     <script src="js/posts.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {

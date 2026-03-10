@@ -12,5 +12,4 @@ import lombok.NoArgsConstructor;
 public class AdminStatsResponse {
     private long userCount;
     private long clubCount;
-    private long matchCount;
 }

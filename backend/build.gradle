@@ -48,6 +48,9 @@ dependencies {
     // Google API Client (ID Token 검증)
     implementation 'com.google.api-client:google-api-client:2.2.0'
     
+    // Firebase Admin SDK (FCM 푸시 알림)
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
+    
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

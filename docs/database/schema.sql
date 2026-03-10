@@ -8,7 +8,6 @@
 --   00_common.sql  - 확장, ENUM
 --   01_users.sql   - 회원
 --   02_clubs.sql   - 동아리, 동아리 멤버
---   03_matches.sql - 매치, 매치 참가자
 --   04_posts.sql   - 게시글, 댓글
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -16,11 +15,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ============================================================
 -- ENUM
 -- ============================================================
-CREATE TYPE match_state AS ENUM ('SCHEDULED', 'READY', 'ONGOING', 'DONE', 'CANCELLED');
 CREATE TYPE club_role AS ENUM ('PRESIDENT', 'MEMBER', 'OB', 'MANAGER');
 
 -- Hibernate @Enumerated(EnumType.STRING)이 VARCHAR로 전송하므로,
--- PostgreSQL이 자동으로 club_role로 캐스팅할 수 있도록 implicit cast 등록
+-- PostgreSQL이 자동으로 enum으로 캐스팅할 수 있도록 implicit cast 등록
 CREATE CAST (character varying AS club_role) WITH INOUT AS IMPLICIT;
 
 -- ============================================================
@@ -39,6 +37,7 @@ CREATE TABLE users (
     kakao_id                VARCHAR(255) UNIQUE,
     date_of_birth           DATE,
     is_pnu_student          BOOLEAN NOT NULL DEFAULT false,
+    is_admin                BOOLEAN NOT NULL DEFAULT false,
     department              VARCHAR(100),
     student_id              VARCHAR(20),
     wins                    INTEGER NOT NULL DEFAULT 0,
@@ -83,44 +82,6 @@ CREATE TABLE club_members (
 
 CREATE INDEX idx_club_members_user_id ON club_members(user_id);
 CREATE INDEX idx_club_members_club_id ON club_members(club_id);
-
--- ============================================================
--- matches
--- ============================================================
-CREATE TABLE matches (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    home_club_id    UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
-    away_club_id    UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
-    scheduled_at    TIMESTAMP NOT NULL,
-    state           match_state NOT NULL DEFAULT 'SCHEDULED',
-    home_score      INTEGER,
-    away_score      INTEGER,
-    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_match_clubs_different CHECK (home_club_id != away_club_id)
-);
-
-CREATE INDEX idx_matches_home_club ON matches(home_club_id);
-CREATE INDEX idx_matches_away_club ON matches(away_club_id);
-CREATE INDEX idx_matches_scheduled_at ON matches(scheduled_at);
-CREATE INDEX idx_matches_state ON matches(state);
-
--- ============================================================
--- match_participants
--- ============================================================
-CREATE TABLE match_participants (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    match_id        UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
-    user_id         BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    club_id         UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
-    points_scored   INTEGER NOT NULL DEFAULT 0,
-    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_match_participant UNIQUE (match_id, user_id),
-    CONSTRAINT chk_points_non_negative CHECK (points_scored >= 0)
-);
-
-CREATE INDEX idx_match_participants_match_id ON match_participants(match_id);
-CREATE INDEX idx_match_participants_user_id ON match_participants(user_id);
-CREATE INDEX idx_match_participants_club_id ON match_participants(club_id);
 
 -- ============================================================
 -- posts

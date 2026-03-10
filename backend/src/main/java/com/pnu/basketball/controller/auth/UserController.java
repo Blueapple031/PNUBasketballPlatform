@@ -1,5 +1,6 @@
 package com.pnu.basketball.controller.auth;
 
+import com.pnu.basketball.dto.request.FcmTokenRequest;
 import com.pnu.basketball.dto.request.UpdatePasswordRequest;
 import com.pnu.basketball.dto.request.UpdateProfileRequest;
 import com.pnu.basketball.dto.response.ApiResponse;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 
 
 @RestController
@@ -53,5 +55,24 @@ public class UserController {
     ) {
         userService.withdraw(userId);
         return ResponseEntity.ok(ApiResponse.success(null, "회원 탈퇴가 성공적으로 처리되었습니다."));
+    }
+
+    @PostMapping("/me/fcm-token")
+    @Operation(summary = "FCM 토큰 등록", description = "푸시 알림 수신을 위한 FCM 토큰을 등록합니다.")
+    public ResponseEntity<ApiResponse<Void>> registerFcmToken(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody FcmTokenRequest request
+    ) {
+        userService.updateFcmToken(userId, request.getFcmToken());
+        return ResponseEntity.ok(ApiResponse.success(null, "FCM 토큰이 등록되었습니다."));
+    }
+
+    @DeleteMapping("/me/fcm-token")
+    @Operation(summary = "FCM 토큰 삭제", description = "로그아웃 시 FCM 토큰을 삭제합니다.")
+    public ResponseEntity<ApiResponse<Void>> removeFcmToken(
+            @AuthenticationPrincipal Long userId
+    ) {
+        userService.clearFcmToken(userId);
+        return ResponseEntity.ok(ApiResponse.success(null, "FCM 토큰이 삭제되었습니다."));
     }
 }

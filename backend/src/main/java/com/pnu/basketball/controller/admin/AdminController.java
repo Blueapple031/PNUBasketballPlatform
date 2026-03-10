@@ -1,6 +1,5 @@
 package com.pnu.basketball.controller.admin;
 
-import com.pnu.basketball.domain.MatchState;
 import com.pnu.basketball.dto.request.*;
 import com.pnu.basketball.dto.response.*;
 import com.pnu.basketball.service.admin.AdminService;
@@ -84,35 +83,6 @@ public class AdminController {
             @Valid @RequestBody AdminSetCaptainRequest request) {
         adminService.setCaptain(id, request);
         return ResponseEntity.ok(ApiResponse.success(null, "동아리장 설정 완료"));
-    }
-
-    @GetMapping("/matches")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getMatches(
-            @RequestParam(required = false) MatchState state,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = PageRequest.of(page - 1, Math.min(size, 50));
-        Page<AdminMatchListResponse> result = adminService.getMatches(state, pageable);
-        Map<String, Object> data = new HashMap<>();
-        data.put("content", result.getContent());
-        data.put("totalElements", result.getTotalElements());
-        data.put("totalPages", result.getTotalPages());
-        data.put("currentPage", page);
-        return ResponseEntity.ok(ApiResponse.success(data, "매치 목록 조회 성공"));
-    }
-
-    @GetMapping("/matches/{id}")
-    public ResponseEntity<ApiResponse<AdminMatchListResponse>> getMatchDetail(@PathVariable UUID id) {
-        AdminMatchListResponse response = adminService.getMatchDetail(id);
-        return ResponseEntity.ok(ApiResponse.success(response, "매치 상세 조회 성공"));
-    }
-
-    @PutMapping("/matches/{id}")
-    public ResponseEntity<ApiResponse<AdminMatchListResponse>> updateMatch(
-            @PathVariable UUID id,
-            @RequestBody AdminUpdateMatchRequest request) {
-        AdminMatchListResponse response = adminService.updateMatch(id, request);
-        return ResponseEntity.ok(ApiResponse.success(response, "매치 수정 완료"));
     }
 
     // ========== 게시글/댓글 관리 ==========
