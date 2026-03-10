@@ -107,6 +107,7 @@ frontend/android/.gradle/
 frontend/android/app/build/
 frontend/android/build/
 frontend/android/.idea/
+frontend/android/key.properties
 frontend/android/local.properties
 frontend/android/.metadata
 
