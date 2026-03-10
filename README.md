@@ -222,3 +222,9 @@ flutter run
   - 백엔드: 게시판 게시글, 댓글 API 및 필수 입력 정보 API 구현
 - **사용 LLM**:
   - GitHub Copilot: 구현 및 실행 오류 수정 용도
+
+
+ ---
+
+ ## 저장소 시각화
+ ![Alt](https://repobeats.axiom.co/api/embed/8630ad34003041e4792b2e4b73c7c94de4467815.svg "Repobeats analytics image")
