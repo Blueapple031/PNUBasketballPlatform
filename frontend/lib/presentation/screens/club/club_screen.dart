@@ -97,20 +97,27 @@ class _ClubScreenState extends State<ClubScreen> {
             ],
           ),
         ),
-        body: Column(
+            body: Column(
           children: [
             ClubHeader(club: club), // 별도 구현된 위젯
             Expanded(
               child: TabBarView(
                 children: [
-                  SingleChildScrollView(
-                    child: ClubInfoSection(
-                      club: club,
-                      onClubUpdated: (updated) =>
-                          setState(() => _myClub = updated),
+                  RefreshIndicator(
+                    onRefresh: _loadData,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: ClubInfoSection(
+                        club: club,
+                        onClubUpdated: (updated) =>
+                            setState(() => _myClub = updated),
+                      ),
                     ),
                   ),
-                  ClubMemberList(members: _myClubMembers),
+                  RefreshIndicator(
+                    onRefresh: _loadData,
+                    child: ClubMemberList(members: _myClubMembers),
+                  ),
                 ],
               ),
             ),
@@ -148,6 +155,7 @@ class _ClubScreenState extends State<ClubScreen> {
       body: RefreshIndicator(
         onRefresh: _loadData,
         child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
           itemCount: sections.length + 1,
           itemBuilder: (context, index) {
             if (index == 0) return _buildDiscoveryHeader();

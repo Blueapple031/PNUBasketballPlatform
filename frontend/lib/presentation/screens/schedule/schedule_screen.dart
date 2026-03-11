@@ -203,9 +203,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   ) {
     const dayLabels = ['월', '화', '수', '목', '금', '토', '일'];
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
+    return RefreshIndicator(
+      onRefresh: () => provider.loadSchedules(refresh: true),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
@@ -246,6 +249,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             }),
           ),
         ],
+        ),
       ),
     );
   }

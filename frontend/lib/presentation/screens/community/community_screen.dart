@@ -121,6 +121,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
           return RefreshIndicator(
             onRefresh: () => provider.loadPosts(refresh: true),
             child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
               controller: _scrollController,
               padding: const EdgeInsets.all(16),
               itemCount: provider.posts.length + (provider.hasMore ? 1 : 0),
