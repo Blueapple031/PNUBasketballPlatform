@@ -11,27 +11,44 @@ class ScheduleProvider with ChangeNotifier {
 
   List<ScheduleModel> _schedules = [];
   List<ScheduleLocationModel> _locations = [];
-  DateTime _selectedDate = DateTime.now();
   String? _selectedLocationId;
   bool _isLoading = false;
   String? _errorMessage;
 
+  /// 3주치 데이터의 시작일 (이번 주 월요일)
+  DateTime _weekBase = _getStartOfWeek(DateTime.now());
+
+  static DateTime _getStartOfWeek(DateTime date) {
+    final weekday = date.weekday;
+    return DateTime(date.year, date.month, date.day - (weekday - 1));
+  }
+
   List<ScheduleModel> get schedules => _schedules;
   List<ScheduleLocationModel> get locations => _locations;
-  DateTime get selectedDate => _selectedDate;
   String? get selectedLocationId => _selectedLocationId;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+
+  /// 3주치 데이터의 시작일
+  DateTime get weekBase => _weekBase;
+
+  /// index번째 주의 시작일 (0: 이번 주, 1: 다음 주, 2: 다다음 주)
+  DateTime getWeekStart(int index) {
+    return _weekBase.add(Duration(days: index * 7));
+  }
 
   Future<void> loadSchedules({bool refresh = true}) async {
     if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
+    if (refresh) {
+      _weekBase = _getStartOfWeek(DateTime.now());
+    }
     notifyListeners();
 
     try {
-      final startDate = DateTime(_selectedDate.year, _selectedDate.month, 1);
-      final endDate = DateTime(_selectedDate.year, _selectedDate.month + 1, 0);
+      final startDate = _weekBase;
+      final endDate = _weekBase.add(const Duration(days: 21));
 
       final result = await scheduleRepository.getSchedules(
         startDate: startDate,
@@ -49,11 +66,6 @@ class ScheduleProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
-  }
-
-  void setSelectedDate(DateTime date) {
-    _selectedDate = date;
-    notifyListeners();
   }
 
   void setSelectedLocationId(String? locationId) {
