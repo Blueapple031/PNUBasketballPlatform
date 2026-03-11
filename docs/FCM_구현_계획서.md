@@ -45,7 +45,7 @@
 | # | 작업 | 담당 | 예상 시간 |
 |---|------|------|----------|
 | 0-1 | Firebase 프로젝트 생성 | 공통 | 10분 |
-| 0-2 | Android 앱 등록 (패키지: com.example.basketball_frontend) | 프론트 | 5분 |
+| 0-2 | Android 앱 등록 (패키지: com.pnu.basketball) | 프론트 | 5분 |
 | 0-3 | google-services.json 다운로드 및 배치 | 프론트 | 5분 |
 | 0-4 | Cloud Messaging API 활성화 | 공통 | 2분 |
 | 0-5 | 서비스 계정 키(JSON) 생성 및 다운로드 | 백엔드 | 5분 |
@@ -59,7 +59,7 @@
 
 #### 0-2. Android 앱 등록
 1. 프로젝트 설정 → **앱 추가** → Android
-2. 패키지 이름: `com.example.basketball_frontend`
+2. 패키지 이름: `com.pnu.basketball`
 3. 앱 닉네임: `딸바` (선택)
 4. SHA-1: 디버그 키는 나중에 추가 가능
 
