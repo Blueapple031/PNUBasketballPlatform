@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../core/utils/error_message_util.dart';
 import '../../data/models/auth_response_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/club_model.dart';
@@ -45,7 +46,7 @@ class AuthProvider with ChangeNotifier {
       _currentUser = await authRepository.getCurrentUser();
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
       return false;
     } finally {
       _isLoading = false;
@@ -92,7 +93,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return authResponse;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = toUserFriendlyMessage(e);
       _isLoading = false;
       notifyListeners();
       return null;
@@ -126,7 +127,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return authResponse;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = toUserFriendlyMessage(e);
       _isLoading = false;
       notifyListeners();
       return null;
@@ -154,7 +155,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return authResponse;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = toUserFriendlyMessage(e);
       _isLoading = false;
       notifyListeners();
       return null;
@@ -182,7 +183,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return authResponse;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = toUserFriendlyMessage(e);
       _isLoading = false;
       notifyListeners();
       return null;
@@ -201,7 +202,7 @@ class AuthProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = toUserFriendlyMessage(e);
       _isLoading = false;
       notifyListeners();
     }
@@ -248,7 +249,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return user;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = toUserFriendlyMessage(e);
       _isLoading = false;
       notifyListeners();
       return null;
@@ -259,7 +260,7 @@ class AuthProvider with ChangeNotifier {
     try {
       return await authRepository.getClubs();
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return null;
     }
@@ -273,7 +274,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return club;
     } catch (e) {
-      _errorMessage = _extractErrorMessage(e);
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return null;
     }
@@ -291,7 +292,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return result;
     } catch (e) {
-      _errorMessage = _extractErrorMessage(e);
+      _errorMessage = toUserFriendlyMessage(e);
       _isLoading = false;
       notifyListeners();
       return null;
@@ -305,7 +306,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return club;
     } catch (e) {
-      _errorMessage = _extractErrorMessage(e);
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return null;
     }
@@ -318,18 +319,10 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return members;
     } catch (e) {
-      _errorMessage = _extractErrorMessage(e);
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return null;
     }
-  }
-
-  String _extractErrorMessage(Object e) {
-    final str = e.toString();
-    if (str.startsWith('Exception: ')) {
-      return str.substring('Exception: '.length);
-    }
-    return str;
   }
 
   void clearError() {

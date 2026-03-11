@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../core/utils/error_message_util.dart';
 import '../../data/models/schedule_model.dart';
 import '../../data/repositories/schedule_repository.dart';
 
@@ -41,7 +42,7 @@ class ScheduleProvider with ChangeNotifier {
       _schedules = result.schedules;
       _locations = result.locations;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
       _schedules = [];
       _locations = [];
     } finally {
