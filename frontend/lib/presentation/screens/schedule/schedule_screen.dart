@@ -13,21 +13,38 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  late PageController _pageController;
+  static const double _hourRowHeight = 48;
+  static const double _dayColumnWidth = 52;
+  static const double _timeColumnWidth = 44;
+  static const int _startHour = 8;
+  static const int _endHour = 22;
+  static const int _totalHours = _endHour - _startHour;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ScheduleProvider>().loadSchedules(refresh: true);
     });
   }
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  int _parseTimeToMinutes(String time) {
+    final parts = time.split(':');
+    final h = int.tryParse(parts[0]) ?? 0;
+    final m = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+    return h * 60 + m;
+  }
+
+  double _timeToTop(String time) {
+    final min = _parseTimeToMinutes(time);
+    final startMin = _startHour * 60;
+    return ((min - startMin) / 60) * _hourRowHeight;
+  }
+
+  double _timeToHeight(String start, String end) {
+    final startMin = _parseTimeToMinutes(start);
+    final endMin = _parseTimeToMinutes(end);
+    return ((endMin - startMin) / 60) * _hourRowHeight;
   }
 
   @override
@@ -62,8 +79,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Consumer<ScheduleProvider>(
         builder: (context, provider, _) {
-          final weekStart = provider.getWeekStart(0);
-          final weekEnd = weekStart.add(const Duration(days: 6));
+          final weekStart = provider.weekBase;
+          final weekEnd = weekStart.add(const Duration(days: 20));
           final rangeStr =
               '${weekStart.month}/${weekStart.day} ~ ${weekEnd.month}/${weekEnd.day}';
           return Row(
@@ -183,133 +200,151 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           );
         }
 
-        return PageView.builder(
-          controller: _pageController,
-          physics: const BouncingScrollPhysics(),
-          itemCount: 3,
-          itemBuilder: (context, index) {
-            final weekStart = provider.getWeekStart(index);
-            return _buildWeekPage(context, provider, weekStart);
-          },
+        return RefreshIndicator(
+          onRefresh: () => provider.loadSchedules(refresh: true),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(bottom: 24),
+            child: _buildTimetableGrid(context, provider),
+          ),
         );
       },
     );
   }
 
-  Widget _buildWeekPage(
+  Widget _buildTimetableGrid(
     BuildContext context,
     ScheduleProvider provider,
-    DateTime weekStart,
   ) {
     const dayLabels = ['월', '화', '수', '목', '금', '토', '일'];
+    final weekStart = provider.weekBase;
+    final totalHeight = _totalHours * _hourRowHeight;
 
-    return RefreshIndicator(
-      onRefresh: () => provider.loadSchedules(refresh: true),
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '${weekStart.month}월 ${weekStart.day}일 ~ ${weekStart.add(const Duration(days: 6)).month}월 ${weekStart.add(const Duration(days: 6)).day}일',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.titleText,
+              // 시간 열 (고정, 가로 스크롤 시에도 고정)
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: SizedBox(
+                  width: _timeColumnWidth,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 32),
+                      ...List.generate(_totalHours, (i) {
+                        final hour = _startHour + i;
+                        return SizedBox(
+                          height: _hourRowHeight,
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Text(
+                              '$hour',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.subText,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+              // 3주(21일) 일정 그리드 - 연속 가로 스크롤
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Row(
+                    children: List.generate(21, (dayIndex) {
+              final date = weekStart.add(Duration(days: dayIndex));
+              final dayLabel = dayLabels[date.weekday - 1];
+              final isToday = _isSameDay(date, DateTime.now());
+              final schedules = provider.getSchedulesForDate(date);
+
+              return SizedBox(
+                width: _dayColumnWidth,
+                child: Column(
+                  children: [
+                    // 요일 헤더
+                    SizedBox(
+                      height: 32,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              dayLabel,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isToday
+                                    ? AppColors.activeBlue
+                                    : AppColors.subText,
+                              ),
+                            ),
+                            Text(
+                              '${date.month}/${date.day}',
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: isToday
+                                    ? AppColors.activeBlue
+                                    : AppColors.subText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // 시간 슬롯 + 일정 블록
+                    SizedBox(
+                      height: totalHeight,
+                      child: Stack(
+                        children: [
+                          // 시간 구분선
+                          ...List.generate(_totalHours + 1, (i) {
+                            return Positioned(
+                              left: 0,
+                              right: 0,
+                              top: i * _hourRowHeight,
+                              child: Container(
+                                height: 1,
+                                color: AppColors.boxBorder.withValues(alpha: 0.6),
+                              ),
+                            );
+                          }),
+                          // 일정 블록
+                          ...schedules.map((s) {
+                            final top = _timeToTop(s.startTime);
+                            final height = _timeToHeight(s.startTime, s.endTime);
+                            if (top < 0 || top + height > totalHeight) return const SizedBox.shrink();
+
+                            return _buildScheduleBlock(s, top, height);
+                          }),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+                    }),
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: List.generate(7, (i) {
-              final date = weekStart.add(Duration(days: i));
-              final isToday = _isSameDay(date, DateTime.now());
-              return Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      dayLabels[i],
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isToday
-                            ? AppColors.activeBlue
-                            : AppColors.subText,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    _buildDayColumn(context, provider, date),
-                  ],
-                ),
-              );
-            }),
-          ),
-        ],
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildDayColumn(
-    BuildContext context,
-    ScheduleProvider provider,
-    DateTime date,
-  ) {
-    final schedules = provider.getSchedulesForDate(date);
-    final isToday = _isSameDay(date, DateTime.now());
-
-    return Container(
-      margin: const EdgeInsets.only(left: 2),
-      constraints: const BoxConstraints(minHeight: 120),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      decoration: BoxDecoration(
-        color: isToday
-            ? AppColors.activeBlue.withValues(alpha: 0.08)
-            : AppColors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isToday ? AppColors.activeBlue : AppColors.boxBorder,
-          width: isToday ? 1.5 : 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '${date.month}/${date.day}',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: isToday ? AppColors.activeBlue : AppColors.subText,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          if (schedules.isEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                '-',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppColors.subText.withValues(alpha: 0.7),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            )
-          else
-            ...schedules.map((s) => _buildCompactScheduleCard(s)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompactScheduleCard(ScheduleModel schedule) {
+  Widget _buildScheduleBlock(ScheduleModel schedule, double top, double height) {
     Color statusColor;
     switch (schedule.status) {
       case 'AVAILABLE':
@@ -325,45 +360,50 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         statusColor = AppColors.titleText;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: statusColor.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
-        border: Border(
-          left: BorderSide(color: statusColor, width: 3),
+    return Positioned(
+      left: 2,
+      right: 2,
+      top: top + 2,
+      child: Container(
+        height: height.clamp(24, double.infinity) - 4,
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: statusColor.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(4),
+          border: Border(
+            left: BorderSide(color: statusColor, width: 3),
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            schedule.locationName,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              schedule.locationName,
+              style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            '${schedule.startTime}~${schedule.endTime}',
-            style: TextStyle(
-              fontSize: 9,
-              color: AppColors.subText,
+            Text(
+              '${schedule.startTime}~${schedule.endTime}',
+              style: TextStyle(
+                fontSize: 8,
+                color: AppColors.subText,
+              ),
             ),
-          ),
-          Text(
-            schedule.statusDisplayText,
-            style: TextStyle(
-              fontSize: 9,
-              color: statusColor,
-              fontWeight: FontWeight.w500,
+            Text(
+              schedule.statusDisplayText,
+              style: TextStyle(
+                fontSize: 8,
+                color: statusColor,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
