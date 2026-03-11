@@ -6,14 +6,19 @@ import com.pnu.basketball.dto.response.*;
 import com.pnu.basketball.exception.CustomException;
 import com.pnu.basketball.exception.ErrorCode;
 import com.pnu.basketball.repository.*;
+import com.pnu.basketball.dto.request.ScheduleCreateRequest;
+import com.pnu.basketball.dto.request.ScheduleUpdateRequest;
 import com.pnu.basketball.service.notification.FcmService;
 import com.pnu.basketball.service.poll.PollService;
+import com.pnu.basketball.service.schedule.ScheduleLocationService;
+import com.pnu.basketball.service.schedule.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,6 +35,8 @@ public class AdminServiceImpl implements AdminService {
     private final PollRepository pollRepository;
     private final PollService pollService;
     private final FcmService fcmService;
+    private final ScheduleService scheduleService;
+    private final ScheduleLocationService scheduleLocationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -301,5 +308,63 @@ public class AdminServiceImpl implements AdminService {
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .build();
+    }
+
+    // ========== 매칭 장소 관리 ==========
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ScheduleLocationResponse> getScheduleLocations() {
+        return scheduleLocationService.getAllLocations();
+    }
+
+    @Override
+    @Transactional
+    public ScheduleLocationResponse createScheduleLocation(ScheduleLocationCreateRequest request) {
+        return scheduleLocationService.createLocation(request);
+    }
+
+    @Override
+    @Transactional
+    public ScheduleLocationResponse updateScheduleLocation(UUID id, ScheduleLocationUpdateRequest request) {
+        return scheduleLocationService.updateLocation(id, request);
+    }
+
+    @Override
+    @Transactional
+    public void deleteScheduleLocation(UUID id) {
+        scheduleLocationService.deleteLocation(id);
+    }
+
+    // ========== 일정 관리 ==========
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, UUID locationId) {
+        return scheduleService.getSchedules(startDate, endDate, locationId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ScheduleResponse getSchedule(UUID id) {
+        return scheduleService.getSchedule(id);
+    }
+
+    @Override
+    @Transactional
+    public ScheduleCreateResult createSchedule(ScheduleCreateRequest request) {
+        return scheduleService.createSchedule(request);
+    }
+
+    @Override
+    @Transactional
+    public ScheduleResponse updateSchedule(UUID id, ScheduleUpdateRequest request) {
+        return scheduleService.updateSchedule(id, request);
+    }
+
+    @Override
+    @Transactional
+    public void deleteSchedule(UUID id) {
+        scheduleService.deleteSchedule(id);
     }
 }

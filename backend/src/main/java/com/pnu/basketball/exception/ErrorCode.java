@@ -46,6 +46,13 @@ public enum ErrorCode {
     UNAUTHORIZED_POST_EDIT(HttpStatus.FORBIDDEN, "본인의 게시글만 수정/삭제할 수 있습니다."),
     UNAUTHORIZED_COMMENT_EDIT(HttpStatus.FORBIDDEN, "본인의 댓글만 수정/삭제할 수 있습니다."),
 
+    // Schedule
+    SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "일정을 찾을 수 없습니다."),
+    SCHEDULE_OVERLAP(HttpStatus.CONFLICT, "해당 장소의 같은 날짜·시간대에 이미 일정이 등록되어 있습니다."),
+    SCHEDULE_LOCATION_NOT_FOUND(HttpStatus.NOT_FOUND, "매칭 장소를 찾을 수 없습니다."),
+    SCHEDULE_LOCATION_NAME_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 장소명입니다."),
+    SCHEDULE_LOCATION_IN_USE(HttpStatus.BAD_REQUEST, "해당 장소에 등록된 일정이 있어 삭제할 수 없습니다."),
+
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
     GOOGLE_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "구글 API 통신 중 오류가 발생했습니다."),

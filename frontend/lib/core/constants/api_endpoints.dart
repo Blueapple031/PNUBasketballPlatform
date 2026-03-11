@@ -39,4 +39,9 @@ class ApiEndpoints {
       '/api/posts/$postId/comments/$commentId';
   static String postPollVote(String postId) =>
       '/api/posts/$postId/polls/vote';
+
+  // Schedule endpoints
+  static const String schedules = '/api/schedules';
+  static const String scheduleLocations = '/api/schedules/locations';
+  static String schedule(String id) => '/api/schedules/$id';
 }

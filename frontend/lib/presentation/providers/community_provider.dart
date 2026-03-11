@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../core/utils/error_message_util.dart';
 import '../../data/models/post_model.dart';
 import '../../data/repositories/post_repository.dart';
 
@@ -45,7 +46,7 @@ class CommunityProvider with ChangeNotifier {
       _currentPage = result.currentPage;
       _totalElements = result.totalElements;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -63,7 +64,7 @@ class CommunityProvider with ChangeNotifier {
       _errorMessage = null;
       return await postRepository.getPost(postId);
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return null;
     }
@@ -84,7 +85,7 @@ class CommunityProvider with ChangeNotifier {
       await loadPosts(refresh: true);
       return post;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return null;
     }
@@ -102,7 +103,7 @@ class CommunityProvider with ChangeNotifier {
       );
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return false;
     }
@@ -123,7 +124,7 @@ class CommunityProvider with ChangeNotifier {
       notifyListeners();
       return post;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return null;
     }
@@ -136,7 +137,7 @@ class CommunityProvider with ChangeNotifier {
       await loadPosts(refresh: true);
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return false;
     }
@@ -149,7 +150,7 @@ class CommunityProvider with ChangeNotifier {
       await loadPosts(refresh: true);
       return post;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return null;
     }
@@ -166,7 +167,7 @@ class CommunityProvider with ChangeNotifier {
         content: content,
       );
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return null;
     }
@@ -185,7 +186,7 @@ class CommunityProvider with ChangeNotifier {
         content: content,
       );
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return null;
     }
@@ -203,7 +204,7 @@ class CommunityProvider with ChangeNotifier {
       );
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = toUserFriendlyMessage(e);
       notifyListeners();
       return false;
     }

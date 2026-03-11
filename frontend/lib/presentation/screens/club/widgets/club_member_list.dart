@@ -16,17 +16,24 @@ class ClubMemberList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (members.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            '등록된 멤버가 없습니다.',
-            style: TextStyle(color: AppColors.subText),
+      return SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: const SizedBox(
+          height: 300,
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                '등록된 멤버가 없습니다.',
+                style: TextStyle(color: AppColors.subText),
+              ),
+            ),
           ),
         ),
       );
     }
     return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       itemCount: members.length,
       separatorBuilder: (_, __) =>

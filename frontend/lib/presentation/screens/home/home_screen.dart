@@ -129,13 +129,19 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
           ),
           // 프로필 리스트
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _profiles.length,
-              itemBuilder: (context, index) {
-                final profile = _profiles[index];
-                return _buildProfileCard(profile);
+            child: RefreshIndicator(
+              onRefresh: () async {
+                // TODO: 실제 데이터 로드 시 구현
               },
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                itemCount: _profiles.length,
+                itemBuilder: (context, index) {
+                  final profile = _profiles[index];
+                  return _buildProfileCard(profile);
+                },
+              ),
             ),
           ),
         ],
