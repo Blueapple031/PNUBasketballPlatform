@@ -14,11 +14,28 @@ class ScheduleScreen extends StatefulWidget {
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
   static const double _hourRowHeight = 48;
-  static const double _dayColumnWidth = 52;
+  static const double _dayColumnWidth = 60;
   static const double _timeColumnWidth = 44;
   static const int _startHour = 8;
   static const int _endHour = 22;
   static const int _totalHours = _endHour - _startHour;
+
+  static const List<Color> _locationColors = [
+    Color(0xFF26A69A), // teal - 넉넉한터 본관 방향
+    Color(0xFF5C6BC0), // indigo - 넉넉한터 공원 방향
+    Color(0xFF42A5F5), // blue - 온천천 부산대역
+    Color(0xFF66BB6A), // green
+    Color(0xFFFFA726), // orange
+    Color(0xFFAB47BC), // purple
+    Color(0xFFEC407A), // pink
+  ];
+
+  Color _colorForLocation(String locationId, List<ScheduleLocationModel> locations) {
+    final idx = locations.indexWhere((l) => l.id == locationId);
+    if (idx >= 0) return _locationColors[idx % _locationColors.length];
+    final hash = locationId.hashCode.abs();
+    return _locationColors[hash % _locationColors.length];
+  }
 
   @override
   void initState() {
@@ -325,7 +342,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             final height = _timeToHeight(s.startTime, s.endTime);
                             if (top < 0 || top + height > totalHeight) return const SizedBox.shrink();
 
-                            return _buildScheduleBlock(s, top, height);
+                            return _buildScheduleBlock(context, provider, s, top, height);
                           }),
                         ],
                       ),
@@ -344,21 +361,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  Widget _buildScheduleBlock(ScheduleModel schedule, double top, double height) {
-    Color statusColor;
-    switch (schedule.status) {
-      case 'AVAILABLE':
-        statusColor = AppColors.classTeal;
-        break;
-      case 'SCHEDULED':
-        statusColor = AppColors.alertOrange;
-        break;
-      case 'CANCELLED':
-        statusColor = AppColors.subText;
-        break;
-      default:
-        statusColor = AppColors.titleText;
-    }
+  Widget _buildScheduleBlock(
+    BuildContext context,
+    ScheduleProvider provider,
+    ScheduleModel schedule,
+    double top,
+    double height,
+  ) {
+    final locationColor = _colorForLocation(schedule.locationId, provider.locations);
 
     return Positioned(
       left: 2,
@@ -368,24 +378,26 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         height: height.clamp(24, double.infinity) - 4,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: statusColor.withValues(alpha: 0.2),
+          color: locationColor.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(4),
           border: Border(
-            left: BorderSide(color: statusColor, width: 3),
+            left: BorderSide(color: locationColor, width: 3),
           ),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              schedule.locationName,
-              style: const TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.w600,
+            FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.scaleDown,
+              child: Text(
+                schedule.locationName,
+                style: const TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
             Text(
               '${schedule.startTime}~${schedule.endTime}',
@@ -398,7 +410,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               schedule.statusDisplayText,
               style: TextStyle(
                 fontSize: 8,
-                color: statusColor,
+                color: locationColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
