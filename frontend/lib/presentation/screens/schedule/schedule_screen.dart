@@ -394,7 +394,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           schedule.title!,
                           style: const TextStyle(
                             fontSize: 12,
-                            color: AppColors.textSecondary,
+                            color: AppColors.subText,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
