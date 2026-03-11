@@ -49,6 +49,10 @@
                     <span class="tab-icon">📝</span>
                     <span class="tab-text">게시글 관리</span>
                 </button>
+                <button type="button" class="nav-tab" data-tab="schedules">
+                    <span class="tab-icon">📅</span>
+                    <span class="tab-text">일정 관리</span>
+                </button>
             </nav>
             <button type="button" class="logout-btn" id="logout-btn">로그아웃</button>
         </aside>
@@ -183,6 +187,59 @@
                 </div>
             </div>
 
+            <!-- 일정 관리 -->
+            <div id="tab-schedules" class="tab-content">
+                <div class="content-header">
+                    <h1>일정 관리</h1>
+                    <div class="header-info">
+                        <button type="button" class="action-btn" id="btn-create-schedule">+ 일정 등록</button>
+                        <span class="total-count" style="margin-left: 12px;">총 <strong id="schedules-total">0</strong>건</span>
+                    </div>
+                </div>
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <div class="filter-item">
+                            <label>날짜 범위</label>
+                            <input type="date" id="schedule-start-date" class="filter-input">
+                            ~
+                            <input type="date" id="schedule-end-date" class="filter-input">
+                        </div>
+                        <div class="filter-item">
+                            <label>장소</label>
+                            <select id="filter-schedule-location" class="filter-select">
+                                <option value="">전체</option>
+                                <option value="넉넉한터 본관 방향">넉넉한터 본관 방향</option>
+                                <option value="넉넉한터 공원 방향">넉넉한터 공원 방향</option>
+                                <option value="온천천 부산대역 농구장">온천천 부산대역 농구장</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <button type="button" class="search-btn" id="btn-search-schedules">조회</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-wrapper">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>장소</th>
+                                    <th>날짜</th>
+                                    <th>시작</th>
+                                    <th>종료</th>
+                                    <th>상태</th>
+                                    <th>제목</th>
+                                    <th>액션</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schedules-tbody">
+                                <tr><td colspan="7" class="empty-state"><p>날짜 범위를 선택 후 조회하세요.</p></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -295,6 +352,60 @@
         </div>
     </div>
 
+    <!-- 일정 등록/수정 모달 -->
+    <div id="modal-edit-schedule" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-schedule-title">일정 등록</h3>
+                <button type="button" class="modal-close" data-close="modal-edit-schedule">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-schedule-id">
+                <div class="filter-item">
+                    <label>장소 <span class="required">*</span></label>
+                    <select id="edit-schedule-location" class="modal-input" required>
+                        <option value="">선택</option>
+                        <option value="넉넉한터 본관 방향">넉넉한터 본관 방향</option>
+                        <option value="넉넉한터 공원 방향">넉넉한터 공원 방향</option>
+                        <option value="온천천 부산대역 농구장">온천천 부산대역 농구장</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>날짜 <span class="required">*</span></label>
+                    <input type="date" id="edit-schedule-date" class="modal-input" required>
+                </div>
+                <div class="filter-item">
+                    <label>시작 시간 <span class="required">*</span></label>
+                    <input type="time" id="edit-schedule-start-time" class="modal-input" required>
+                </div>
+                <div class="filter-item">
+                    <label>종료 시간 <span class="required">*</span></label>
+                    <input type="time" id="edit-schedule-end-time" class="modal-input" required>
+                </div>
+                <div class="filter-item">
+                    <label>상태</label>
+                    <select id="edit-schedule-status" class="modal-input">
+                        <option value="SCHEDULED">사용 중</option>
+                        <option value="AVAILABLE">비어 있음</option>
+                        <option value="CANCELLED">취소</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>제목</label>
+                    <input type="text" id="edit-schedule-title" class="modal-input" placeholder="예: 동아리 연습" maxlength="200">
+                </div>
+                <div class="filter-item">
+                    <label>설명</label>
+                    <textarea id="edit-schedule-description" class="modal-input" rows="3" placeholder="추가 설명"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="modal-edit-schedule">취소</button>
+                <button type="button" class="btn btn-primary" id="btn-submit-schedule">저장</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 댓글 작성 모달 -->
     <div id="modal-add-comment" class="modal">
         <div class="modal-content">
@@ -325,6 +436,7 @@
     <script src="js/users.js"></script>
     <script src="js/clubs.js"></script>
     <script src="js/posts.js"></script>
+    <script src="js/schedules.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (Admin.isLoggedIn()) {

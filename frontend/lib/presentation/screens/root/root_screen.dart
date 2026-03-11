@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../club/club_screen.dart';
 import '../community/community_screen.dart';
 import '../home/home_screen.dart';
+import '../schedule/schedule_screen.dart';
 import '../user/user_tab.dart';
 
 class RootScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _RootScreenState extends State<RootScreen> {
     HomeScreen(),
     ClubScreen(),
     CommunityScreen(),
-    PlaceholderScreen(title: '일정'),
+    ScheduleScreen(),
     UserTab(),
   ];
 

@@ -149,3 +149,32 @@ CREATE TABLE poll_votes (
 
 CREATE INDEX idx_poll_votes_poll_id ON poll_votes(poll_id);
 CREATE INDEX idx_poll_votes_user_id ON poll_votes(user_id);
+
+-- ============================================================
+-- schedule_status ENUM
+-- ============================================================
+CREATE TYPE schedule_status AS ENUM ('AVAILABLE', 'SCHEDULED', 'CANCELLED');
+CREATE CAST (character varying AS schedule_status) WITH INOUT AS IMPLICIT;
+
+-- ============================================================
+-- schedules (농구장 일정)
+-- MVP: 넉넉한터 본관 방향, 넉넉한터 공원 방향, 온천천 부산대역 농구장
+-- ============================================================
+CREATE TABLE schedules (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    location        VARCHAR(100) NOT NULL,
+    schedule_date   DATE NOT NULL,
+    start_time      TIME NOT NULL,
+    end_time        TIME NOT NULL,
+    status          schedule_status NOT NULL DEFAULT 'SCHEDULED',
+    title           VARCHAR(200),
+    description     TEXT,
+    match_id        UUID,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_schedule_time CHECK (start_time < end_time)
+);
+
+CREATE INDEX idx_schedules_location ON schedules(location);
+CREATE INDEX idx_schedules_date ON schedules(schedule_date);
+CREATE INDEX idx_schedules_location_date ON schedules(location, schedule_date);

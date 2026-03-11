@@ -50,7 +50,8 @@ const Admin = (function () {
 
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-            throw new Error(data.message || `요청 실패: ${response.status}`);
+            const msg = data.error?.message || data.message || `요청 실패: ${response.status}`;
+            throw new Error(msg);
         }
         return data;
     }

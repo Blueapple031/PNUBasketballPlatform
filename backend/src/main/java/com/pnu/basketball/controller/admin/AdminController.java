@@ -10,9 +10,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -151,5 +154,43 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> deleteComment(@PathVariable UUID id) {
         adminService.deleteComment(id);
         return ResponseEntity.ok(ApiResponse.success(null, "댓글이 삭제되었습니다."));
+    }
+
+    // ========== 일정 관리 ==========
+
+    @GetMapping("/schedules")
+    public ResponseEntity<ApiResponse<List<ScheduleResponse>>> getSchedules(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String location) {
+        List<ScheduleResponse> schedules = adminService.getSchedules(startDate, endDate, location);
+        return ResponseEntity.ok(ApiResponse.success(schedules, "일정 목록 조회 성공"));
+    }
+
+    @GetMapping("/schedules/{id}")
+    public ResponseEntity<ApiResponse<ScheduleResponse>> getSchedule(@PathVariable UUID id) {
+        ScheduleResponse schedule = adminService.getSchedule(id);
+        return ResponseEntity.ok(ApiResponse.success(schedule, "일정 조회 성공"));
+    }
+
+    @PostMapping("/schedules")
+    public ResponseEntity<ApiResponse<ScheduleResponse>> createSchedule(
+            @Valid @RequestBody ScheduleCreateRequest request) {
+        ScheduleResponse schedule = adminService.createSchedule(request);
+        return ResponseEntity.ok(ApiResponse.success(schedule, "일정이 등록되었습니다."));
+    }
+
+    @PutMapping("/schedules/{id}")
+    public ResponseEntity<ApiResponse<ScheduleResponse>> updateSchedule(
+            @PathVariable UUID id,
+            @Valid @RequestBody ScheduleUpdateRequest request) {
+        ScheduleResponse schedule = adminService.updateSchedule(id, request);
+        return ResponseEntity.ok(ApiResponse.success(schedule, "일정이 수정되었습니다."));
+    }
+
+    @DeleteMapping("/schedules/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteSchedule(@PathVariable UUID id) {
+        adminService.deleteSchedule(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "일정이 삭제되었습니다."));
     }
 }

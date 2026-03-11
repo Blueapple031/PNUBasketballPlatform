@@ -40,4 +40,15 @@ public interface AdminService {
     CommentResponse createComment(Long userId, UUID postId, CreateCommentRequest request);
 
     void deleteComment(UUID commentId);
+
+    // 일정 관리
+    List<ScheduleResponse> getSchedules(java.time.LocalDate startDate, java.time.LocalDate endDate, String location);
+
+    ScheduleResponse getSchedule(UUID id);
+
+    ScheduleResponse createSchedule(ScheduleCreateRequest request);
+
+    ScheduleResponse updateSchedule(UUID id, ScheduleUpdateRequest request);
+
+    void deleteSchedule(UUID id);
 }
