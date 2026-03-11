@@ -41,8 +41,17 @@ public interface AdminService {
 
     void deleteComment(UUID commentId);
 
+    // 매칭 장소 관리
+    List<ScheduleLocationResponse> getScheduleLocations();
+
+    ScheduleLocationResponse createScheduleLocation(ScheduleLocationCreateRequest request);
+
+    ScheduleLocationResponse updateScheduleLocation(UUID id, ScheduleLocationUpdateRequest request);
+
+    void deleteScheduleLocation(UUID id);
+
     // 일정 관리
-    List<ScheduleResponse> getSchedules(java.time.LocalDate startDate, java.time.LocalDate endDate, String location);
+    List<ScheduleResponse> getSchedules(java.time.LocalDate startDate, java.time.LocalDate endDate, UUID locationId);
 
     ScheduleResponse getSchedule(UUID id);
 

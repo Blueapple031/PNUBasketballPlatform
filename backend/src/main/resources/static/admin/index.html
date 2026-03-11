@@ -49,6 +49,10 @@
                     <span class="tab-icon">📝</span>
                     <span class="tab-text">게시글 관리</span>
                 </button>
+                <button type="button" class="nav-tab" data-tab="schedule-locations">
+                    <span class="tab-icon">📍</span>
+                    <span class="tab-text">매칭 장소</span>
+                </button>
                 <button type="button" class="nav-tab" data-tab="schedules">
                     <span class="tab-icon">📅</span>
                     <span class="tab-text">일정 관리</span>
@@ -187,6 +191,33 @@
                 </div>
             </div>
 
+            <!-- 매칭 장소 관리 -->
+            <div id="tab-schedule-locations" class="tab-content">
+                <div class="content-header">
+                    <h1>매칭 장소 관리</h1>
+                    <div class="header-info">
+                        <button type="button" class="action-btn" id="btn-create-location">+ 장소 추가</button>
+                        <span class="total-count" style="margin-left: 12px;">총 <strong id="locations-total">0</strong>곳</span>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-wrapper">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>순서</th>
+                                    <th>장소명</th>
+                                    <th>액션</th>
+                                </tr>
+                            </thead>
+                            <tbody id="locations-tbody">
+                                <tr><td colspan="3" class="empty-state"><p>데이터를 불러오는 중...</p></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- 일정 관리 -->
             <div id="tab-schedules" class="tab-content">
                 <div class="content-header">
@@ -208,9 +239,6 @@
                             <label>장소</label>
                             <select id="filter-schedule-location" class="filter-select">
                                 <option value="">전체</option>
-                                <option value="넉넉한터 본관 방향">넉넉한터 본관 방향</option>
-                                <option value="넉넉한터 공원 방향">넉넉한터 공원 방향</option>
-                                <option value="온천천 부산대역 농구장">온천천 부산대역 농구장</option>
                             </select>
                         </div>
                         <div class="filter-item">
@@ -352,6 +380,31 @@
         </div>
     </div>
 
+    <!-- 매칭 장소 등록/수정 모달 -->
+    <div id="modal-edit-location" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-location-title">장소 추가</h3>
+                <button type="button" class="modal-close" data-close="modal-edit-location">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-location-id">
+                <div class="filter-item">
+                    <label>장소명 <span class="required">*</span></label>
+                    <input type="text" id="edit-location-name" class="modal-input" required placeholder="예: 넉넉한터 본관 방향">
+                </div>
+                <div class="filter-item">
+                    <label>정렬 순서</label>
+                    <input type="number" id="edit-location-sort-order" class="modal-input" value="0" min="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="modal-edit-location">취소</button>
+                <button type="button" class="btn btn-primary" id="btn-submit-location">저장</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 일정 등록/수정 모달 -->
     <div id="modal-edit-schedule" class="modal">
         <div class="modal-content">
@@ -365,9 +418,6 @@
                     <label>장소 <span class="required">*</span></label>
                     <select id="edit-schedule-location" class="modal-input" required>
                         <option value="">선택</option>
-                        <option value="넉넉한터 본관 방향">넉넉한터 본관 방향</option>
-                        <option value="넉넉한터 공원 방향">넉넉한터 공원 방향</option>
-                        <option value="온천천 부산대역 농구장">온천천 부산대역 농구장</option>
                     </select>
                 </div>
                 <div class="filter-item">
@@ -436,6 +486,7 @@
     <script src="js/users.js"></script>
     <script src="js/clubs.js"></script>
     <script src="js/posts.js"></script>
+    <script src="js/schedule-locations.js"></script>
     <script src="js/schedules.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {

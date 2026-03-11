@@ -10,6 +10,7 @@ import com.pnu.basketball.dto.request.ScheduleCreateRequest;
 import com.pnu.basketball.dto.request.ScheduleUpdateRequest;
 import com.pnu.basketball.service.notification.FcmService;
 import com.pnu.basketball.service.poll.PollService;
+import com.pnu.basketball.service.schedule.ScheduleLocationService;
 import com.pnu.basketball.service.schedule.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ public class AdminServiceImpl implements AdminService {
     private final PollService pollService;
     private final FcmService fcmService;
     private final ScheduleService scheduleService;
+    private final ScheduleLocationService scheduleLocationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -308,12 +310,38 @@ public class AdminServiceImpl implements AdminService {
                 .build();
     }
 
+    // ========== 매칭 장소 관리 ==========
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ScheduleLocationResponse> getScheduleLocations() {
+        return scheduleLocationService.getAllLocations();
+    }
+
+    @Override
+    @Transactional
+    public ScheduleLocationResponse createScheduleLocation(ScheduleLocationCreateRequest request) {
+        return scheduleLocationService.createLocation(request);
+    }
+
+    @Override
+    @Transactional
+    public ScheduleLocationResponse updateScheduleLocation(UUID id, ScheduleLocationUpdateRequest request) {
+        return scheduleLocationService.updateLocation(id, request);
+    }
+
+    @Override
+    @Transactional
+    public void deleteScheduleLocation(UUID id) {
+        scheduleLocationService.deleteLocation(id);
+    }
+
     // ========== 일정 관리 ==========
 
     @Override
     @Transactional(readOnly = true)
-    public List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, String location) {
-        return scheduleService.getSchedules(startDate, endDate, location);
+    public List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, UUID locationId) {
+        return scheduleService.getSchedules(startDate, endDate, locationId);
     }
 
     @Override

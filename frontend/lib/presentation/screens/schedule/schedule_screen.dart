@@ -41,6 +41,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       body: Column(
         children: [
           _buildFilterSection(context),
+          _buildLocationChips(context),
           Expanded(child: _buildContent(context)),
         ],
       ),
@@ -76,7 +77,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   Expanded(
                     flex: 2,
                     child: DropdownButtonFormField<String>(
-                      value: provider.selectedLocation,
+                      value: provider.selectedLocationId,
                       decoration: const InputDecoration(
                         contentPadding:
                             EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -90,16 +91,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         ),
                         ...provider.locations.map(
                           (loc) => DropdownMenuItem<String>(
-                            value: loc.displayName,
+                            value: loc.id,
                             child: Text(
-                              loc.displayName,
+                              loc.name,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
                       ],
                       onChanged: (v) {
-                        provider.setSelectedLocation(v);
+                        provider.setSelectedLocationId(v);
                         provider.loadSchedules(refresh: true);
                       },
                     ),
@@ -117,8 +118,66 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 ),
               ),
             ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLocationChips(BuildContext context) {
+    return Consumer<ScheduleProvider>(
+      builder: (context, provider, _) {
+        if (provider.locations.isEmpty) return const SizedBox.shrink();
+
+        return Container(
+          color: AppColors.white,
+          padding: const EdgeInsets.only(bottom: 12),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _buildLocationChip(
+                  context,
+                  provider,
+                  null,
+                  '전체',
+                ),
+                ...provider.locations.map(
+                  (loc) => _buildLocationChip(
+                    context,
+                    provider,
+                    loc.id,
+                    loc.name,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLocationChip(
+    BuildContext context,
+    ScheduleProvider provider,
+    String? locationId,
+    String label,
+  ) {
+    final isSelected = provider.selectedLocationId == locationId;
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        label: Text(label, overflow: TextOverflow.ellipsis),
+        selected: isSelected,
+        onSelected: (_) {
+          provider.setSelectedLocationId(locationId);
+          provider.loadSchedules(refresh: true);
+        },
+        selectedColor: AppColors.activeBlue.withValues(alpha: 0.3),
+        checkmarkColor: AppColors.activeBlue,
       ),
     );
   }
@@ -188,20 +247,24 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           itemCount: days,
           itemBuilder: (context, index) {
             final date = startDate.add(Duration(days: index));
-            final schedules = provider.getSchedulesForDate(date);
-            if (schedules.isEmpty &&
+            final grouped = provider.getSchedulesGroupedByLocation(date);
+            final hasAny = grouped.values.any((list) => list.isNotEmpty);
+            if (!hasAny &&
                 date.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
               return const SizedBox.shrink();
             }
 
-            return _buildDateSection(date, schedules);
+            return _buildDateSection(date, grouped);
           },
         );
       },
     );
   }
 
-  Widget _buildDateSection(DateTime date, List<ScheduleModel> schedules) {
+  Widget _buildDateSection(
+    DateTime date,
+    Map<String, List<ScheduleModel>> groupedByLocation,
+  ) {
     final isToday = _isSameDay(date, DateTime.now());
     final dateStr = DateFormat('M/d (E)', 'ko').format(date);
 
@@ -235,7 +298,31 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               ],
             ),
           ),
-          if (schedules.isEmpty)
+          ...groupedByLocation.entries.map((entry) {
+            final locationName = entry.key;
+            final schedules = entry.value;
+            if (schedules.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, bottom: 4),
+                  child: Text(
+                    locationName,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.activeBlue,
+                    ),
+                  ),
+                ),
+                ...schedules.map((s) => _buildScheduleCard(s)),
+              ],
+            );
+          }),
+          if (groupedByLocation.values.every((list) => list.isEmpty))
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
@@ -245,9 +332,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   color: AppColors.subText,
                 ),
               ),
-            )
-          else
-            ...schedules.map((s) => _buildScheduleCard(s)),
+            ),
         ],
       ),
     );
@@ -297,18 +382,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        schedule.location,
+                        '${schedule.startTime} ~ ${schedule.endTime}',
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${schedule.startTime} ~ ${schedule.endTime}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.subText,
                         ),
                       ),
                       if (schedule.title != null && schedule.title!.isNotEmpty) ...[

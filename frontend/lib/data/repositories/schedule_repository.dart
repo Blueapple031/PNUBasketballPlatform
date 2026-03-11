@@ -22,7 +22,7 @@ class ScheduleRepository {
   Future<ScheduleListResult> getSchedules({
     DateTime? startDate,
     DateTime? endDate,
-    String? location,
+    String? locationId,
   }) async {
     final token = await _getAccessToken();
     if (token == null) throw Exception('로그인이 필요합니다.');
@@ -30,7 +30,7 @@ class ScheduleRepository {
       accessToken: token,
       startDate: startDate,
       endDate: endDate,
-      location: location,
+      locationId: locationId,
     );
   }
 }

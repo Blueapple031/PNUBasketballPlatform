@@ -1,8 +1,9 @@
 package com.pnu.basketball.controller.schedule;
 
-import com.pnu.basketball.domain.ScheduleLocation;
 import com.pnu.basketball.dto.response.ApiResponse;
+import com.pnu.basketball.dto.response.ScheduleLocationResponse;
 import com.pnu.basketball.dto.response.ScheduleResponse;
+import com.pnu.basketball.service.schedule.ScheduleLocationService;
 import com.pnu.basketball.service.schedule.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -14,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/schedules")
@@ -22,21 +22,32 @@ import java.util.stream.Collectors;
 public class ScheduleController {
 
     private final ScheduleService scheduleService;
+    private final ScheduleLocationService locationService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Map<String, Object>>> getSchedules(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) String location) {
-        List<ScheduleResponse> schedules = scheduleService.getSchedules(startDate, endDate, location);
+            @RequestParam(required = false) UUID locationId) {
+        List<ScheduleResponse> schedules = scheduleService.getSchedules(startDate, endDate, locationId);
+        List<ScheduleLocationResponse> locations = locationService.getAllLocations();
 
         Map<String, Object> data = new HashMap<>();
         data.put("schedules", schedules);
-        data.put("locations", java.util.Arrays.stream(ScheduleLocation.values())
-                .map(loc -> Map.of("id", loc.name(), "displayName", loc.getDisplayName()))
-                .collect(Collectors.toList()));
+        data.put("locations", locations.stream()
+                .map(loc -> Map.<String, Object>of(
+                        "id", loc.getId().toString(),
+                        "name", loc.getName(),
+                        "sortOrder", loc.getSortOrder() != null ? loc.getSortOrder() : 0))
+                .toList());
 
         return ResponseEntity.ok(ApiResponse.success(data, "일정 조회 성공"));
+    }
+
+    @GetMapping("/locations")
+    public ResponseEntity<ApiResponse<List<ScheduleLocationResponse>>> getLocations() {
+        List<ScheduleLocationResponse> locations = locationService.getAllLocations();
+        return ResponseEntity.ok(ApiResponse.success(locations, "매칭 장소 목록 조회 성공"));
     }
 
     @GetMapping("/{id}")

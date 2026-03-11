@@ -49,7 +49,9 @@ public enum ErrorCode {
     // Schedule
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "일정을 찾을 수 없습니다."),
     SCHEDULE_OVERLAP(HttpStatus.CONFLICT, "해당 장소의 같은 날짜·시간대에 이미 일정이 등록되어 있습니다."),
-    INVALID_SCHEDULE_LOCATION(HttpStatus.BAD_REQUEST, "유효하지 않은 장소입니다. (넉넉한터 본관 방향, 넉넉한터 공원 방향, 온천천 부산대역 농구장 중 선택)"),
+    SCHEDULE_LOCATION_NOT_FOUND(HttpStatus.NOT_FOUND, "매칭 장소를 찾을 수 없습니다."),
+    SCHEDULE_LOCATION_NAME_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 장소명입니다."),
+    SCHEDULE_LOCATION_IN_USE(HttpStatus.BAD_REQUEST, "해당 장소에 등록된 일정이 있어 삭제할 수 없습니다."),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),

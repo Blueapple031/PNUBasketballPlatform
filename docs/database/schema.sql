@@ -151,6 +151,18 @@ CREATE INDEX idx_poll_votes_poll_id ON poll_votes(poll_id);
 CREATE INDEX idx_poll_votes_user_id ON poll_votes(user_id);
 
 -- ============================================================
+-- schedule_locations (매칭 장소 - 유동적 확장)
+-- ============================================================
+CREATE TABLE schedule_locations (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name            VARCHAR(100) NOT NULL UNIQUE,
+    sort_order      INT NOT NULL DEFAULT 0,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_schedule_locations_sort ON schedule_locations(sort_order);
+
+-- ============================================================
 -- schedule_status ENUM
 -- ============================================================
 CREATE TYPE schedule_status AS ENUM ('AVAILABLE', 'SCHEDULED', 'CANCELLED');
@@ -158,11 +170,10 @@ CREATE CAST (character varying AS schedule_status) WITH INOUT AS IMPLICIT;
 
 -- ============================================================
 -- schedules (농구장 일정)
--- MVP: 넉넉한터 본관 방향, 넉넉한터 공원 방향, 온천천 부산대역 농구장
 -- ============================================================
 CREATE TABLE schedules (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    location        VARCHAR(100) NOT NULL,
+    location_id     UUID NOT NULL REFERENCES schedule_locations(id) ON DELETE RESTRICT,
     schedule_date   DATE NOT NULL,
     start_time      TIME NOT NULL,
     end_time        TIME NOT NULL,
@@ -175,6 +186,13 @@ CREATE TABLE schedules (
     CONSTRAINT chk_schedule_time CHECK (start_time < end_time)
 );
 
-CREATE INDEX idx_schedules_location ON schedules(location);
+CREATE INDEX idx_schedules_location_id ON schedules(location_id);
 CREATE INDEX idx_schedules_date ON schedules(schedule_date);
-CREATE INDEX idx_schedules_location_date ON schedules(location, schedule_date);
+CREATE INDEX idx_schedules_location_date ON schedules(location_id, schedule_date);
+
+-- MVP 기본 매칭 장소
+INSERT INTO schedule_locations (name, sort_order) VALUES
+    ('넉넉한터 본관 방향', 1),
+    ('넉넉한터 공원 방향', 2),
+    ('온천천 부산대역 농구장', 3)
+ON CONFLICT (name) DO NOTHING;

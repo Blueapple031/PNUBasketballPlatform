@@ -156,14 +156,43 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(null, "댓글이 삭제되었습니다."));
     }
 
+    // ========== 매칭 장소 관리 ==========
+
+    @GetMapping("/schedule-locations")
+    public ResponseEntity<ApiResponse<List<ScheduleLocationResponse>>> getScheduleLocations() {
+        List<ScheduleLocationResponse> locations = adminService.getScheduleLocations();
+        return ResponseEntity.ok(ApiResponse.success(locations, "매칭 장소 목록 조회 성공"));
+    }
+
+    @PostMapping("/schedule-locations")
+    public ResponseEntity<ApiResponse<ScheduleLocationResponse>> createScheduleLocation(
+            @Valid @RequestBody ScheduleLocationCreateRequest request) {
+        ScheduleLocationResponse location = adminService.createScheduleLocation(request);
+        return ResponseEntity.ok(ApiResponse.success(location, "매칭 장소가 등록되었습니다."));
+    }
+
+    @PutMapping("/schedule-locations/{id}")
+    public ResponseEntity<ApiResponse<ScheduleLocationResponse>> updateScheduleLocation(
+            @PathVariable UUID id,
+            @Valid @RequestBody ScheduleLocationUpdateRequest request) {
+        ScheduleLocationResponse location = adminService.updateScheduleLocation(id, request);
+        return ResponseEntity.ok(ApiResponse.success(location, "매칭 장소가 수정되었습니다."));
+    }
+
+    @DeleteMapping("/schedule-locations/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteScheduleLocation(@PathVariable UUID id) {
+        adminService.deleteScheduleLocation(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "매칭 장소가 삭제되었습니다."));
+    }
+
     // ========== 일정 관리 ==========
 
     @GetMapping("/schedules")
     public ResponseEntity<ApiResponse<List<ScheduleResponse>>> getSchedules(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) String location) {
-        List<ScheduleResponse> schedules = adminService.getSchedules(startDate, endDate, location);
+            @RequestParam(required = false) UUID locationId) {
+        List<ScheduleResponse> schedules = adminService.getSchedules(startDate, endDate, locationId);
         return ResponseEntity.ok(ApiResponse.success(schedules, "일정 목록 조회 성공"));
     }
 

@@ -1,6 +1,5 @@
 package com.pnu.basketball.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
@@ -16,8 +16,8 @@ import java.time.LocalTime;
 @Builder
 public class ScheduleUpdateRequest {
 
-    @NotBlank(message = "장소는 필수입니다.")
-    private String location;
+    @NotNull(message = "장소는 필수입니다.")
+    private UUID locationId;
 
     @NotNull(message = "날짜는 필수입니다.")
     private LocalDate scheduleDate;

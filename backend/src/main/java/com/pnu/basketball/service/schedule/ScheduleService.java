@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface ScheduleService {
 
-    List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, String location);
+    List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, UUID locationId);
 
     ScheduleResponse getSchedule(UUID id);
 

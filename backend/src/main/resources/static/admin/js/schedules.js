@@ -1,7 +1,7 @@
 /**
  * 일정 관리 탭
  */
-var SchedulesState = { startDate: null, endDate: null, location: null };
+var SchedulesState = { startDate: null, endDate: null, locationId: null };
 
 function loadSchedules() {
     var startEl = document.getElementById('schedule-start-date');
@@ -15,8 +15,16 @@ function loadSchedules() {
     }
     SchedulesState.startDate = startEl.value;
     SchedulesState.endDate = endEl.value;
-    SchedulesState.location = document.getElementById('filter-schedule-location').value || null;
+    var locEl = document.getElementById('filter-schedule-location');
+    SchedulesState.locationId = (locEl && locEl.value) || null;
 
+    if (typeof refreshLocationSelects === 'function' && typeof LocationsCache !== 'undefined' && LocationsCache.length > 0) {
+        refreshLocationSelects();
+    }
+    if (typeof loadScheduleLocations === 'function' && (!LocationsCache || LocationsCache.length === 0)) {
+        loadScheduleLocations().then(fetchSchedules).catch(function () { fetchSchedules(); });
+        return;
+    }
     fetchSchedules();
 }
 
@@ -24,7 +32,7 @@ function fetchSchedules() {
     var params = new URLSearchParams();
     if (SchedulesState.startDate) params.set('startDate', SchedulesState.startDate);
     if (SchedulesState.endDate) params.set('endDate', SchedulesState.endDate);
-    if (SchedulesState.location) params.set('location', SchedulesState.location);
+    if (SchedulesState.locationId) params.set('locationId', SchedulesState.locationId);
 
     document.getElementById('schedules-tbody').innerHTML =
         '<tr><td colspan="7" class="empty-state"><p>로딩 중...</p></td></tr>';
@@ -54,7 +62,7 @@ function fetchSchedules() {
                     var titleShort = (s.title || '').length > 20 ? (s.title || '').substring(0, 20) + '...' : (s.title || '-');
                     return (
                         '<tr>' +
-                        '<td>' + (s.location || '-') + '</td>' +
+                        '<td>' + (s.locationName || '-') + '</td>' +
                         '<td>' + dateStr + '</td>' +
                         '<td>' + startStr + '</td>' +
                         '<td>' + endStr + '</td>' +
@@ -94,12 +102,16 @@ function openScheduleModal(id) {
     document.getElementById('modal-schedule-title').textContent = id ? '일정 수정' : '일정 등록';
     document.getElementById('edit-schedule-id').value = id || '';
 
+    if (typeof refreshLocationSelects === 'function') {
+        refreshLocationSelects();
+    }
+
     if (id) {
         Admin.apiRequest('/admin/schedules/' + id)
             .then(function (res) {
                 if (res.success && res.data) {
                     var s = res.data;
-                    document.getElementById('edit-schedule-location').value = s.location || '';
+                    document.getElementById('edit-schedule-location').value = s.locationId || '';
                     document.getElementById('edit-schedule-date').value = s.scheduleDate || '';
                     document.getElementById('edit-schedule-start-time').value = s.startTime ? String(s.startTime).substring(0, 5) : '';
                     document.getElementById('edit-schedule-end-time').value = s.endTime ? String(s.endTime).substring(0, 5) : '';
@@ -123,8 +135,9 @@ function openScheduleModal(id) {
 
 function submitSchedule() {
     var id = document.getElementById('edit-schedule-id').value;
+    var locationId = document.getElementById('edit-schedule-location').value;
     var payload = {
-        location: document.getElementById('edit-schedule-location').value,
+        locationId: locationId,
         scheduleDate: document.getElementById('edit-schedule-date').value,
         startTime: document.getElementById('edit-schedule-start-time').value,
         endTime: document.getElementById('edit-schedule-end-time').value,
@@ -133,7 +146,7 @@ function submitSchedule() {
         description: document.getElementById('edit-schedule-description').value || null
     };
 
-    if (!payload.location || !payload.scheduleDate || !payload.startTime || !payload.endTime) {
+    if (!payload.locationId || !payload.scheduleDate || !payload.startTime || !payload.endTime) {
         alert('장소, 날짜, 시작/종료 시간은 필수입니다.');
         return;
     }

@@ -23,8 +23,9 @@ public class Schedule {
     @Column(name = "id", updatable = false)
     private UUID id;
 
-    @Column(nullable = false, length = 100)
-    private String location;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_id", nullable = false)
+    private ScheduleLocationEntity location;
 
     @Column(name = "schedule_date", nullable = false)
     private LocalDate scheduleDate;
@@ -57,7 +58,7 @@ public class Schedule {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public void update(String location, LocalDate scheduleDate, LocalTime startTime,
+    public void update(ScheduleLocationEntity location, LocalDate scheduleDate, LocalTime startTime,
                        LocalTime endTime, ScheduleStatus status, String title, String description) {
         if (location != null) this.location = location;
         if (scheduleDate != null) this.scheduleDate = scheduleDate;

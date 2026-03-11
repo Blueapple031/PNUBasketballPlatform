@@ -16,7 +16,7 @@ class ScheduleService {
     required String accessToken,
     DateTime? startDate,
     DateTime? endDate,
-    String? location,
+    String? locationId,
   }) async {
     final params = <String, String>{};
     if (startDate != null) {
@@ -27,8 +27,8 @@ class ScheduleService {
       params['endDate'] =
           '${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}';
     }
-    if (location != null && location.isNotEmpty) {
-      params['location'] = location;
+    if (locationId != null && locationId.isNotEmpty) {
+      params['locationId'] = locationId;
     }
 
     final query = params.isEmpty ? '' : '?${params.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';

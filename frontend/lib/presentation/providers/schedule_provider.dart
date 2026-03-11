@@ -11,22 +11,16 @@ class ScheduleProvider with ChangeNotifier {
   List<ScheduleModel> _schedules = [];
   List<ScheduleLocationModel> _locations = [];
   DateTime _selectedDate = DateTime.now();
-  String? _selectedLocation;
+  String? _selectedLocationId;
   bool _isLoading = false;
   String? _errorMessage;
 
   List<ScheduleModel> get schedules => _schedules;
   List<ScheduleLocationModel> get locations => _locations;
   DateTime get selectedDate => _selectedDate;
-  String? get selectedLocation => _selectedLocation;
+  String? get selectedLocationId => _selectedLocationId;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-
-  static const List<ScheduleLocationModel> defaultLocations = [
-    ScheduleLocationModel(id: 'NUNGNEUNG_BON', displayName: '넉넉한터 본관 방향'),
-    ScheduleLocationModel(id: 'NUNGNEUNG_PARK', displayName: '넉넉한터 공원 방향'),
-    ScheduleLocationModel(id: 'ONCHEON_BUSAN', displayName: '온천천 부산대역 농구장'),
-  ];
 
   Future<void> loadSchedules({bool refresh = true}) async {
     if (_isLoading) return;
@@ -41,17 +35,15 @@ class ScheduleProvider with ChangeNotifier {
       final result = await scheduleRepository.getSchedules(
         startDate: startDate,
         endDate: endDate,
-        location: _selectedLocation,
+        locationId: _selectedLocationId,
       );
 
       _schedules = result.schedules;
-      _locations = result.locations.isNotEmpty
-          ? result.locations
-          : defaultLocations;
+      _locations = result.locations;
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
       _schedules = [];
-      _locations = defaultLocations;
+      _locations = [];
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -63,8 +55,8 @@ class ScheduleProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setSelectedLocation(String? location) {
-    _selectedLocation = location;
+  void setSelectedLocationId(String? locationId) {
+    _selectedLocationId = locationId;
     notifyListeners();
   }
 
@@ -84,10 +76,10 @@ class ScheduleProvider with ChangeNotifier {
     final list = getSchedulesForDate(date);
     final map = <String, List<ScheduleModel>>{};
     for (final s in list) {
-      map.putIfAbsent(s.location, () => []).add(s);
+      map.putIfAbsent(s.locationName, () => []).add(s);
     }
-    for (final loc in defaultLocations) {
-      map.putIfAbsent(loc.displayName, () => []);
+    for (final loc in _locations) {
+      map.putIfAbsent(loc.name, () => []);
     }
     return map;
   }

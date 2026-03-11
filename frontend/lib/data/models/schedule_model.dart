@@ -1,6 +1,7 @@
 class ScheduleModel {
   final String id;
-  final String location;
+  final String locationId;
+  final String locationName;
   final DateTime scheduleDate;
   final String startTime;
   final String endTime;
@@ -11,7 +12,8 @@ class ScheduleModel {
 
   ScheduleModel({
     required this.id,
-    required this.location,
+    required this.locationId,
+    required this.locationName,
     required this.scheduleDate,
     required this.startTime,
     required this.endTime,
@@ -48,7 +50,8 @@ class ScheduleModel {
 
     return ScheduleModel(
       id: json['id']?.toString() ?? '',
-      location: json['location'] as String? ?? '',
+      locationId: json['locationId']?.toString() ?? '',
+      locationName: json['locationName'] as String? ?? '',
       scheduleDate: dateStr != null ? DateTime.parse(dateStr) : DateTime.now(),
       startTime: startStr,
       endTime: endStr,
@@ -79,14 +82,14 @@ class ScheduleModel {
 
 class ScheduleLocationModel {
   final String id;
-  final String displayName;
+  final String name;
 
-  ScheduleLocationModel({required this.id, required this.displayName});
+  ScheduleLocationModel({required this.id, required this.name});
 
   factory ScheduleLocationModel.fromJson(Map<String, dynamic> json) {
     return ScheduleLocationModel(
-      id: json['id'] as String? ?? '',
-      displayName: json['displayName'] as String? ?? '',
+      id: json['id']?.toString() ?? '',
+      name: json['name'] as String? ?? json['displayName'] as String? ?? '',
     );
   }
 }
