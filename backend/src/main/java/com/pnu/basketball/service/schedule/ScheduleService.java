@@ -3,6 +3,7 @@ package com.pnu.basketball.service.schedule;
 import com.pnu.basketball.domain.Schedule;
 import com.pnu.basketball.dto.request.ScheduleCreateRequest;
 import com.pnu.basketball.dto.request.ScheduleUpdateRequest;
+import com.pnu.basketball.dto.response.ScheduleCreateResult;
 import com.pnu.basketball.dto.response.ScheduleResponse;
 
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ public interface ScheduleService {
 
     ScheduleResponse getSchedule(UUID id);
 
-    ScheduleResponse createSchedule(ScheduleCreateRequest request);
+    ScheduleCreateResult createSchedule(ScheduleCreateRequest request);
 
     ScheduleResponse updateSchedule(UUID id, ScheduleUpdateRequest request);
 

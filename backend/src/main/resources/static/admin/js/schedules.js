@@ -35,7 +35,7 @@ function fetchSchedules() {
     if (SchedulesState.locationId) params.set('locationId', SchedulesState.locationId);
 
     document.getElementById('schedules-tbody').innerHTML =
-        '<tr><td colspan="7" class="empty-state"><p>로딩 중...</p></td></tr>';
+        '<tr><td colspan="8" class="empty-state"><p>로딩 중...</p></td></tr>';
 
     Admin.apiRequest('/admin/schedules?' + params.toString())
         .then(function (res) {
@@ -47,11 +47,12 @@ function fetchSchedules() {
 
             if (content.length === 0) {
                 document.getElementById('schedules-tbody').innerHTML =
-                    '<tr><td colspan="7" class="empty-state"><p>해당 기간에 등록된 일정이 없습니다.</p></td></tr>';
+                    '<tr><td colspan="8" class="empty-state"><p>해당 기간에 등록된 일정이 없습니다.</p></td></tr>';
                 return;
             }
 
             var statusMap = { AVAILABLE: '비어있음', SCHEDULED: '사용중', CANCELLED: '취소' };
+            var typeMap = { REGULAR: '일반', TRAINING: '훈련' };
             var html = content
                 .map(function (s) {
                     var dateStr = s.scheduleDate || '-';
@@ -59,10 +60,12 @@ function fetchSchedules() {
                     var endStr = s.endTime ? String(s.endTime).substring(0, 5) : '-';
                     var statusClass = s.status === 'SCHEDULED' ? 'status-approved' : s.status === 'CANCELLED' ? 'status-rejected' : 'status-pending';
                     var statusText = statusMap[s.status] || s.status;
+                    var typeText = typeMap[s.scheduleType] || (s.scheduleType || '일반');
                     var titleShort = (s.title || '').length > 20 ? (s.title || '').substring(0, 20) + '...' : (s.title || '-');
                     return (
                         '<tr>' +
                         '<td>' + (s.locationName || '-') + '</td>' +
+                        '<td>' + typeText + '</td>' +
                         '<td>' + dateStr + '</td>' +
                         '<td>' + startStr + '</td>' +
                         '<td>' + endStr + '</td>' +
@@ -81,7 +84,7 @@ function fetchSchedules() {
         })
         .catch(function (err) {
             document.getElementById('schedules-tbody').innerHTML =
-                '<tr><td colspan="7" class="empty-state"><p>오류: ' + (err.message || '') + '</p></td></tr>';
+                '<tr><td colspan="8" class="empty-state"><p>오류: ' + (err.message || '') + '</p></td></tr>';
         });
 }
 
@@ -101,6 +104,10 @@ function bindScheduleEvents() {
 function openScheduleModal(id) {
     document.getElementById('modal-schedule-title').textContent = id ? '일정 수정' : '일정 등록';
     document.getElementById('edit-schedule-id').value = id || '';
+    var typeEl = document.getElementById('edit-schedule-type');
+    var hintEl = document.getElementById('schedule-type-hint');
+    typeEl.disabled = !!id;
+    hintEl.style.display = typeEl.value === 'TRAINING' ? 'block' : 'none';
 
     if (typeof refreshLocationSelects === 'function') {
         refreshLocationSelects();
@@ -112,6 +119,7 @@ function openScheduleModal(id) {
                 if (res.success && res.data) {
                     var s = res.data;
                     document.getElementById('edit-schedule-location').value = s.locationId || '';
+                    document.getElementById('edit-schedule-type').value = s.scheduleType || 'REGULAR';
                     document.getElementById('edit-schedule-date').value = s.scheduleDate || '';
                     document.getElementById('edit-schedule-start-time').value = s.startTime ? String(s.startTime).substring(0, 5) : '';
                     document.getElementById('edit-schedule-end-time').value = s.endTime ? String(s.endTime).substring(0, 5) : '';
@@ -123,6 +131,7 @@ function openScheduleModal(id) {
             });
     } else {
         document.getElementById('edit-schedule-location').value = '';
+        document.getElementById('edit-schedule-type').value = 'REGULAR';
         document.getElementById('edit-schedule-date').value = '';
         document.getElementById('edit-schedule-start-time').value = '09:00';
         document.getElementById('edit-schedule-end-time').value = '11:00';
@@ -138,6 +147,7 @@ function submitSchedule() {
     var locationId = document.getElementById('edit-schedule-location').value;
     var payload = {
         locationId: locationId,
+        scheduleType: document.getElementById('edit-schedule-type').value || 'REGULAR',
         scheduleDate: document.getElementById('edit-schedule-date').value,
         startTime: document.getElementById('edit-schedule-start-time').value,
         endTime: document.getElementById('edit-schedule-end-time').value,
@@ -193,6 +203,10 @@ function deleteSchedule(id) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('edit-schedule-type').addEventListener('change', function () {
+        var hintEl = document.getElementById('schedule-type-hint');
+        hintEl.style.display = this.value === 'TRAINING' ? 'block' : 'none';
+    });
     document.getElementById('btn-create-schedule').addEventListener('click', function () {
         openScheduleModal(null);
     });

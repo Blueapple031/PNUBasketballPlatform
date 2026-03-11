@@ -55,7 +55,7 @@ public interface AdminService {
 
     ScheduleResponse getSchedule(UUID id);
 
-    ScheduleResponse createSchedule(ScheduleCreateRequest request);
+    ScheduleCreateResult createSchedule(ScheduleCreateRequest request);
 
     ScheduleResponse updateSchedule(UUID id, ScheduleUpdateRequest request);
 

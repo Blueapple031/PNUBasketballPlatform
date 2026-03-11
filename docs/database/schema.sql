@@ -178,6 +178,7 @@ CREATE TABLE schedules (
     start_time      TIME NOT NULL,
     end_time        TIME NOT NULL,
     status          schedule_status NOT NULL DEFAULT 'SCHEDULED',
+    schedule_type   VARCHAR(50) NOT NULL DEFAULT 'REGULAR',
     title           VARCHAR(200),
     description     TEXT,
     match_id        UUID,

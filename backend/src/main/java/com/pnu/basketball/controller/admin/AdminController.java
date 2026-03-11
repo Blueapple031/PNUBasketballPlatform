@@ -205,8 +205,11 @@ public class AdminController {
     @PostMapping("/schedules")
     public ResponseEntity<ApiResponse<ScheduleResponse>> createSchedule(
             @Valid @RequestBody ScheduleCreateRequest request) {
-        ScheduleResponse schedule = adminService.createSchedule(request);
-        return ResponseEntity.ok(ApiResponse.success(schedule, "일정이 등록되었습니다."));
+        ScheduleCreateResult result = adminService.createSchedule(request);
+        String message = result.getCreatedCount() > 1
+                ? result.getCreatedCount() + "주의 훈련 일정이 등록되었습니다."
+                : "일정이 등록되었습니다.";
+        return ResponseEntity.ok(ApiResponse.success(result.getSchedule(), message));
     }
 
     @PutMapping("/schedules/{id}")

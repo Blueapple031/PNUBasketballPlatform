@@ -352,7 +352,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public ScheduleResponse createSchedule(ScheduleCreateRequest request) {
+    public ScheduleCreateResult createSchedule(ScheduleCreateRequest request) {
         return scheduleService.createSchedule(request);
     }
 

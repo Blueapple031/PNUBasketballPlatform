@@ -24,6 +24,7 @@ public class ScheduleResponse {
     private LocalTime startTime;
     private LocalTime endTime;
     private String status;
+    private String scheduleType;
     private String title;
     private String description;
     private UUID matchId;
@@ -39,6 +40,7 @@ public class ScheduleResponse {
                 .startTime(schedule.getStartTime())
                 .endTime(schedule.getEndTime())
                 .status(schedule.getStatus().name())
+                .scheduleType(schedule.getScheduleType())
                 .title(schedule.getTitle())
                 .description(schedule.getDescription())
                 .matchId(schedule.getMatchId())

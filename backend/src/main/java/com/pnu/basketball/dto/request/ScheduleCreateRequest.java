@@ -30,6 +30,8 @@ public class ScheduleCreateRequest {
 
     private String status;  // AVAILABLE, SCHEDULED, CANCELLED
 
+    private String scheduleType;  // REGULAR, TRAINING (훈련: 주간 반복)
+
     private String title;
 
     private String description;

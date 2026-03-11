@@ -41,6 +41,10 @@ public class Schedule {
     @Builder.Default
     private ScheduleStatus status = ScheduleStatus.SCHEDULED;
 
+    @Column(name = "schedule_type", length = 50, nullable = false)
+    @Builder.Default
+    private String scheduleType = "REGULAR";
+
     @Column(length = 200)
     private String title;
 
