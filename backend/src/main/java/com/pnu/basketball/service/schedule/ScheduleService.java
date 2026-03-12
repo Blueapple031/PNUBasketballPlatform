@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public interface ScheduleService {
 
-    List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, UUID locationId);
+    List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, List<UUID> locationIds);
 
     ScheduleResponse getSchedule(UUID id);
 

@@ -1,7 +1,7 @@
 /**
  * 일정 관리 탭
  */
-var SchedulesState = { startDate: null, endDate: null, locationId: null };
+var SchedulesState = { startDate: null, endDate: null, locationIds: [] };
 
 function loadSchedules() {
     var startEl = document.getElementById('schedule-start-date');
@@ -15,8 +15,11 @@ function loadSchedules() {
     }
     SchedulesState.startDate = startEl.value;
     SchedulesState.endDate = endEl.value;
-    var locEl = document.getElementById('filter-schedule-location');
-    SchedulesState.locationId = (locEl && locEl.value) || null;
+    var ids = [];
+    document.querySelectorAll('input[name="filter-location-id"]:checked').forEach(function (cb) {
+        if (cb.value) ids.push(cb.value);
+    });
+    SchedulesState.locationIds = ids;
 
     if (typeof refreshLocationSelects === 'function' && typeof LocationsCache !== 'undefined' && LocationsCache.length > 0) {
         refreshLocationSelects();
@@ -32,7 +35,9 @@ function fetchSchedules() {
     var params = new URLSearchParams();
     if (SchedulesState.startDate) params.set('startDate', SchedulesState.startDate);
     if (SchedulesState.endDate) params.set('endDate', SchedulesState.endDate);
-    if (SchedulesState.locationId) params.set('locationId', SchedulesState.locationId);
+    SchedulesState.locationIds.forEach(function (id) {
+        params.append('locationIds', id);
+    });
 
     document.getElementById('schedules-tbody').innerHTML =
         '<tr><td colspan="8" class="empty-state"><p>로딩 중...</p></td></tr>';

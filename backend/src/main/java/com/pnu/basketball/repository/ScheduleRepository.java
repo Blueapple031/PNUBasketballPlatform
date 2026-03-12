@@ -22,6 +22,9 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
     List<Schedule> findByLocationIdAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
             UUID locationId, LocalDate startDate, LocalDate endDate);
 
+    List<Schedule> findByLocationIdInAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
+            List<UUID> locationIds, LocalDate startDate, LocalDate endDate);
+
     long countByLocationId(UUID locationId);
 
     /**

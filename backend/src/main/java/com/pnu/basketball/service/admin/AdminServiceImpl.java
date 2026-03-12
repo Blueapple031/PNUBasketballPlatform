@@ -340,8 +340,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, UUID locationId) {
-        return scheduleService.getSchedules(startDate, endDate, locationId);
+    public List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, List<UUID> locationIds) {
+        return scheduleService.getSchedules(startDate, endDate, locationIds);
     }
 
     @Override

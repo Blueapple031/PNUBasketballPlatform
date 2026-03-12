@@ -51,7 +51,7 @@ public interface AdminService {
     void deleteScheduleLocation(UUID id);
 
     // 일정 관리
-    List<ScheduleResponse> getSchedules(java.time.LocalDate startDate, java.time.LocalDate endDate, UUID locationId);
+    List<ScheduleResponse> getSchedules(java.time.LocalDate startDate, java.time.LocalDate endDate, List<UUID> locationIds);
 
     ScheduleResponse getSchedule(UUID id);
 
