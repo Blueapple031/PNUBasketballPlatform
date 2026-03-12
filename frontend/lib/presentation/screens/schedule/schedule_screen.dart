@@ -388,53 +388,70 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               left: BorderSide(color: locationColor, width: 3),
             ),
           ),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (schedule.isTraining)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 2),
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: locationColor.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(4),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final h = constraints.maxHeight;
+              final showFull = h >= 88;
+              final showLocation = h >= 36;
+
+              return ClipRect(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    if (schedule.isTraining && showFull)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: locationColor.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '훈련',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: locationColor,
+                          ),
+                        ),
+                      ),
+                    if (showLocation)
+                      Text(
+                        schedule.locationName,
+                        style: textStyle.copyWith(fontWeight: FontWeight.w600),
+                        maxLines: showFull ? 2 : 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
+                      ),
+                    if (showFull &&
+                        schedule.title != null &&
+                        schedule.title!.isNotEmpty)
+                      Text(
+                        schedule.title!,
+                        style: const TextStyle(
+                            fontSize: 10, fontWeight: FontWeight.w500),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
+                      ),
+                    Text(
+                      '${schedule.startTime}~${schedule.endTime}',
+                      style: subStyle,
                     ),
-                    child: Text(
-                      '훈련',
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
+                    Text(
+                      schedule.statusDisplayText,
+                      style: subStyle.copyWith(
                         color: locationColor,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                Text(
-                  schedule.locationName,
-                  style: textStyle.copyWith(fontWeight: FontWeight.w600),
-                  softWrap: true,
-                  overflow: TextOverflow.visible,
+                  ],
                 ),
-                if (schedule.title != null && schedule.title!.isNotEmpty)
-                  Text(
-                    schedule.title!,
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
-                    softWrap: true,
-                    overflow: TextOverflow.visible,
-                  ),
-                Text(
-                  '${schedule.startTime}~${schedule.endTime}',
-                  style: subStyle,
-                ),
-                Text(
-                  schedule.statusDisplayText,
-                  style: subStyle.copyWith(
-                    color: locationColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
+          ),
         ),
       ),
     );
