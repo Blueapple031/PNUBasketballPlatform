@@ -415,10 +415,13 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="edit-schedule-id">
-                <div class="filter-item">
+                <div class="filter-item" id="edit-schedule-location-wrap">
                     <label>장소 <span class="required">*</span></label>
-                    <select id="edit-schedule-location" class="modal-input" required>
-                        <option value="">선택</option>
+                    <div id="edit-schedule-locations" class="edit-locations-checkboxes">
+                        <!-- 등록 시: 체크박스 다중 선택 -->
+                    </div>
+                    <select id="edit-schedule-location" class="modal-input" style="display:none;">
+                        <!-- 수정 시: 단일 선택 -->
                     </select>
                 </div>
                 <div class="filter-item">

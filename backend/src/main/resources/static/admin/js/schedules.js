@@ -111,6 +111,8 @@ function openScheduleModal(id) {
     document.getElementById('edit-schedule-id').value = id || '';
     var typeEl = document.getElementById('edit-schedule-type');
     var hintEl = document.getElementById('schedule-type-hint');
+    var locationsDiv = document.getElementById('edit-schedule-locations');
+    var locationSelect = document.getElementById('edit-schedule-location');
     typeEl.disabled = !!id;
     hintEl.style.display = typeEl.value === 'TRAINING' ? 'block' : 'none';
 
@@ -119,11 +121,14 @@ function openScheduleModal(id) {
     }
 
     if (id) {
+        locationsDiv.style.display = 'none';
+        locationSelect.style.display = 'block';
+        locationSelect.required = true;
         Admin.apiRequest('/admin/schedules/' + id)
             .then(function (res) {
                 if (res.success && res.data) {
                     var s = res.data;
-                    document.getElementById('edit-schedule-location').value = s.locationId || '';
+                    locationSelect.value = s.locationId || '';
                     document.getElementById('edit-schedule-type').value = s.scheduleType || 'REGULAR';
                     document.getElementById('edit-schedule-date').value = s.scheduleDate || '';
                     document.getElementById('edit-schedule-start-time').value = s.startTime ? String(s.startTime).substring(0, 5) : '';
@@ -135,7 +140,9 @@ function openScheduleModal(id) {
                 document.getElementById('modal-edit-schedule').classList.add('show');
             });
     } else {
-        document.getElementById('edit-schedule-location').value = '';
+        locationsDiv.style.display = 'flex';
+        locationSelect.style.display = 'none';
+        locationSelect.required = false;
         document.getElementById('edit-schedule-type').value = 'REGULAR';
         document.getElementById('edit-schedule-date').value = '';
         document.getElementById('edit-schedule-start-time').value = '09:00';
@@ -149,47 +156,99 @@ function openScheduleModal(id) {
 
 function submitSchedule() {
     var id = document.getElementById('edit-schedule-id').value;
-    var locationId = document.getElementById('edit-schedule-location').value;
-    var payload = {
-        locationId: locationId,
+    var locationIds = [];
+    var locationSelect = document.getElementById('edit-schedule-location');
+    var locationsDiv = document.getElementById('edit-schedule-locations');
+
+    if (id) {
+        if (!locationSelect.value) {
+            alert('장소를 선택해 주세요.');
+            return;
+        }
+        locationIds = [locationSelect.value];
+    } else {
+        document.querySelectorAll('input[name="edit-location-id"]:checked').forEach(function (cb) {
+            if (cb.value) locationIds.push(cb.value);
+        });
+        if (locationIds.length === 0) {
+            alert('장소를 1개 이상 선택해 주세요.');
+            return;
+        }
+    }
+
+    var scheduleDate = document.getElementById('edit-schedule-date').value;
+    var startTime = document.getElementById('edit-schedule-start-time').value;
+    var endTime = document.getElementById('edit-schedule-end-time').value;
+    if (!scheduleDate || !startTime || !endTime) {
+        alert('날짜, 시작/종료 시간은 필수입니다.');
+        return;
+    }
+
+    var basePayload = {
         scheduleType: document.getElementById('edit-schedule-type').value || 'REGULAR',
-        scheduleDate: document.getElementById('edit-schedule-date').value,
-        startTime: document.getElementById('edit-schedule-start-time').value,
-        endTime: document.getElementById('edit-schedule-end-time').value,
+        scheduleDate: scheduleDate,
+        startTime: startTime,
+        endTime: endTime,
         status: document.getElementById('edit-schedule-status').value,
         title: document.getElementById('edit-schedule-title').value || null,
         description: document.getElementById('edit-schedule-description').value || null
     };
 
-    if (!payload.locationId || !payload.scheduleDate || !payload.startTime || !payload.endTime) {
-        alert('장소, 날짜, 시작/종료 시간은 필수입니다.');
+    if (id) {
+        var payload = Object.assign({ locationId: locationIds[0] }, basePayload);
+        Admin.apiRequest('/admin/schedules/' + id, {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+        })
+            .then(function (res) {
+                if (res.success) {
+                    document.getElementById('modal-edit-schedule').classList.remove('show');
+                    fetchSchedules();
+                    alert(res.message || '저장되었습니다.');
+                } else {
+                    alert(res.message || '저장에 실패했습니다.');
+                }
+            })
+            .catch(handleScheduleError);
         return;
     }
 
-    var url = id ? '/admin/schedules/' + id : '/admin/schedules';
-    var method = id ? 'PUT' : 'POST';
-
-    Admin.apiRequest(url, {
-        method: method,
-        body: JSON.stringify(payload)
-    })
-        .then(function (res) {
-            if (res.success) {
-                document.getElementById('modal-edit-schedule').classList.remove('show');
-                fetchSchedules();
-                alert(res.message || '저장되었습니다.');
-            } else {
-                alert(res.message || '저장에 실패했습니다.');
-            }
-        })
-        .catch(function (err) {
-            var msg = err.message || '저장에 실패했습니다.';
-            if (msg.indexOf('겹치') >= 0 || msg.indexOf('SCHEDULE_OVERLAP') >= 0) {
-                alert('해당 장소의 같은 날짜·시간대에 이미 일정이 등록되어 있습니다. 다른 시간을 선택해 주세요.');
-            } else {
-                alert(msg);
-            }
+    var successCount = 0;
+    var chain = Promise.resolve();
+    locationIds.forEach(function (locationId) {
+        chain = chain.then(function () {
+            var payload = Object.assign({ locationId: locationId }, basePayload);
+            return Admin.apiRequest('/admin/schedules', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            }).then(function (res) {
+                if (res.success) {
+                    successCount++;
+                }
+                return res;
+            });
         });
+    });
+
+    chain
+        .then(function () {
+            document.getElementById('modal-edit-schedule').classList.remove('show');
+            fetchSchedules();
+            var msg = successCount === locationIds.length
+                ? (locationIds.length > 1 ? locationIds.length + '개 장소에 일정이 등록되었습니다.' : '일정이 등록되었습니다.')
+                : '일부 장소에만 등록되었습니다. (성공: ' + successCount + '/' + locationIds.length + ')';
+            alert(msg);
+        })
+        .catch(handleScheduleError);
+}
+
+function handleScheduleError(err) {
+    var msg = err.message || '저장에 실패했습니다.';
+    if (msg.indexOf('겹치') >= 0 || msg.indexOf('SCHEDULE_OVERLAP') >= 0) {
+        alert('해당 장소의 같은 날짜·시간대에 이미 일정이 등록되어 있습니다. 다른 시간을 선택해 주세요.');
+    } else {
+        alert(msg);
+    }
 }
 
 function deleteSchedule(id) {

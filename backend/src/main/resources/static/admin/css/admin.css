@@ -186,6 +186,13 @@ body {
     color: #94a3b8;
 }
 
+.edit-locations-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    align-items: center;
+}
+
 .search-box {
     flex: 1;
     min-width: 250px;
