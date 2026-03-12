@@ -143,11 +143,12 @@ function openScheduleModal(id) {
         locationsDiv.style.display = 'flex';
         locationSelect.style.display = 'none';
         locationSelect.required = false;
-        document.getElementById('edit-schedule-type').value = 'REGULAR';
+        document.getElementById('edit-schedule-type').value = 'TRAINING';
+        hintEl.style.display = 'block';
         document.getElementById('edit-schedule-date').value = '';
-        document.getElementById('edit-schedule-start-time').value = '09:00';
-        document.getElementById('edit-schedule-end-time').value = '11:00';
-        document.getElementById('edit-schedule-status').value = 'SCHEDULED';
+        document.getElementById('edit-schedule-start-time').value = '18:00';
+        document.getElementById('edit-schedule-end-time').value = '22:00';
+        document.getElementById('edit-schedule-status').value = 'CANCELLED';
         document.getElementById('edit-schedule-title').value = '';
         document.getElementById('edit-schedule-description').value = '';
         document.getElementById('modal-edit-schedule').classList.add('show');
