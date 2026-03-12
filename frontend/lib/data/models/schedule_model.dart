@@ -6,6 +6,7 @@ class ScheduleModel {
   final String startTime;
   final String endTime;
   final String status;
+  final String scheduleType; // REGULAR, TRAINING
   final String? title;
   final String? description;
   final String? matchId;
@@ -18,10 +19,13 @@ class ScheduleModel {
     required this.startTime,
     required this.endTime,
     required this.status,
+    this.scheduleType = 'REGULAR',
     this.title,
     this.description,
     this.matchId,
   });
+
+  bool get isTraining => scheduleType == 'TRAINING';
 
   factory ScheduleModel.fromJson(Map<String, dynamic> json) {
     final dateStr = json['scheduleDate'] as String?;
@@ -56,6 +60,7 @@ class ScheduleModel {
       startTime: startStr,
       endTime: endStr,
       status: json['status'] as String? ?? 'SCHEDULED',
+      scheduleType: json['scheduleType'] as String? ?? 'REGULAR',
       title: json['title'] as String?,
       description: json['description'] as String?,
       matchId: json['matchId']?.toString(),

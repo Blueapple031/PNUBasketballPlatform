@@ -369,6 +369,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     double height,
   ) {
     final locationColor = _colorForLocation(schedule.locationId, provider.locations);
+    const textStyle = TextStyle(fontSize: 11, fontWeight: FontWeight.w500);
+    const subStyle = TextStyle(fontSize: 10, color: AppColors.subText);
 
     return Positioned(
       left: 2,
@@ -387,37 +389,52 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             ),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FittedBox(
-                alignment: Alignment.centerLeft,
-                fit: BoxFit.scaleDown,
-                child: Text(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (schedule.isTraining)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: locationColor.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '훈련',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        color: locationColor,
+                      ),
+                    ),
+                  ),
+                Text(
                   schedule.locationName,
-                  style: const TextStyle(
-                    fontSize: 9,
+                  style: textStyle.copyWith(fontWeight: FontWeight.w600),
+                  softWrap: true,
+                  overflow: TextOverflow.visible,
+                ),
+                if (schedule.title != null && schedule.title!.isNotEmpty)
+                  Text(
+                    schedule.title!,
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+                    softWrap: true,
+                    overflow: TextOverflow.visible,
+                  ),
+                Text(
+                  '${schedule.startTime}~${schedule.endTime}',
+                  style: subStyle,
+                ),
+                Text(
+                  schedule.statusDisplayText,
+                  style: subStyle.copyWith(
+                    color: locationColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-              Text(
-                '${schedule.startTime}~${schedule.endTime}',
-                style: TextStyle(
-                  fontSize: 8,
-                  color: AppColors.subText,
-                ),
-              ),
-              Text(
-                schedule.statusDisplayText,
-                style: TextStyle(
-                  fontSize: 8,
-                  color: locationColor,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
         ),
       ),
     );
@@ -497,6 +514,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               schedule.statusDisplayText,
               valueColor: accentColor,
             ),
+            if (schedule.isTraining)
+              _buildDetailRow(Icons.fitness_center, '종류', '훈련', valueColor: accentColor),
             if (schedule.title != null && schedule.title!.isNotEmpty)
               _buildDetailRow(Icons.title, '제목', schedule.title!),
             if (schedule.description != null && schedule.description!.isNotEmpty)
