@@ -374,48 +374,176 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       left: 2,
       right: 2,
       top: top + 2,
-      child: Container(
-        height: height.clamp(24, double.infinity) - 4,
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: locationColor.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(4),
-          border: Border(
-            left: BorderSide(color: locationColor, width: 3),
+      child: GestureDetector(
+        onTap: () => _showScheduleDetail(context, schedule, locationColor),
+        child: Container(
+          height: height.clamp(24, double.infinity) - 4,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: locationColor.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(4),
+            border: Border(
+              left: BorderSide(color: locationColor, width: 3),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FittedBox(
+                alignment: Alignment.centerLeft,
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  schedule.locationName,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Text(
+                '${schedule.startTime}~${schedule.endTime}',
+                style: TextStyle(
+                  fontSize: 8,
+                  color: AppColors.subText,
+                ),
+              ),
+              Text(
+                schedule.statusDisplayText,
+                style: TextStyle(
+                  fontSize: 8,
+                  color: locationColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showScheduleDetail(
+    BuildContext context,
+    ScheduleModel schedule,
+    Color accentColor,
+  ) {
+    final dateStr =
+        '${schedule.scheduleDate.year}.${schedule.scheduleDate.month.toString().padLeft(2, '0')}.${schedule.scheduleDate.day.toString().padLeft(2, '0')}';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).padding.bottom + 24,
+        ),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            FittedBox(
-              alignment: Alignment.centerLeft,
-              fit: BoxFit.scaleDown,
-              child: Text(
-                schedule.locationName,
-                style: const TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.boxBorder,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            Text(
-              '${schedule.startTime}~${schedule.endTime}',
-              style: TextStyle(
-                fontSize: 8,
-                color: AppColors.subText,
-              ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    schedule.locationName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.titleText,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Text(
+            const SizedBox(height: 16),
+            _buildDetailRow(Icons.calendar_today, '날짜', dateStr),
+            _buildDetailRow(
+              Icons.access_time,
+              '시간',
+              '${schedule.startTime} ~ ${schedule.endTime}',
+            ),
+            _buildDetailRow(
+              Icons.info_outline,
+              '상태',
               schedule.statusDisplayText,
-              style: TextStyle(
-                fontSize: 8,
-                color: locationColor,
-                fontWeight: FontWeight.w500,
-              ),
+              valueColor: accentColor,
             ),
+            if (schedule.title != null && schedule.title!.isNotEmpty)
+              _buildDetailRow(Icons.title, '제목', schedule.title!),
+            if (schedule.description != null && schedule.description!.isNotEmpty)
+              _buildDetailRow(Icons.notes, '설명', schedule.description!),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(
+    IconData icon,
+    String label,
+    String value, {
+    Color? valueColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: AppColors.subText),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.subText,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: valueColor ?? AppColors.titleText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

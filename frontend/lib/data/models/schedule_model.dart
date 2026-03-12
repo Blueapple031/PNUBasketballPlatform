@@ -73,7 +73,7 @@ class ScheduleModel {
       case 'SCHEDULED':
         return '사용중';
       case 'CANCELLED':
-        return '취소';
+        return '사용 예정';
       default:
         return status;
     }

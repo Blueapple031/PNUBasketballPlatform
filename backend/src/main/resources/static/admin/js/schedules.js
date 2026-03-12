@@ -56,7 +56,7 @@ function fetchSchedules() {
                 return;
             }
 
-            var statusMap = { AVAILABLE: '비어있음', SCHEDULED: '사용중', CANCELLED: '취소' };
+            var statusMap = { AVAILABLE: '비어있음', SCHEDULED: '사용중', CANCELLED: '사용 예정' };
             var typeMap = { REGULAR: '일반', TRAINING: '훈련' };
             var html = content
                 .map(function (s) {

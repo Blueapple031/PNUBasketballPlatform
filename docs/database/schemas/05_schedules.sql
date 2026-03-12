@@ -46,6 +46,6 @@ CREATE INDEX idx_schedules_match_id ON schedules(match_id) WHERE match_id IS NOT
 
 COMMENT ON TABLE schedule_locations IS '매칭 장소 (유동적 확장)';
 COMMENT ON TABLE schedules IS '농구장 일정';
-COMMENT ON COLUMN schedules.status IS 'AVAILABLE=비어있음, SCHEDULED=사용중, CANCELLED=취소';
+COMMENT ON COLUMN schedules.status IS 'AVAILABLE=비어있음, SCHEDULED=사용중, CANCELLED=사용 예정';
 COMMENT ON COLUMN schedules.schedule_type IS 'REGULAR=일반, TRAINING=훈련(주간 반복)';
 COMMENT ON COLUMN schedules.match_id IS '향후 매칭/모집 확정 시 연동';
