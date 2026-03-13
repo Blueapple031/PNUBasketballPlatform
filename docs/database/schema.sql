@@ -62,11 +62,13 @@ CREATE TABLE clubs (
     logo_url      VARCHAR(500),
     introduction  TEXT,
     captain_id    BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+    wins          INTEGER NOT NULL DEFAULT 0,
     created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_clubs_captain_id ON clubs(captain_id);
 CREATE INDEX idx_clubs_name ON clubs(name);
+CREATE INDEX idx_clubs_wins ON clubs(wins DESC);
 
 -- ============================================================
 -- club_members (1 user : 1 club)

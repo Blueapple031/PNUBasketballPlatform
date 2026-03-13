@@ -29,6 +29,10 @@ public class Club {
     @Column(name = "introduction", columnDefinition = "TEXT")
     private String introduction;
 
+    @Column(name = "wins", nullable = false)
+    @Builder.Default
+    private int wins = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "captain_id", referencedColumnName = "user_id")
     private User captain;
