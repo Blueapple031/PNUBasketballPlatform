@@ -2,7 +2,7 @@
 
 > **작성일**: 2026-03-16  
 > **프로젝트**: 딸바 (PNU Basketball Platform)  
-> **핵심**: 레벨업 시스템, 게스트/번개 모집, 동아리 친선전, 노쇼 페널티
+> **핵심**: EXP 시스템, 게스트/번개 모집, 동아리 친선전, 리뷰 + 노쇼 관리
 
 ---
 
@@ -10,7 +10,7 @@
 
 1. [시스템 개요](#1-시스템-개요)
 2. [공통 요구사항](#2-공통-요구사항)
-3. [게스트/사람 모으기 모집](#3-게스트사람-모으기-모집)
+3. [게스트/번개 모집](#3-게스트번개-모집)
 4. [동아리 친선전](#4-동아리-친선전)
 5. [경기 종료 후 리뷰 + 노쇼 시스템](#5-경기-종료-후-리뷰--노쇼-시스템)
 6. [DB 및 도메인 설계](#6-db-및-도메인-설계)
@@ -25,7 +25,7 @@
 
 | 유형 | 점수 기록 | 경기 형식 | 설명 |
 |------|----------|----------|------|
-| **게스트/사람 모으기** | ❌ (참여 이력만) | 3:3, 4:4, 5:5, 모이는대로 | 번개, 즉석 농구, 결원 보충 |
+| **게스트/번개 모집** | ❌ (참여 이력만) | 3:3, 4:4, 5:5, 모이는대로 | 번개, 즉석 농구, 결원 보충 |
 | **동아리 친선전** | ✅ 상세 기록 | 5:5만 | 팀 대 팀 공식 매치 |
 
 ### 1.2 핵심 가치
@@ -67,7 +67,7 @@
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
 | **nickname** | varchar(30) | O | 닉네임 (앱 내 표시명, 모집/리뷰에 노출) |
-| **position** | enum | O | 주 포지션 (GUARD / FORWARD / CENTER) |
+| **position** | enum | O | 주 포지션 1개 (GUARD / FORWARD / CENTER). 추후 보조 포지션 다중 선택 확장 가능 |
 | **exp** | int | O | 경험치 (누적) — DB에는 EXP만 저장 |
 | **no_show_count** | int | O | 노쇼 누적 횟수 |
 | **participation_count** | int | O | 참여 완료 횟수 |
@@ -100,7 +100,7 @@
 
 ---
 
-## 3. 게스트/사람 모으기 모집
+## 3. 게스트/번개 모집
 
 ### 3.1 개요
 
@@ -114,8 +114,8 @@
 | 시작 시각 | start_at | O | 경기 시작 (datetime) |
 | 종료 시각 | end_at | O | 경기 종료 (datetime) — 장소 중복 체크, 일정 표시에 필요 |
 | 장소 | location_id | O | **있는 장소에서 선택** (schedule_locations 참조) |
-| 현재 확정 인원 | int | O | 이미 있는 인원 |
-| 필요한 인원 | int | O | 모집 인원 |
+| 기본 인원 | base_members_count | O | 모집 생성 시점에 이미 확보된 인원 수 |
+| 필요한 인원 | needed_members | O | 추가로 모집할 인원 수 |
 | 포지션 | multi-select | △ | 가드/포워드/센터 우대 |
 | 경기 형태 | enum | O | THREE_VS_THREE, FOUR_VS_FOUR, FIVE_VS_FIVE, FLEXIBLE |
 | 모집 마감 시간 | datetime | △ | 마감 시각 |
@@ -133,7 +133,7 @@
 ```
 
 - 실시간 인원 수 반영
-- 목표 인원 도달 여부는 **상태가 아닌 계산값** (`accepted_count >= needed_members`)
+- 목표 인원 도달 여부는 **상태가 아닌 계산값** (`accepted_count >=needed_members`)
 - "FULL" 뱃지는 UI에서만 표시, DB 상태로 관리하지 않음
 - 모집자가 최종 확정 버튼 → `OPEN` → `CONFIRMED` → matches 생성
 
@@ -177,7 +177,7 @@
 | 장소 | location_id | O | **있는 장소에서 선택** (schedule_locations 참조) |
 | 상대 동아리 | club_id | △ | 지정 시 바로 매칭, 미지정 시 모집 |
 
-### 4.3 펀딩형 출석 조건
+### 4.3 참가 의사 기반 확정 조건
 
 > **같은 동아리 소속인 5명 이상 모여야 상대 동아리로 지정 가능**
 
@@ -251,7 +251,7 @@
 
 **UX 원칙**
 
-- **따봉(👍) 방식**: 점수 X. 좋았으면 👍 누르기 (1), 안 누르면 (0)
+- **따봉(👍) 방식**: 좋았던 참가자에게만 👍를 남기는 방식이며, 별점/비추천 기능은 제공하지 않는다. (row 존재 = 추천, row 없음 = 미평가)
 - **간단함**: 한 화면에서 모든 참가자 한 번에 평가
 - **우리 팀 / 상대 팀** 구분 표시 (한 눈에 보기 쉽게)
 - **노쇼 신고 버튼**: 각 참가자 옆에 "⚠️노쇼" 버튼 (안 나왔으면 누르기)
@@ -306,8 +306,39 @@
 | 기능 | 설명 |
 |------|------|
 | 노쇼 신고 | 리뷰 팝업에서 참가자별 "⚠️노쇼" 버튼 |
-| 노쇼 확인 | 복수 참가자가 같은 사람을 신고 시 자동 확정 (또는 관리자 확인) |
+| 노쇼 확인 | **초기 MVP에서는 자동 확정 없이 관리자 확인 후 반영.** 추후 복수 참가자 신고(2인 이상 또는 과반) 시 자동 확정 후보 분류 도입 |
 | 노쇼 이력 조회 | 사용자별 노쇼 이력 (관리자용) |
+
+> **노쇼 신고 정책**: 노쇼 신고는 경기 종료 후 24시간 이내 가능하며, 동일 경기의 복수 참가자가 동일 사용자를 신고한 경우 자동 확정 후보로 분류한다. 단, 최종 반영은 운영 정책에 따라 관리자 확인 또는 최소 기준 충족 시 자동 확정한다. **초기 MVP에서는 자동 확정 없이 관리자 확인 후 반영한다.**
+
+### 5.3 정책 요약 표
+
+| 항목 | 기한 / 조건 |
+|------|------------|
+| 리뷰 제출 | 경기 종료 후 24시간 이내 |
+| 노쇼 신고 | 경기 종료 후 24시간 이내 |
+| 모집 취소 | 경기 시작 N시간 전까지 (운영 정책에 따라 결정) |
+| 노쇼 확정 (MVP) | 관리자 확인 후 수동 반영 |
+| 노쇼 확정 (추후) | 2인 이상 또는 과반 신고 시 자동 확정 후보 분류 |
+
+### 5.4 경기 완료 처리 권한
+
+`POST /api/matches/{id}/complete` 호출 권한:
+
+| 매칭 유형 | 완료 처리 가능자 |
+|----------|----------------|
+| 게스트/번개 모집 | 모집자 또는 관리자 |
+| 동아리 친선전 | 양팀 대표 중 1인 또는 관리자 |
+
+### 5.5 일정 중복 체크 시점
+
+| 시점 | 검증 내용 |
+|------|----------|
+| 모집 생성 시 | 사용자에게 가능한 슬롯인지 사전 안내 (경고 수준) |
+| 모집 확정 시 | 서버에서 최종 중복 검증 후 match/schedule 생성 |
+| 관리자 일정 생성 시 | 동일 검증 수행 |
+
+> **최종 신뢰는 schedules 기준 서버 검증**이다. 모집 생성 시 안내는 UX 편의를 위한 것이며, 확정 시점에 서버에서 반드시 재검증한다.
 
 ---
 
@@ -345,7 +376,7 @@
 │                                                                                                  │
 │   [기존 컬럼]                      [추가 컬럼]                                                  │
 │   • user_id                        • nickname      VARCHAR(30) UNIQUE                           │
-│   • email                          • position      VARCHAR(20) NOT NULL (GUARD/FORWARD/CENTER)  │
+│   • email                          • position      VARCHAR(20) CHECK (GUARD/FORWARD/CENTER)     │
 │   • real_name                      • exp           INTEGER DEFAULT 0                             │
 │   • real_name                      • no_show_count INTEGER DEFAULT 0                             │
 │   • wins, games, total_score       • participation_count INTEGER DEFAULT 0                      │
@@ -365,7 +396,7 @@
 │         │                                                                                        │
 │         └── (확정 시) matches 생성 ◄── recruitment_posts 또는 club_match_requests                │
 │                   │                                                                              │
-│                   ├── schedules (일정 자동 등록, match_id ↔ schedule_id 양방향)                    │
+│                   ├── schedules (일정 자동 등록, schedules.match_id 단방향 참조)                    │
 │                   ├── match_participations ◄── users (실제 경기 참가 이력)                        │
 │                   │         └── participation_reviews                                            │
 │                   └── no_show_reports (match_id 기준)                                             │
@@ -408,8 +439,8 @@
 1단계: users 확장
    └── V001__add_users_matching_fields.sql
 
-2단계: 모집 관련 ENUM
-   └── recruitment_game_format, recruitment_status
+2단계: 모집/매칭 관련 ENUM
+   └── recruitment_game_format, recruitment_status, application_status, club_match_status
 
 3단계: recruitment_posts, recruitment_applications
    └── V002__create_recruitment_posts.sql
@@ -426,7 +457,7 @@
 ```sql
 -- level 컬럼 없음. exp만 저장. 등급/레벨은 나중에 exp 구간으로 앱에서 계산
 ALTER TABLE users ADD COLUMN IF NOT EXISTS nickname VARCHAR(30) UNIQUE;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS position VARCHAR(20);  -- GUARD, FORWARD, CENTER
+ALTER TABLE users ADD COLUMN IF NOT EXISTS position VARCHAR(20) CHECK (position IN ('GUARD', 'FORWARD', 'CENTER'));
 ALTER TABLE users ADD COLUMN IF NOT EXISTS exp INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS no_show_count INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS participation_count INTEGER NOT NULL DEFAULT 0;
@@ -446,8 +477,8 @@ CREATE TABLE recruitment_posts (
     start_at        TIMESTAMP NOT NULL,   -- 경기 시작 (datetime) — 장소 중복 체크, 일정 표시에 필요
     end_at          TIMESTAMP NOT NULL,   -- 경기 종료 (datetime)
     location_id     UUID NOT NULL REFERENCES schedule_locations(id) ON DELETE RESTRICT,  -- 있는 장소에서 선택
-    current_members INTEGER NOT NULL,
-    needed_members INTEGER NOT NULL,
+    base_members_count INTEGER NOT NULL,  -- 모집 생성 시점에 이미 확보된 기본 인원 수. 진행률 = base_members_count + accepted_count
+    needed_members INTEGER NOT NULL,     -- 추가로 모집할 인원 수
     game_format     recruitment_game_format NOT NULL,
     deadline_at     TIMESTAMP,
     status          recruitment_status NOT NULL DEFAULT 'OPEN',
@@ -456,11 +487,13 @@ CREATE TABLE recruitment_posts (
     CONSTRAINT chk_recruitment_time CHECK (start_at < end_at)
 );
 
+CREATE TYPE application_status AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED');
+
 CREATE TABLE recruitment_applications (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     recruitment_id  UUID NOT NULL REFERENCES recruitment_posts(id) ON DELETE CASCADE,
     applicant_id    BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    status          VARCHAR(20) NOT NULL DEFAULT 'PENDING',  -- PENDING, ACCEPTED, REJECTED
+    status          application_status NOT NULL DEFAULT 'PENDING',
     message         VARCHAR(200),
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(recruitment_id, applicant_id)
@@ -470,6 +503,14 @@ CREATE TABLE recruitment_applications (
 ### 6.4 동아리 친선전
 
 ```sql
+CREATE TYPE club_match_status AS ENUM ('GATHERING', 'READY', 'MATCHED', 'CONFIRMED', 'DONE', 'CANCELLED');
+-- GATHERING: 홈팀 인원 모집 중
+-- READY:     홈팀 5인 이상 확보, 상대 지정 가능
+-- MATCHED:   상대팀 지정 완료
+-- CONFIRMED: 양팀 5인 이상 확보, 일정 확정
+-- DONE:      경기 종료
+-- CANCELLED: 취소
+
 -- 친선전 신청 (홈팀이 먼저 생성)
 CREATE TABLE club_match_requests (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -477,13 +518,7 @@ CREATE TABLE club_match_requests (
     start_at        TIMESTAMP NOT NULL,   -- 경기 시작 (datetime)
     end_at          TIMESTAMP NOT NULL,  -- 경기 종료 (datetime)
     location_id     UUID NOT NULL REFERENCES schedule_locations(id) ON DELETE RESTRICT,  -- 있는 장소에서 선택
-    status          VARCHAR(20) NOT NULL DEFAULT 'GATHERING',
-    -- GATHERING: 홈팀 인원 모집 중
-    -- READY:     홈팀 5인 이상 확보, 상대 지정 가능
-    -- MATCHED:   상대팀 지정 완료
-    -- CONFIRMED: 양팀 5인 이상 확보, 일정 확정
-    -- DONE:      경기 종료
-    -- CANCELLED: 취소
+    status          club_match_status NOT NULL DEFAULT 'GATHERING',
     away_club_id    UUID REFERENCES clubs(id) ON DELETE SET NULL,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -522,10 +557,9 @@ CREATE TABLE club_match_results (
 -- 실제 확정된 경기 (모집글/동아리전 확정 시 생성)
 CREATE TABLE matches (
     id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    source_type         VARCHAR(20) NOT NULL,  -- RECRUITMENT, CLUB_MATCH
+    source_type         VARCHAR(20) NOT NULL CHECK (source_type IN ('RECRUITMENT', 'CLUB_MATCH')),
     recruitment_id      UUID REFERENCES recruitment_posts(id) ON DELETE SET NULL,   -- 게스트/번개 확정 시
     club_match_request_id UUID REFERENCES club_match_requests(id) ON DELETE SET NULL,  -- 동아리전 확정 시
-    schedule_id         UUID REFERENCES schedules(id) ON DELETE SET NULL,  -- 일정 연동 (확정 시 자동 생성)
     location_id         UUID NOT NULL REFERENCES schedule_locations(id) ON DELETE RESTRICT,
     start_at            TIMESTAMP NOT NULL,
     end_at              TIMESTAMP NOT NULL,
@@ -542,26 +576,25 @@ CREATE TABLE matches (
 -- ※ 매치 확정 시 서비스 로직에서 아래를 동시에 수행:
 --   1. matches INSERT
 --   2. schedules INSERT (schedule_type='MATCH', match_id=matches.id)
---   3. matches.schedule_id = 생성된 schedules.id
--- → schedules.match_id ↔ matches.schedule_id 양방향 참조로 일정 탭과 완전 연계
+-- → schedules.match_id 단방향 참조. matches에서 schedule을 찾으려면 schedules.match_id로 역조회
 
 -- 참가 이력 (실제 경기 기준)
 CREATE TABLE match_participations (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     match_id        UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
     user_id         BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    status          VARCHAR(20) NOT NULL,  -- ATTENDED, NO_SHOW
+    status          VARCHAR(20) NOT NULL CHECK (status IN ('ATTENDED', 'NO_SHOW')),
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(match_id, user_id)
 );
 
--- 리뷰 (따봉 방식: 1=👍, 0=미평가)
+-- 리뷰 (따봉 방식: 👍를 누른 대상에 대해서만 row 생성)
+-- row 존재 = 추천함, row 없음 = 미평가/추천 안 함
 CREATE TABLE participation_reviews (
     id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     match_id            UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
     reviewer_id         BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     reviewee_id         BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    thumbs_up           BOOLEAN NOT NULL DEFAULT FALSE,  -- true=👍, false=미평가
     created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(match_id, reviewer_id, reviewee_id)
 );
@@ -572,7 +605,7 @@ CREATE TABLE no_show_reports (
     match_id        UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
     reporter_id     BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     reported_user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    status          VARCHAR(20) NOT NULL DEFAULT 'PENDING',  -- PENDING, CONFIRMED, REJECTED
+    status          VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'CONFIRMED', 'REJECTED')),
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 ```
@@ -622,7 +655,6 @@ Schedule.java (현재 구현)
 │  2. matches 테이블에 INSERT                                                 │
 │     ├── source_type, recruitment_id/club_match_request_id                    │
 │     ├── location_id, start_at, end_at, game_format                           │
-│     └── schedule_id (3단계에서 채움)                                         │
 │                                                                              │
 │  3. schedules 테이블에 INSERT (일정 자동 등록)                               │
 │     ├── location_id    = matches.location_id                                 │
@@ -635,7 +667,7 @@ Schedule.java (현재 구현)
 │     ├── match_id       = matches.id           ← 기존 컬럼 활용              │
 │     └── description    = 모집 정보 요약                                      │
 │                                                                              │
-│  4. matches.schedule_id = 생성된 schedules.id (양방향 참조)                  │
+│  ※ matches에서 schedule 조회 시: SELECT * FROM schedules WHERE match_id = :matchId │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -671,10 +703,7 @@ public Match confirmRecruitment(UUID recruitmentId) {
         .build();
     scheduleRepository.save(schedule);
 
-    // 3) 양방향 연결
-    match.setScheduleId(schedule.getId());
-
-    // 4) 수락된 신청자 → match_participations
+    // 3) 수락된 신청자 → match_participations
     ...
 
     return match;
@@ -718,7 +747,7 @@ WHERE location_id = :locationId
 | 대상 | 변경 내용 |
 |------|----------|
 | **DB (schedules)** | 변경 없음. `schedule_type`에 'MATCH' 값만 추가 사용, `match_id`는 이미 존재 |
-| **DB (matches)** | `schedule_id` 컬럼 추가 (양방향 참조) |
+| **DB (matches)** | 변경 없음. schedules.match_id로 단방향 참조 |
 | **Schedule.java** | 변경 없음. `scheduleType`은 String, `matchId`는 UUID로 이미 대응 |
 | **ScheduleResponse.java** | 변경 없음. `scheduleType`, `matchId` 이미 응답에 포함 |
 | **ScheduleController** | 변경 없음. 기존 API가 `schedule_type='MATCH'`도 함께 조회 |
@@ -750,8 +779,8 @@ CREATE TABLE recruitment_preferred_positions (
 | GET | /api/recruitments | 목록 조회 (필터: start_at~end_at, 장소, 경기형태) |
 | GET | /api/recruitments/{id} | 상세 (진행률 포함) |
 | POST | /api/recruitments/{id}/apply | 신청 |
-| POST | /api/recruitments/{id}/applications/{userId}/accept | 수락 |
-| POST | /api/recruitments/{id}/applications/{userId}/reject | 거절 |
+| POST | /api/recruitments/{id}/applications/{applicationId}/accept | 수락 |
+| POST | /api/recruitments/{id}/applications/{applicationId}/reject | 거절 |
 | POST | /api/recruitments/{id}/confirm | 모집 확정 → matches 생성 |
 | POST | /api/matches/{id}/complete | 경기 완료 처리 |
 | POST | /api/matches/{id}/review | 리뷰 + 노쇼 일괄 제출 (팝업에서 한 번에) |
@@ -802,7 +831,7 @@ CREATE TABLE recruitment_preferred_positions (
 |------|------|------|
 | 1 | recruitment_posts CRUD | 모집글 생성, 조회 (start_at, end_at) |
 | 2 | 신청/수락/거절 | applications, 진행률 계산 |
-| 3 | 진행률 시각화 | API 응답에 current/needed 포함 |
+| 3 | 진행률 시각화 | API 응답에 base_members_count + accepted_count / total 포함 |
 | 4 | 확정 → matches + schedules 생성 | 목표 인원 충족 시 matches + 일정 자동 등록 |
 | 5 | match_participations | 실제 경기 기준 참가 이력 저장 |
 | 6 | 리뷰 기능 | participation_reviews (match 기준) |
@@ -835,8 +864,10 @@ CREATE TABLE recruitment_preferred_positions (
 - [ ] **게스트/번개**: start_at/end_at, 장소(location_id), 인원, 포지션, 경기형태, 마감
 - [ ] **진행률 시각화** (3/6명)
 - [ ] **폼 기반 신청** + 수락/거절
-- [ ] **경기 후 리뷰 팝업** (따봉 👍 방식 + 노쇼 신고 통합, 우리팀/상대팀 구분)
+- [ ] **경기 후 리뷰 팝업** (👍 누른 대상만 row 생성 + 노쇼 신고 통합, 우리팀/상대팀 구분)
 - [ ] **동아리 친선전**: 5명↑ 모여야 상대 지정, 5:5만
 - [ ] **결과 입력** → 양측 대표 승인 → 관리자 기록
 - [ ] **노쇼 페널티** (모든 경기)
-- [ ] **모집글 ↔ 실제 경기 분리** (확정 시 matches 생성 + schedules에 일정 자동 등록)
+- [ ] **모집글 ↔ 실제 경기 분리** (확정 시 matches 생성 + schedules에 일정 자동 등록, 단방향 참조)
+- [ ] **정책 표** (리뷰/노쇼 24시간, 모집 취소 기한, 완료 처리 권한)
+- [ ] **일정 중복 체크** (생성 시 안내 + 확정 시 서버 검증)
