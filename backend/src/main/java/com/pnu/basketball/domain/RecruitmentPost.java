@@ -52,7 +52,8 @@ public class RecruitmentPost {
     private LocalDateTime deadlineAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(nullable = false, columnDefinition = "recruitment_status")
     @Builder.Default
     private RecruitmentStatus status = RecruitmentStatus.OPEN;
 

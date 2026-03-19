@@ -3,7 +3,9 @@ package com.pnu.basketball.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -36,7 +38,8 @@ public class ClubMatchRequest {
     private ScheduleLocationEntity location;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(nullable = false, columnDefinition = "club_match_status")
     @Builder.Default
     private ClubMatchStatus status = ClubMatchStatus.GATHERING;
 
