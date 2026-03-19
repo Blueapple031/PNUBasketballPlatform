@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
@@ -12,14 +13,23 @@ class CompleteProfileScreen extends StatefulWidget {
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nicknameController = TextEditingController();
   final _realNameController = TextEditingController();
   final _dateOfBirthController = TextEditingController();
   final _departmentController = TextEditingController();
   final _studentIdController = TextEditingController();
   bool _isPnuStudent = true;
+  String? _selectedPosition;
+
+  static const _positions = [
+    {'value': 'GUARD', 'label': '가드'},
+    {'value': 'FORWARD', 'label': '포워드'},
+    {'value': 'CENTER', 'label': '센터'},
+  ];
 
   @override
   void dispose() {
+    _nicknameController.dispose();
     _realNameController.dispose();
     _dateOfBirthController.dispose();
     _departmentController.dispose();
@@ -37,6 +47,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         : _dateOfBirthController.text.trim();
 
     final user = await authProvider.completeProfile(
+      nickname: _nicknameController.text.trim(),
+      position: _selectedPosition!,
       realName: _realNameController.text.trim().isEmpty
           ? null
           : _realNameController.text.trim(),
@@ -83,6 +95,67 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   style: TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 24),
+                TextFormField(
+                  controller: _nicknameController,
+                  decoration: const InputDecoration(
+                    labelText: '닉네임 *',
+                    hintText: '2~30자, 앱 내 활동에 사용됩니다',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.badge_outlined),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return '닉네임을 입력해주세요';
+                    }
+                    if (value.trim().length < 2 || value.trim().length > 30) {
+                      return '닉네임은 2~30자 사이여야 합니다';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '주 포지션 *',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: _positions.map((pos) {
+                    final isSelected = _selectedPosition == pos['value'];
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: pos != _positions.last ? 8.0 : 0,
+                        ),
+                        child: ChoiceChip(
+                          label: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              pos['label']!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : AppColors.titleText,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                          selected: isSelected,
+                          selectedColor: AppColors.activeBlue,
+                          onSelected: (_) {
+                            setState(() => _selectedPosition = pos['value']);
+                          },
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                if (_selectedPosition == null) ...[
+                  const SizedBox(height: 4),
+                ],
+                Builder(builder: (context) {
+                  return const SizedBox.shrink();
+                }),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _realNameController,
                   decoration: const InputDecoration(
@@ -174,7 +247,20 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, _) {
                     return ElevatedButton(
-                      onPressed: authProvider.isLoading ? null : _handleComplete,
+                      onPressed: authProvider.isLoading
+                          ? null
+                          : () {
+                              if (_selectedPosition == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('포지션을 선택해주세요'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                              _handleComplete();
+                            },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),

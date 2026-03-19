@@ -370,51 +370,67 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   ) {
     final locationColor = _colorForLocation(schedule.locationId, provider.locations);
 
+    final isMatch = schedule.matchId != null && schedule.matchId!.isNotEmpty;
+
     return Positioned(
       left: 2,
       right: 2,
       top: top + 2,
-      child: Container(
-        height: height.clamp(24, double.infinity) - 4,
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: locationColor.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(4),
-          border: Border(
-            left: BorderSide(color: locationColor, width: 3),
+      child: GestureDetector(
+        onTap: isMatch
+            ? () {
+                Navigator.pushNamed(
+                  context,
+                  '/recruitment-detail',
+                  arguments: schedule.matchId,
+                );
+              }
+            : null,
+        child: Container(
+          height: height.clamp(24, double.infinity) - 4,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: locationColor.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(4),
+            border: Border(
+              left: BorderSide(color: locationColor, width: 3),
+            ),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FittedBox(
-              alignment: Alignment.centerLeft,
-              fit: BoxFit.scaleDown,
-              child: Text(
-                schedule.locationName,
-                style: const TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isMatch)
+                const Icon(Icons.sports_basketball, size: 10, color: AppColors.alertOrange),
+              FittedBox(
+                alignment: Alignment.centerLeft,
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  schedule.title ?? schedule.locationName,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                    color: isMatch ? AppColors.activeBlue : null,
+                  ),
                 ),
               ),
-            ),
-            Text(
-              '${schedule.startTime}~${schedule.endTime}',
-              style: TextStyle(
-                fontSize: 8,
-                color: AppColors.subText,
+              Text(
+                '${schedule.startTime}~${schedule.endTime}',
+                style: TextStyle(
+                  fontSize: 8,
+                  color: AppColors.subText,
+                ),
               ),
-            ),
-            Text(
-              schedule.statusDisplayText,
-              style: TextStyle(
-                fontSize: 8,
-                color: locationColor,
-                fontWeight: FontWeight.w500,
+              Text(
+                isMatch ? '매칭' : schedule.statusDisplayText,
+                style: TextStyle(
+                  fontSize: 8,
+                  color: isMatch ? AppColors.activeBlue : locationColor,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

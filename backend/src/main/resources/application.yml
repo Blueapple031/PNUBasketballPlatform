@@ -5,6 +5,9 @@
 # 기본값: local 프로파일 (Redis 없이 인메모리 토큰 저장)
 # 운영 배포 시: --spring.profiles.active=prod 또는 SPRING_PROFILES_ACTIVE=prod
 
+app:
+  token-storage: memory   # Redis 없이 로컬 개발 시 memory 사용. prod에서는 redis로 변경
+
 spring:
   profiles:
     active: local

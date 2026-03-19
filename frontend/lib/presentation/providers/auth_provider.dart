@@ -225,6 +225,8 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<UserModel?> completeProfile({
+    required String nickname,
+    required String position,
     required String? realName,
     required String dateOfBirth,
     required bool isPnuStudent,
@@ -237,6 +239,8 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
 
       final user = await authRepository.completeProfile(
+        nickname: nickname,
+        position: position,
         realName: realName,
         dateOfBirth: dateOfBirth,
         isPnuStudent: isPnuStudent,

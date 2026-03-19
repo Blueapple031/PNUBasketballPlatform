@@ -48,13 +48,23 @@ class ProfileHeader extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            user.realName,
+            user.nickname ?? user.realName,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: AppColors.titleText,
             ),
           ),
+          if (user.nickname != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              user.realName,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.subText,
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
           Text(
             user.email,
@@ -64,24 +74,24 @@ class ProfileHeader extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          if (user.phoneNumber != null && user.phoneNumber!.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              user.phoneNumber!,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.subText,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _certificationBadge('여권', AppColors.classTeal),
-              const SizedBox(width: 8),
-              _certificationBadge('직업', AppColors.alertOrange),
+              if (user.position != null)
+                _certificationBadge(user.positionDisplayName, AppColors.activeBlue),
+              if (user.position != null) const SizedBox(width: 8),
+              _certificationBadge(user.expLevelName, AppColors.classTeal),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _statItem('EXP', '${user.exp}', AppColors.activeBlue),
+              _statItem('참여', '${user.participationCount}회', AppColors.classTeal),
+              _statItem('노쇼', '${user.noShowCount}회',
+                  user.noShowCount > 0 ? AppColors.errorRed : AppColors.subText),
             ],
           ),
           const SizedBox(height: 24),
@@ -116,6 +126,26 @@ class ProfileHeader extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _statItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: AppColors.subText),
+        ),
+      ],
     );
   }
 

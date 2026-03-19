@@ -326,6 +326,8 @@ class AuthRepository {
 
   // 추가 정보 입력 (구글 신규 사용자)
   Future<UserModel> completeProfile({
+    required String nickname,
+    required String position,
     required String? realName,
     required String dateOfBirth,
     required bool isPnuStudent,
@@ -337,6 +339,8 @@ class AuthRepository {
 
     final response = await authService.completeProfile(
       accessToken: accessToken,
+      nickname: nickname,
+      position: position,
       realName: realName,
       dateOfBirth: dateOfBirth,
       isPnuStudent: isPnuStudent,

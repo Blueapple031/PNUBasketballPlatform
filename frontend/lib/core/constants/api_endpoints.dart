@@ -44,4 +44,31 @@ class ApiEndpoints {
   static const String schedules = '/api/schedules';
   static const String scheduleLocations = '/api/schedules/locations';
   static String schedule(String id) => '/api/schedules/$id';
+
+  // Recruitment endpoints
+  static const String recruitments = '/api/recruitments';
+  static String recruitment(String id) => '/api/recruitments/$id';
+  static String recruitmentApply(String id) => '/api/recruitments/$id/apply';
+  static String recruitmentApplicationAccept(String id, String applicationId) =>
+      '/api/recruitments/$id/applications/$applicationId/accept';
+  static String recruitmentApplicationReject(String id, String applicationId) =>
+      '/api/recruitments/$id/applications/$applicationId/reject';
+  static String recruitmentConfirm(String id) => '/api/recruitments/$id/confirm';
+  static String recruitmentCancel(String id) => '/api/recruitments/$id/cancel';
+
+  // Match endpoints
+  static const String matches = '/api/matches';
+  static String match(String id) => '/api/matches/$id';
+  static String matchComplete(String id) => '/api/matches/$id/complete';
+  static String matchReviewForm(String id) => '/api/matches/$id/review-form';
+  static String matchReview(String id) => '/api/matches/$id/review';
+
+  // Club Match endpoints
+  static const String clubMatchRequests = '/api/club-matches/requests';
+  static String clubMatchRequest(String id) => '/api/club-matches/requests/$id';
+  static String clubMatchAttend(String id) => '/api/club-matches/requests/$id/attend';
+  static String clubMatchMatch(String id) => '/api/club-matches/requests/$id/match';
+  static String clubMatchResult(String id) => '/api/club-matches/requests/$id/result';
+  static String clubMatchApproveResult(String id) =>
+      '/api/club-matches/requests/$id/approve-result';
 }
