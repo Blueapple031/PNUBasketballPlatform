@@ -47,6 +47,22 @@ public enum ErrorCode {
     UNAUTHORIZED_POST_EDIT(HttpStatus.FORBIDDEN, "본인의 게시글만 수정/삭제할 수 있습니다."),
     UNAUTHORIZED_COMMENT_EDIT(HttpStatus.FORBIDDEN, "본인의 댓글만 수정/삭제할 수 있습니다."),
 
+    // Recruitment
+    RECRUITMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "모집글을 찾을 수 없습니다."),
+    RECRUITMENT_NOT_OPEN(HttpStatus.BAD_REQUEST, "모집 중인 글이 아닙니다."),
+    RECRUITMENT_ALREADY_APPLIED(HttpStatus.CONFLICT, "이미 신청한 모집글입니다."),
+    RECRUITMENT_SELF_APPLY(HttpStatus.BAD_REQUEST, "본인의 모집글에는 신청할 수 없습니다."),
+    RECRUITMENT_NOT_AUTHOR(HttpStatus.FORBIDDEN, "모집글 작성자만 수행할 수 있습니다."),
+    APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "신청 내역을 찾을 수 없습니다."),
+    APPLICATION_NOT_PENDING(HttpStatus.BAD_REQUEST, "대기 중인 신청만 처리할 수 있습니다."),
+    RECRUITMENT_INVALID_TIME(HttpStatus.BAD_REQUEST, "경기 시작 시각은 종료 시각보다 앞이어야 합니다."),
+    RECRUITMENT_PAST_TIME(HttpStatus.BAD_REQUEST, "과거 시각으로 모집글을 생성할 수 없습니다."),
+
+    // Match
+    MATCH_NOT_FOUND(HttpStatus.NOT_FOUND, "경기를 찾을 수 없습니다."),
+    MATCH_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 확정된 경기가 존재합니다."),
+    MATCH_COMPLETE_UNAUTHORIZED(HttpStatus.FORBIDDEN, "경기 완료 처리 권한이 없습니다."),
+
     // Schedule
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "일정을 찾을 수 없습니다."),
     SCHEDULE_OVERLAP(HttpStatus.CONFLICT, "해당 장소의 같은 날짜·시간대에 이미 일정이 등록되어 있습니다."),
