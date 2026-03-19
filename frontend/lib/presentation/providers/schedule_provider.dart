@@ -50,6 +50,17 @@ class ScheduleProvider with ChangeNotifier {
       final startDate = _weekBase;
       final endDate = _weekBase.add(const Duration(days: 21));
 
+      if (_selectedLocationId == null) {
+        final initial = await scheduleRepository.getSchedules(
+          startDate: startDate,
+          endDate: endDate,
+        );
+        _locations = initial.locations;
+        if (_locations.isNotEmpty) {
+          _selectedLocationId = _locations.first.id;
+        }
+      }
+
       final result = await scheduleRepository.getSchedules(
         startDate: startDate,
         endDate: endDate,
