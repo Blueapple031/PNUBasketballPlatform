@@ -161,6 +161,38 @@ body {
     border-color: #667eea;
 }
 
+.filter-locations-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    align-items: center;
+}
+
+.filter-location-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.filter-location-checkbox input {
+    cursor: pointer;
+}
+
+.filter-locations-checkboxes .empty-hint {
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.edit-locations-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    align-items: center;
+}
+
 .search-box {
     flex: 1;
     min-width: 250px;

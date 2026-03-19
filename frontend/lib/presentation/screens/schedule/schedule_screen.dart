@@ -369,6 +369,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     double height,
   ) {
     final locationColor = _colorForLocation(schedule.locationId, provider.locations);
+    const textStyle = TextStyle(fontSize: 11, fontWeight: FontWeight.w500);
+    const subStyle = TextStyle(fontSize: 10, color: AppColors.subText);
 
     final isMatch = schedule.matchId != null && schedule.matchId!.isNotEmpty;
 
@@ -377,15 +379,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       right: 2,
       top: top + 2,
       child: GestureDetector(
-        onTap: isMatch
-            ? () {
-                Navigator.pushNamed(
-                  context,
-                  '/recruitment-detail',
-                  arguments: schedule.matchId,
-                );
-              }
-            : null,
+        onTap: () {
+          if (isMatch) {
+            Navigator.pushNamed(
+              context,
+              '/recruitment-detail',
+              arguments: schedule.matchId,
+            );
+          } else {
+            _showScheduleDetail(context, schedule, locationColor);
+          }
+        },
         child: Container(
           height: height.clamp(24, double.infinity) - 4,
           padding: const EdgeInsets.all(4),
@@ -393,45 +397,241 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             color: locationColor.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(4),
             border: Border(
-              left: BorderSide(color: locationColor, width: 3),
+              left: BorderSide(
+                color: isMatch ? AppColors.activeBlue : locationColor,
+                width: 3,
+              ),
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isMatch)
-                const Icon(Icons.sports_basketball, size: 10, color: AppColors.alertOrange),
-              FittedBox(
-                alignment: Alignment.centerLeft,
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  schedule.title ?? schedule.locationName,
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                    color: isMatch ? AppColors.activeBlue : null,
-                  ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final h = constraints.maxHeight;
+
+              final showCompact = h >= 24;
+              final showLocation = h >= 36;
+              final showTitle = h >= 52;
+              final showFull = h >= 88;
+
+              final titleText = schedule.title?.isNotEmpty == true
+                  ? schedule.title!
+                  : schedule.locationName;
+
+              return ClipRect(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    if (isMatch && showCompact)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 2),
+                        child: Icon(
+                          Icons.sports_basketball,
+                          size: 10,
+                          color: AppColors.alertOrange,
+                        ),
+                      ),
+
+                    if (!isMatch && schedule.isTraining && showFull)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: locationColor.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '훈련',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: locationColor,
+                          ),
+                        ),
+                      ),
+
+                    if (showLocation)
+                      Text(
+                        isMatch ? titleText : schedule.locationName,
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                          color: isMatch ? AppColors.activeBlue : null,
+                        ),
+                        maxLines: showFull ? 2 : 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
+                      ),
+
+                    if (!isMatch &&
+                        showTitle &&
+                        schedule.title != null &&
+                        schedule.title!.isNotEmpty)
+                      Text(
+                        schedule.title!,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: showFull ? 2 : 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
+                      ),
+
+                    Text(
+                      '${schedule.startTime}~${schedule.endTime}',
+                      style: const TextStyle(
+                        fontSize: 8,
+                        color: AppColors.subText,
+                      ),
+                    ),
+
+                    if (showCompact)
+                      Text(
+                        isMatch ? '매칭' : schedule.statusDisplayText,
+                        style: TextStyle(
+                          fontSize: 8,
+                          color: isMatch ? AppColors.activeBlue : locationColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
                 ),
-              ),
-              Text(
-                '${schedule.startTime}~${schedule.endTime}',
-                style: TextStyle(
-                  fontSize: 8,
-                  color: AppColors.subText,
-                ),
-              ),
-              Text(
-                isMatch ? '매칭' : schedule.statusDisplayText,
-                style: TextStyle(
-                  fontSize: 8,
-                  color: isMatch ? AppColors.activeBlue : locationColor,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+              );
+            },
           ),
         ),
+      ),
+    );
+
+  void _showScheduleDetail(
+    BuildContext context,
+    ScheduleModel schedule,
+    Color accentColor,
+  ) {
+    final dateStr =
+        '${schedule.scheduleDate.year}.${schedule.scheduleDate.month.toString().padLeft(2, '0')}.${schedule.scheduleDate.day.toString().padLeft(2, '0')}';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).padding.bottom + 24,
+        ),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.boxBorder,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    schedule.locationName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.titleText,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildDetailRow(Icons.calendar_today, '날짜', dateStr),
+            _buildDetailRow(
+              Icons.access_time,
+              '시간',
+              '${schedule.startTime} ~ ${schedule.endTime}',
+            ),
+            _buildDetailRow(
+              Icons.info_outline,
+              '상태',
+              schedule.statusDisplayText,
+              valueColor: accentColor,
+            ),
+            if (schedule.isTraining)
+              _buildDetailRow(Icons.fitness_center, '종류', '훈련', valueColor: accentColor),
+            if (schedule.title != null && schedule.title!.isNotEmpty)
+              _buildDetailRow(Icons.title, '제목', schedule.title!),
+            if (schedule.description != null && schedule.description!.isNotEmpty)
+              _buildDetailRow(Icons.notes, '설명', schedule.description!),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(
+    IconData icon,
+    String label,
+    String value, {
+    Color? valueColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: AppColors.subText),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.subText,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: valueColor ?? AppColors.titleText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

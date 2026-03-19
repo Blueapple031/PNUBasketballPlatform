@@ -90,7 +90,7 @@ CREATE TYPE match_state AS ENUM (
     'READY',       -- 준비됨 (시작 직전)
     'ONGOING',     -- 진행 중
     'DONE',        -- 종료됨
-    'CANCELLED'    -- 취소됨
+    'CANCELLED'    -- 사용 예정
 );
 ```
 

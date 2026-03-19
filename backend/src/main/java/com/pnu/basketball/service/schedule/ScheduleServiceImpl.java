@@ -30,29 +30,31 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, UUID locationId) {
+    public List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, List<UUID> locationIds) {
         List<Schedule> schedules;
+        boolean hasLocationFilter = locationIds != null && !locationIds.isEmpty();
+
         if (startDate != null && endDate != null) {
-            if (locationId != null) {
-                schedules = scheduleRepository.findByLocationIdAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
-                        locationId, startDate, endDate);
+            if (hasLocationFilter) {
+                schedules = scheduleRepository.findByLocationIdInAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
+                        locationIds, startDate, endDate);
             } else {
                 schedules = scheduleRepository.findByScheduleDateBetweenOrderByScheduleDateAscLocation_NameAscStartTimeAsc(
                         startDate, endDate);
             }
         } else if (startDate != null) {
             schedules = scheduleRepository.findByScheduleDateOrderByLocation_NameAscStartTimeAsc(startDate);
-            if (locationId != null) {
+            if (hasLocationFilter) {
                 schedules = schedules.stream()
-                        .filter(s -> s.getLocation().getId().equals(locationId))
+                        .filter(s -> locationIds.contains(s.getLocation().getId()))
                         .collect(Collectors.toList());
             }
         } else {
             LocalDate defaultStart = LocalDate.now();
             LocalDate defaultEnd = defaultStart.plusDays(13);
-            if (locationId != null) {
-                schedules = scheduleRepository.findByLocationIdAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
-                        locationId, defaultStart, defaultEnd);
+            if (hasLocationFilter) {
+                schedules = scheduleRepository.findByLocationIdInAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
+                        locationIds, defaultStart, defaultEnd);
             } else {
                 schedules = scheduleRepository.findByScheduleDateBetweenOrderByScheduleDateAscLocation_NameAscStartTimeAsc(
                         defaultStart, defaultEnd);

@@ -85,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage ?? '구글 로그인 실패'),
+          content: Text(authProvider.errorMessage ?? '구글  로그인 실패'),
           backgroundColor: Colors.red,
         ),
       );
