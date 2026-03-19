@@ -29,23 +29,26 @@ class RecruitmentListModel {
     required this.isFull,
   });
 
+  static DateTime _parseDateTime(dynamic v) =>
+      DateTime.parse((v as String?)?.toString() ?? '');
+
   factory RecruitmentListModel.fromJson(Map<String, dynamic> json) {
     return RecruitmentListModel(
       id: json['id']?.toString() ?? '',
-      authorNickname: json['authorNickname'] as String? ?? '',
-      startAt: DateTime.parse(json['startAt'] as String),
-      endAt: DateTime.parse(json['endAt'] as String),
-      locationName: json['locationName'] as String? ?? '',
+      authorNickname: (json['authorNickname'] as String?) ?? '',
+      startAt: _parseDateTime(json['startAt']),
+      endAt: _parseDateTime(json['endAt']),
+      locationName: (json['locationName'] as String?) ?? '',
       baseMembersCount: (json['baseMembersCount'] as num?)?.toInt() ?? 0,
       neededMembers: (json['neededMembers'] as num?)?.toInt() ?? 0,
       acceptedCount: (json['acceptedCount'] as num?)?.toInt() ?? 0,
-      gameFormat: json['gameFormat'] as String? ?? 'FLEXIBLE',
-      status: json['status'] as String? ?? 'OPEN',
+      gameFormat: (json['gameFormat'] as String?) ?? 'FLEXIBLE',
+      status: (json['status'] as String?) ?? 'OPEN',
       deadlineAt: json['deadlineAt'] != null
-          ? DateTime.parse(json['deadlineAt'] as String)
+          ? _parseDateTime(json['deadlineAt'])
           : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      isFull: json['isFull'] as bool? ?? json['full'] as bool? ?? false,
+      createdAt: _parseDateTime(json['createdAt']),
+      isFull: (json['isFull'] as bool?) ?? (json['full'] as bool?) ?? false,
     );
   }
 
@@ -129,21 +132,21 @@ class RecruitmentDetailModel {
     return RecruitmentDetailModel(
       id: json['id']?.toString() ?? '',
       authorId: (json['authorId'] as num?)?.toInt() ?? 0,
-      authorNickname: json['authorNickname'] as String? ?? '',
-      startAt: DateTime.parse(json['startAt'] as String),
-      endAt: DateTime.parse(json['endAt'] as String),
+      authorNickname: (json['authorNickname'] as String?) ?? '',
+      startAt: RecruitmentListModel._parseDateTime(json['startAt']),
+      endAt: RecruitmentListModel._parseDateTime(json['endAt']),
       locationId: json['locationId']?.toString() ?? '',
-      locationName: json['locationName'] as String? ?? '',
+      locationName: (json['locationName'] as String?) ?? '',
       baseMembersCount: (json['baseMembersCount'] as num?)?.toInt() ?? 0,
       neededMembers: (json['neededMembers'] as num?)?.toInt() ?? 0,
       acceptedCount: (json['acceptedCount'] as num?)?.toInt() ?? 0,
-      gameFormat: json['gameFormat'] as String? ?? 'FLEXIBLE',
-      status: json['status'] as String? ?? 'OPEN',
+      gameFormat: (json['gameFormat'] as String?) ?? 'FLEXIBLE',
+      status: (json['status'] as String?) ?? 'OPEN',
       deadlineAt: json['deadlineAt'] != null
-          ? DateTime.parse(json['deadlineAt'] as String)
+          ? RecruitmentListModel._parseDateTime(json['deadlineAt'])
           : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      isFull: json['isFull'] as bool? ?? json['full'] as bool? ?? false,
+      createdAt: RecruitmentListModel._parseDateTime(json['createdAt']),
+      isFull: (json['isFull'] as bool?) ?? (json['full'] as bool?) ?? false,
       applications: appsList
           .map((e) => ApplicationModel.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -217,15 +220,15 @@ class ApplicationModel {
     return ApplicationModel(
       applicationId: json['applicationId']?.toString() ?? '',
       applicantId: (json['applicantId'] as num?)?.toInt() ?? 0,
-      applicantNickname: json['applicantNickname'] as String? ?? '',
+      applicantNickname: (json['applicantNickname'] as String?) ?? '',
       applicantPosition: json['applicantPosition'] as String?,
       applicantExp: (json['applicantExp'] as num?)?.toInt() ?? 0,
       applicantNoShowCount: (json['applicantNoShowCount'] as num?)?.toInt() ?? 0,
       applicantParticipationCount:
           (json['applicantParticipationCount'] as num?)?.toInt() ?? 0,
-      status: json['status'] as String? ?? 'PENDING',
+      status: (json['status'] as String?) ?? 'PENDING',
       message: json['message'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: RecruitmentListModel._parseDateTime(json['createdAt']),
     );
   }
 
