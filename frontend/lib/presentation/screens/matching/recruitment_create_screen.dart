@@ -122,6 +122,30 @@ class _RecruitmentCreateScreenState extends State<RecruitmentCreateScreen> {
       return;
     }
 
+    // 경기 형태별 최소 총원 검증 (3:3→6명, 4:4→8명, 5:5→10명)
+    final base = int.parse(_baseMembersController.text);
+    final needed = int.parse(_neededMembersController.text);
+    final total = base + needed;
+    final minTotal = switch (_gameFormat) {
+      'THREE_VS_THREE' => 6,
+      'FOUR_VS_FOUR' => 8,
+      'FIVE_VS_FIVE' => 10,
+      _ => 0, // FLEXIBLE
+    };
+    if (minTotal > 0 && total < minTotal) {
+      final formatLabel = _gameFormats.firstWhere(
+        (f) => f['value'] == _gameFormat,
+        orElse: () => {'label': ''},
+      )['label']!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$formatLabel 경기는 총 $minTotal명 이상이어야 합니다 (현재: $total명)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final provider = context.read<RecruitmentProvider>();
     final fmt = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
@@ -188,7 +212,9 @@ class _RecruitmentCreateScreenState extends State<RecruitmentCreateScreen> {
                     if (dt != null) {
                       setState(() {
                         _startAt = dt;
-                        // 시작 시간 설정 시 마감을 자동으로 30분 전으로 설정 (수동 수정 가능)
+                        // 종료 시각: 시작 + 1시간 (수동 수정 가능)
+                        _endAt = dt.add(const Duration(hours: 1));
+                        // 마감 시각: 시작 30분 전 (수동 수정 가능)
                         var deadline = dt.subtract(const Duration(minutes: 30));
                         _deadlineAt = deadline.isBefore(DateTime.now())
                             ? DateTime.now()
@@ -239,8 +265,8 @@ class _RecruitmentCreateScreenState extends State<RecruitmentCreateScreen> {
                       child: TextFormField(
                         controller: _baseMembersController,
                         decoration: const InputDecoration(
-                          labelText: '기본 인원 *',
-                          hintText: '이미 확보된 인원',
+                          labelText: '이미 확보된 인원 *',
+                          hintText: '예: 2',
                           border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
@@ -256,8 +282,8 @@ class _RecruitmentCreateScreenState extends State<RecruitmentCreateScreen> {
                       child: TextFormField(
                         controller: _neededMembersController,
                         decoration: const InputDecoration(
-                          labelText: '모집 인원 *',
-                          hintText: '추가로 필요한 인원',
+                          labelText: '추가로 필요한 인원 *',
+                          hintText: '예: 4',
                           border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
