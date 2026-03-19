@@ -12,6 +12,9 @@ spring:
   profiles:
     active: local
     include: secret
+  # application-secret.yml 명시적 로드 (working directory에 따라 ./config/ 또는 ./ 경로 사용)
+  config:
+    import: optional:file:./config/application-secret.yml,optional:file:./application-secret.yml
 
 # JWT 토큰 만료 시간 (민감하지 않은 값 - application-secret.yml에 jwt.secret 필요)
 jwt:

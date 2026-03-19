@@ -57,6 +57,19 @@
                     <span class="tab-icon">📅</span>
                     <span class="tab-text">일정 관리</span>
                 </button>
+                <div class="nav-divider"></div>
+                <button type="button" class="nav-tab" data-tab="recruitments">
+                    <span class="tab-icon">🏟️</span>
+                    <span class="tab-text">모집글 관리</span>
+                </button>
+                <button type="button" class="nav-tab" data-tab="noShowReports">
+                    <span class="tab-icon">🚫</span>
+                    <span class="tab-text">노쇼 신고</span>
+                </button>
+                <button type="button" class="nav-tab" data-tab="clubMatchAdmin">
+                    <span class="tab-icon">⚔️</span>
+                    <span class="tab-text">친선전 관리</span>
+                </button>
             </nav>
             <button type="button" class="logout-btn" id="logout-btn">로그아웃</button>
         </aside>
@@ -269,7 +282,143 @@
                 </div>
             </div>
 
+            <!-- 모집글 관리 -->
+            <div id="tab-recruitments" class="tab-content">
+                <div class="content-header">
+                    <h1>모집글 관리</h1>
+                    <div class="header-info">
+                        <span class="total-count">총 <strong id="recruitments-total">0</strong>건</span>
+                    </div>
+                </div>
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <div class="filter-item">
+                            <label>상태</label>
+                            <select id="filter-recruitment-status" class="filter-select">
+                                <option value="">전체</option>
+                                <option value="OPEN">모집중</option>
+                                <option value="CONFIRMED">확정</option>
+                                <option value="CLOSED">마감</option>
+                                <option value="CANCELLED">취소</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>경기형태</label>
+                            <select id="filter-recruitment-format" class="filter-select">
+                                <option value="">전체</option>
+                                <option value="THREE_VS_THREE">3:3</option>
+                                <option value="FOUR_VS_FOUR">4:4</option>
+                                <option value="FIVE_VS_FIVE">5:5</option>
+                                <option value="FLEXIBLE">자유</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <button type="button" class="search-btn" id="btn-search-recruitments">조회</button>
+                            <button type="button" class="reset-btn" id="btn-reset-recruitments">초기화</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-wrapper">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>작성자</th>
+                                    <th>장소</th>
+                                    <th>시간</th>
+                                    <th>형태</th>
+                                    <th>인원</th>
+                                    <th>상태</th>
+                                    <th>생성일</th>
+                                    <th>액션</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recruitments-tbody">
+                                <tr><td colspan="8" class="empty-state"><p>데이터를 불러오는 중...</p></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="recruitments-pagination"></div>
+                </div>
+            </div>
+
+            <!-- 노쇼 신고 관리 -->
+            <div id="tab-noShowReports" class="tab-content">
+                <div class="content-header">
+                    <h1>노쇼 신고 관리</h1>
+                    <div class="header-info">
+                        <span class="total-count">대기중 <strong id="noshow-total">0</strong>건</span>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-wrapper">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>경기 ID</th>
+                                    <th>신고자</th>
+                                    <th>피신고자</th>
+                                    <th>상태</th>
+                                    <th>신고일</th>
+                                    <th>액션</th>
+                                </tr>
+                            </thead>
+                            <tbody id="noshow-tbody">
+                                <tr><td colspan="6" class="empty-state"><p>데이터를 불러오는 중...</p></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 친선전 관리 -->
+            <div id="tab-clubMatchAdmin" class="tab-content">
+                <div class="content-header">
+                    <h1>친선전 결과 관리</h1>
+                    <div class="header-info">
+                        <span class="total-count">승인 대기 <strong id="clubmatch-pending-total">0</strong>건</span>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-wrapper">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>홈팀</th>
+                                    <th>원정팀</th>
+                                    <th>장소</th>
+                                    <th>시간</th>
+                                    <th>홈 점수</th>
+                                    <th>원정 점수</th>
+                                    <th>상태</th>
+                                    <th>액션</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clubmatch-tbody">
+                                <tr><td colspan="8" class="empty-state"><p>데이터를 불러오는 중...</p></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </main>
+    </div>
+
+    <!-- 모집글 상세 모달 -->
+    <div id="modal-recruitment-detail" class="modal">
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3>모집글 상세</h3>
+                <button type="button" class="modal-close" data-close="modal-recruitment-detail">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-recruitment-detail-body">
+                <p>로딩 중...</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="modal-recruitment-detail">닫기</button>
+            </div>
+        </div>
     </div>
 
     <!-- 유저 상세 모달 -->
@@ -497,6 +646,9 @@
     <script src="js/posts.js"></script>
     <script src="js/schedule-locations.js"></script>
     <script src="js/schedules.js"></script>
+    <script src="js/recruitments.js"></script>
+    <script src="js/no-show-reports.js"></script>
+    <script src="js/club-match-admin.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (Admin.isLoggedIn()) {

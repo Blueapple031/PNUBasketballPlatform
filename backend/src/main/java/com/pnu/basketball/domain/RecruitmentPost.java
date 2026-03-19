@@ -3,7 +3,9 @@ package com.pnu.basketball.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -42,7 +44,8 @@ public class RecruitmentPost {
     private Integer neededMembers;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "game_format", nullable = false)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(name = "game_format", nullable = false, columnDefinition = "recruitment_game_format")
     private RecruitmentGameFormat gameFormat;
 
     @Column(name = "deadline_at")
