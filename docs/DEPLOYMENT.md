@@ -78,16 +78,22 @@ cat ~/.ssh/deploy_key
 - `application-secret.yml` (비밀값) ← Git에 올리지 말고 서버에만 둠
 
 서버에 JAR와 같은 디렉터리에 `config/` 폴더를 만들어 설정을 넣습니다.
+**application-secret.yml은 반드시 서버에 수동으로 생성해야 합니다.** (Git에 없음)
 
 ```
 ~/PNUBasketballPlatform/
 ├── app.jar
 └── config/
-    ├── application-prod.yml   # app.token-storage: redis 등
-    └── application-secret.yml # DB, Redis, JWT, OAuth 비밀값 (Git에 없음)
+    ├── application-prod.yml   # app.token-storage: redis 등 (선택)
+    └── application-secret.yml # DB, Redis, JWT, OAuth 비밀값 ← 필수!
 ```
 
 Spring Boot는 `app.jar`와 같은 디렉터리의 `config/`를 자동으로 읽습니다.
+
+**application-secret.yml 생성 방법:**
+1. 로컬의 `backend/src/main/resources/application-secret.yml.example` 참고
+2. 서버에서 `mkdir -p ~/PNUBasketballPlatform/config`
+3. `config/application-secret.yml` 파일 생성 후 spring.datasource, jwt.secret 등 채우기
 
 **application-prod.yml** 예시 (`backend/src/main/resources/application-prod.yml.example` 참고):
 
@@ -111,5 +117,8 @@ GitHub → **Actions** → **Deploy Backend** → **Run workflow**
 |------|----------|
 | SSH 연결 실패 | `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY` 확인, 서버 방화벽 22번 포트 개방 |
 | JAR 실행 실패 | 서버에서 `java -jar app.jar` 직접 실행해 에러 로그 확인 |
-| DB 연결 실패 | `application-prod.yml` DB URL, 사용자, 비밀번호 확인 |
+| **DataSource 'url' not specified** | `config/application-secret.yml`이 서버에 있는지 확인. 이 파일 없으면 DB 연결 불가. `application-secret.yml.example` 참고해 생성 |
+| DB 연결 실패 | `application-secret.yml`의 spring.datasource.url, username, password 확인 (RDS 보안그룹에서 서버 IP 허용 여부도 확인) |
+| Redis 연결 실패 | prod 프로파일 사용 시 Redis 필요. `config/application-secret.yml`에 redis.host/port 설정. Redis 미사용 시 `config/application-prod.yml`에 `app.token-storage: memory` 추가 |
+| Spring Data Redis 로그 노이즈 | local 프로파일 사용 시 `application-local.yml`이 Redis 자동설정을 비활성화함 |
 | 포트 충돌 | 기존 프로세스가 완전히 종료되지 않았을 수 있음 → `pkill -f app.jar` 후 재시작 |

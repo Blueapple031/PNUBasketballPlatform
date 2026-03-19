@@ -20,6 +20,8 @@ class ClubModel {
   final String? captainName;
   final String? captainProfileImageUrl;
   final bool? isCaptain;
+  final int wins;
+  final int rank;
 
   ClubModel({
     required this.clubId,
@@ -30,6 +32,8 @@ class ClubModel {
     this.captainName,
     this.captainProfileImageUrl,
     this.isCaptain,
+    this.wins = 0,
+    this.rank = 0,
   });
 
   ClubModel copyWith({
@@ -41,6 +45,8 @@ class ClubModel {
     String? captainName,
     String? captainProfileImageUrl,
     bool? isCaptain,
+    int? wins,
+    int? rank,
   }) {
     return ClubModel(
       clubId: clubId ?? this.clubId,
@@ -51,6 +57,8 @@ class ClubModel {
       captainName: captainName ?? this.captainName,
       captainProfileImageUrl: captainProfileImageUrl ?? this.captainProfileImageUrl,
       isCaptain: isCaptain ?? this.isCaptain,
+      wins: wins ?? this.wins,
+      rank: rank ?? this.rank,
     );
   }
 

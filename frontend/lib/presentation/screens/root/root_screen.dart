@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../club/club_screen.dart';
 import '../community/community_screen.dart';
-import '../home/home_screen.dart';
+import '../matching/matching_screen.dart';
 import '../schedule/schedule_screen.dart';
 import '../user/user_tab.dart';
 
@@ -23,7 +23,7 @@ class _RootScreenState extends State<RootScreen> {
   late int _selectedIndex;
 
   late final List<Widget> _screens = const [
-    HomeScreen(),
+    MatchingScreen(),
     ClubScreen(),
     CommunityScreen(),
     ScheduleScreen(),
@@ -52,9 +52,9 @@ class _RootScreenState extends State<RootScreen> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: '홈',
+            icon: Icon(Icons.sports_basketball_outlined),
+            activeIcon: Icon(Icons.sports_basketball),
+            label: '매칭',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.stadium_outlined),

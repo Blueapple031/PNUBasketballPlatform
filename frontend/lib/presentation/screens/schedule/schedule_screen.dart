@@ -372,12 +372,24 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     const textStyle = TextStyle(fontSize: 11, fontWeight: FontWeight.w500);
     const subStyle = TextStyle(fontSize: 10, color: AppColors.subText);
 
+    final isMatch = schedule.matchId != null && schedule.matchId!.isNotEmpty;
+
     return Positioned(
       left: 2,
       right: 2,
       top: top + 2,
       child: GestureDetector(
-        onTap: () => _showScheduleDetail(context, schedule, locationColor),
+        onTap: () {
+          if (isMatch) {
+            Navigator.pushNamed(
+              context,
+              '/recruitment-detail',
+              arguments: schedule.matchId,
+            );
+          } else {
+            _showScheduleDetail(context, schedule, locationColor);
+          }
+        },
         child: Container(
           height: height.clamp(24, double.infinity) - 4,
           padding: const EdgeInsets.all(4),
@@ -385,14 +397,24 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             color: locationColor.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(4),
             border: Border(
-              left: BorderSide(color: locationColor, width: 3),
+              left: BorderSide(
+                color: isMatch ? AppColors.activeBlue : locationColor,
+                width: 3,
+              ),
             ),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
               final h = constraints.maxHeight;
-              final showFull = h >= 88;
+
+              final showCompact = h >= 24;
               final showLocation = h >= 36;
+              final showTitle = h >= 52;
+              final showFull = h >= 88;
+
+              final titleText = schedule.title?.isNotEmpty == true
+                  ? schedule.title!
+                  : schedule.locationName;
 
               return ClipRect(
                 child: Column(
@@ -400,10 +422,23 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    if (schedule.isTraining && showFull)
+                    if (isMatch && showCompact)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 2),
+                        child: Icon(
+                          Icons.sports_basketball,
+                          size: 10,
+                          color: AppColors.alertOrange,
+                        ),
+                      ),
+
+                    if (!isMatch && schedule.isTraining && showFull)
                       Container(
                         margin: const EdgeInsets.only(bottom: 2),
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: locationColor.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(4),
@@ -417,36 +452,54 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ),
                         ),
                       ),
+
                     if (showLocation)
                       Text(
-                        schedule.locationName,
-                        style: textStyle.copyWith(fontWeight: FontWeight.w600),
+                        isMatch ? titleText : schedule.locationName,
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                          color: isMatch ? AppColors.activeBlue : null,
+                        ),
                         maxLines: showFull ? 2 : 1,
                         overflow: TextOverflow.ellipsis,
                         softWrap: true,
                       ),
-                    if (showFull &&
+
+                    if (!isMatch &&
+                        showTitle &&
                         schedule.title != null &&
                         schedule.title!.isNotEmpty)
                       Text(
                         schedule.title!,
                         style: const TextStyle(
-                            fontSize: 10, fontWeight: FontWeight.w500),
-                        maxLines: 2,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: showFull ? 2 : 1,
                         overflow: TextOverflow.ellipsis,
                         softWrap: true,
                       ),
+
                     Text(
                       '${schedule.startTime}~${schedule.endTime}',
-                      style: subStyle,
-                    ),
-                    Text(
-                      schedule.statusDisplayText,
-                      style: subStyle.copyWith(
-                        color: locationColor,
-                        fontWeight: FontWeight.w600,
+                      style: const TextStyle(
+                        fontSize: 8,
+                        color: AppColors.subText,
                       ),
                     ),
+
+                    if (showCompact)
+                      Text(
+                        isMatch ? '매칭' : schedule.statusDisplayText,
+                        style: TextStyle(
+                          fontSize: 8,
+                          color: isMatch ? AppColors.activeBlue : locationColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                   ],
                 ),
               );
@@ -455,7 +508,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ),
       ),
     );
-  }
 
   void _showScheduleDetail(
     BuildContext context,

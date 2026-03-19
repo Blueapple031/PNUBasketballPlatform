@@ -1,5 +1,6 @@
 package com.pnu.basketball.dto.request;
 
+import com.pnu.basketball.domain.Position;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -17,4 +18,9 @@ public class UpdateProfileRequest {
 
     @Size(max = 500, message = "프로필 이미지 URL은 500자를 초과할 수 없습니다.")
     private String profileImageUrl;
+
+    @Size(min = 2, max = 30, message = "닉네임은 2-30자 사이여야 합니다.")
+    private String nickname;
+
+    private Position position;
 }

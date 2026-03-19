@@ -56,7 +56,12 @@ CREATE TABLE users (
     virtual_currency        INTEGER NOT NULL DEFAULT 0,
     created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fcm_token               VARCHAR(500),
-    fcm_token_updated_at    TIMESTAMP
+    fcm_token_updated_at    TIMESTAMP,
+    nickname                VARCHAR(30) UNIQUE,
+    position                VARCHAR(20) CHECK (position IN ('GUARD', 'FORWARD', 'CENTER')),
+    exp                     INTEGER NOT NULL DEFAULT 0,
+    no_show_count           INTEGER NOT NULL DEFAULT 0,
+    participation_count     INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE UNIQUE INDEX idx_users_student_id_unique ON users(student_id) WHERE student_id IS NOT NULL AND student_id != '';
@@ -64,6 +69,7 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_google_id ON users(google_id);
 CREATE INDEX idx_users_kakao_id ON users(kakao_id);
 CREATE INDEX idx_users_real_name ON users(real_name);
+CREATE INDEX idx_users_nickname ON users(nickname);
 
 -- ============================================================
 -- clubs
@@ -74,11 +80,13 @@ CREATE TABLE clubs (
     logo_url      VARCHAR(500),
     introduction  TEXT,
     captain_id    BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+    wins          INTEGER NOT NULL DEFAULT 0,
     created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_clubs_captain_id ON clubs(captain_id);
 CREATE INDEX idx_clubs_name ON clubs(name);
+CREATE INDEX idx_clubs_wins ON clubs(wins DESC);
 
 -- ============================================================
 -- club_members (1 user : 1 club)

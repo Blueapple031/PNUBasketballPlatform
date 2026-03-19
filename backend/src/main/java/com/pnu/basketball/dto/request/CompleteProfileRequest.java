@@ -1,5 +1,7 @@
 package com.pnu.basketball.dto.request;
 
+import com.pnu.basketball.domain.Position;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -25,4 +27,11 @@ public class CompleteProfileRequest {
 
     @Size(max = 20, message = "학번은 20자 이내입니다.")
     private String studentId;
+
+    @NotBlank(message = "닉네임은 필수입니다.")
+    @Size(min = 2, max = 30, message = "닉네임은 2-30자 사이여야 합니다.")
+    private String nickname;
+
+    @NotNull(message = "포지션은 필수입니다.")
+    private Position position;
 }

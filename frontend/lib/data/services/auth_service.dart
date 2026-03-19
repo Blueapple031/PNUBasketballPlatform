@@ -126,6 +126,8 @@ class AuthService {
 
   Future<ApiResponseModel<UserModel>> completeProfile({
     required String accessToken,
+    required String nickname,
+    required String position,
     required String? realName,
     required String dateOfBirth,
     required bool isPnuStudent,
@@ -136,6 +138,8 @@ class AuthService {
       ApiEndpoints.completeProfile,
       headers: {'Authorization': 'Bearer $accessToken'},
       body: {
+        'nickname': nickname,
+        'position': position,
         if (realName != null) 'realName': realName,
         'dateOfBirth': dateOfBirth,
         'isPnuStudent': isPnuStudent,

@@ -5,10 +5,16 @@
 # 기본값: local 프로파일 (Redis 없이 인메모리 토큰 저장)
 # 운영 배포 시: --spring.profiles.active=prod 또는 SPRING_PROFILES_ACTIVE=prod
 
+app:
+  token-storage: memory   # Redis 없이 로컬 개발 시 memory 사용. prod에서는 redis로 변경
+
 spring:
   profiles:
     active: local
     include: secret
+  # application-secret.yml 명시적 로드 (working directory에 따라 ./config/ 또는 ./ 경로 사용)
+  config:
+    import: optional:file:./config/application-secret.yml,optional:file:./application-secret.yml
 
 # JWT 토큰 만료 시간 (민감하지 않은 값 - application-secret.yml에 jwt.secret 필요)
 jwt:

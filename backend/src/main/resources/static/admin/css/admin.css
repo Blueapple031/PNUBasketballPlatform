@@ -697,3 +697,60 @@ body {
         width: 100%;
     }
 }
+
+/* 사이드바 구분선 */
+.nav-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 8px 20px 16px;
+}
+
+/* 테이블 내 소형 버튼 */
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #667eea;
+    color: white;
+    transition: background 0.2s;
+}
+
+.btn-sm:hover {
+    background: #5a6fd6;
+}
+
+.btn-danger-sm {
+    background: #e53e3e;
+}
+
+.btn-danger-sm:hover {
+    background: #c53030;
+}
+
+/* 상태 배지: 활성 (파란색 계열) */
+.status-badge.status-active {
+    background: #ebf8ff;
+    color: #2b6cb0;
+}
+
+/* 상세 모달 그리드 */
+.detail-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.detail-row strong {
+    min-width: 80px;
+    color: #4a5568;
+    font-size: 13px;
+}

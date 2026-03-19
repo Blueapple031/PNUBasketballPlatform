@@ -34,9 +34,13 @@ public class ClubServiceImpl implements ClubService {
     @Override
     @Transactional(readOnly = true)
     public List<ClubListResponse> getClubs() {
-        return clubRepository.findAll().stream()
-                .map(club -> toClubListResponse(club, null))
-                .collect(Collectors.toList());
+        List<Club> clubs = clubRepository.findAllByOrderByWinsDesc();
+        int rank = 1;
+        List<ClubListResponse> result = new java.util.ArrayList<>();
+        for (Club club : clubs) {
+            result.add(toClubListResponseWithRank(club, null, rank++));
+        }
+        return result;
     }
 
     @Override
@@ -163,6 +167,10 @@ public class ClubServiceImpl implements ClubService {
     }
 
     private ClubListResponse toClubListResponse(Club club, Long currentUserId) {
+        return toClubListResponseWithRank(club, currentUserId, 0);
+    }
+
+    private ClubListResponse toClubListResponseWithRank(Club club, Long currentUserId, int rank) {
         String captainName = null;
         String captainProfileImageUrl = null;
         Boolean isCaptain = null;
@@ -182,6 +190,8 @@ public class ClubServiceImpl implements ClubService {
                 .captainName(captainName)
                 .captainProfileImageUrl(captainProfileImageUrl)
                 .isCaptain(isCaptain)
+                .wins(club.getWins())
+                .rank(rank)
                 .build();
     }
 }

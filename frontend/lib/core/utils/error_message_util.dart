@@ -12,7 +12,7 @@ String toUserFriendlyMessage(Object e) {
       msg.contains('timeoutexception') ||
       msg.contains('connection timed out') ||
       msg.contains('network is unreachable');
-  return isNetworkError
-      ? networkErrorMessage
-      : e.toString().replaceFirst('Exception: ', '');
+  if (isNetworkError) return networkErrorMessage;
+  if (e is FormatException) return '날짜 형식이 올바르지 않습니다';
+  return e.toString().replaceFirst('Exception: ', '');
 }

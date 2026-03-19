@@ -12,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
@@ -54,11 +55,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/api/health").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/clubs").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/v3/api-docs/**",
-                                "/admin/**"
+                                "/admin/**",
+                                "/privacy.html"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

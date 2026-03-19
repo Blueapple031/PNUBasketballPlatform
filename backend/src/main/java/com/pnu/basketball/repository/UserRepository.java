@@ -25,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByKakaoId(String kakaoId);
     boolean existsByStudentId(String studentId);
     boolean existsByStudentIdAndUserIdNot(String studentId, Long userId);
+    boolean existsByNickname(String nickname);
+    boolean existsByNicknameAndUserIdNot(String nickname, Long userId);
 
     @Query("SELECT u FROM User u " +
             "WHERE (:isPnuStudent IS NULL OR u.isPnuStudent = :isPnuStudent) " +

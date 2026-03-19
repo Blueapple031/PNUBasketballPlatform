@@ -28,7 +28,7 @@ class _ClubScreenState extends State<ClubScreen> {
     _loadData();
   }
 
-  // 데이터 로드: 내 동아리 정보와 탐색용 동아리 목록을 가져옵니다.
+  // 데이터 로드: 내 동아리 정보, 전체 동아리 순위 목록, 멤버 목록
   Future<void> _loadData() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
@@ -38,12 +38,11 @@ class _ClubScreenState extends State<ClubScreen> {
     // API 호출: 내 동아리 조회
     final myClub = await authProvider.getMyClub();
 
-    // 내 동아리가 없으면 전체 동아리 목록 조회 (탐색용)
-    List<ClubModel> allClubs = [];
+    // 전체 동아리 목록(승리 수 기준 순위) 항상 조회
+    final allClubs = await authProvider.getClubs() ?? [];
+
     List<MemberModel> myClubMembers = [];
-    if (myClub == null) {
-      allClubs = await authProvider.getClubs() ?? [];
-    } else {
+    if (myClub != null) {
       myClubMembers = await authProvider.getClubMembers(myClub.clubId) ?? [];
     }
 
@@ -65,26 +64,28 @@ class _ClubScreenState extends State<ClubScreen> {
       );
     }
 
-    // 내 동아리가 있다면 탭 뷰를 포함한 상세 화면을 보여줌
+    // 내 동아리가 있다면 탭 뷰(정보, 멤버, 순위)를 포함한 상세 화면
     if (_myClub != null) {
       return _buildMyClubDetailView(_myClub!);
     }
 
-    // 내 동아리가 없다면 동아리 탐색 목록을 보여줌
-    return _buildClubDiscoveryView();
+    // 내 동아리가 없다면 전체 동아리 순위 목록을 보여줌
+    return _buildClubRankingView();
   }
 
   // --- 1. 내 동아리 상세 뷰 (가입된 경우) ---
+  // 탭 순서: 순위(디폴트) → 내 동아리 → 멤버
   Widget _buildMyClubDetailView(ClubModel club) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
+      initialIndex: 0, // 순위 디폴트
       child: Scaffold(
         backgroundColor: AppColors.pageBg,
         appBar: AppBar(
           backgroundColor: AppColors.headerGrey,
           elevation: 0,
           title: const Text(
-            '내 동아리',
+            '동아리',
             style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
           ),
           bottom: const TabBar(
@@ -92,17 +93,22 @@ class _ClubScreenState extends State<ClubScreen> {
             labelColor: Colors.white,
             unselectedLabelColor: AppColors.subText,
             tabs: [
-              Tab(text: '정보'),
+              Tab(text: '순위'),
+              Tab(text: '내 동아리'),
               Tab(text: '멤버'),
             ],
           ),
         ),
-            body: Column(
+        body: Column(
           children: [
-            ClubHeader(club: club), // 별도 구현된 위젯
+            ClubHeader(club: club),
             Expanded(
               child: TabBarView(
                 children: [
+                  RefreshIndicator(
+                    onRefresh: _loadData,
+                    child: _buildClubRankingList(),
+                  ),
                   RefreshIndicator(
                     onRefresh: _loadData,
                     child: SingleChildScrollView(
@@ -127,168 +133,135 @@ class _ClubScreenState extends State<ClubScreen> {
     );
   }
 
-  // --- 2. 동아리 탐색 뷰 (가입 안 된 경우) ---
-  Widget _buildClubDiscoveryView() {
-    final sections = [
-      _ClubSectionData(
-        title: '중앙동아리',
-        subtitle: '학교 대표 동아리',
-        accentColor: AppColors.activeBlue,
-        icon: Icons.verified,
-        clubs: _allClubs, // 실제로는 필터링 로직 추가 (e.g. .where(...) 사용)
-      ),
-      _ClubSectionData(
-        title: '과동아리',
-        subtitle: '학과 중심 동아리',
-        accentColor: Colors.teal,
-        icon: Icons.school,
-        clubs: [],
-      ),
-    ];
-
+  // --- 2. 전체 동아리 순위 뷰 (가입 안 된 경우 또는 순위 탭) ---
+  Widget _buildClubRankingView() {
     return Scaffold(
       backgroundColor: AppColors.pageBg,
       appBar: AppBar(
         backgroundColor: AppColors.headerGrey,
-        title: const Text('동아리 탐색', style: TextStyle(color: Colors.white)),
+        title: const Text('전체 동아리 순위', style: TextStyle(color: Colors.white)),
       ),
       body: RefreshIndicator(
         onRefresh: _loadData,
-        child: ListView.builder(
-          physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: sections.length + 1,
-          itemBuilder: (context, index) {
-            if (index == 0) return _buildDiscoveryHeader();
-            return _ClubSection(
-              data: sections[index - 1],
-              onTapClub: (club) => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => ClubDetailScreen(club: club)),
-              ),
-            );
-          },
-        ),
+        child: _buildClubRankingList(),
       ),
     );
   }
 
-  Widget _buildDiscoveryHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.headerGrey.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Text(
-        '가입된 동아리가 없습니다.\n아래 카테고리에서 새로운 팀을 찾아보세요!',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
+  Widget _buildClubRankingList() {
+    if (_allClubs.isEmpty) {
+      return const Center(
+        child: Text('등록된 동아리가 없습니다.'),
+      );
+    }
 
-// --- 보조 위젯 및 데이터 모델 ---
-
-class _ClubSectionData {
-  final String title, subtitle;
-  final Color accentColor;
-  final IconData icon;
-  final List<ClubModel> clubs;
-
-  _ClubSectionData({
-    required this.title,
-    required this.subtitle,
-    required this.accentColor,
-    required this.icon,
-    required this.clubs,
-  });
-}
-
-class _ClubSection extends StatelessWidget {
-  final _ClubSectionData data;
-  final ValueChanged<ClubModel> onTapClub;
-
-  const _ClubSection({required this.data, required this.onTapClub});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [data.accentColor.withValues(alpha: 0.15), Colors.transparent],
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Icon(data.icon, color: data.accentColor),
-                const SizedBox(width: 8),
-                Text(data.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ],
-            ),
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      itemCount: _allClubs.length,
+      itemBuilder: (context, index) {
+        final club = _allClubs[index];
+        return _RankedClubTile(
+          club: club,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => ClubDetailScreen(club: club)),
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 130,
-            child: data.clubs.isEmpty
-                ? const Center(child: Text('해당 카테고리에 동아리가 없습니다.'))
-                : ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: data.clubs.length,
-              itemBuilder: (context, i) => _ClubTile(
-                club: data.clubs[i],
-                color: data.accentColor,
-                onTap: () => onTapClub(data.clubs[i]),
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
-class _ClubTile extends StatelessWidget {
+// --- 보조 위젯 ---
+
+class _RankedClubTile extends StatelessWidget {
   final ClubModel club;
-  final Color color;
   final VoidCallback onTap;
 
-  const _ClubTile({required this.club, required this.color, required this.onTap});
+  const _RankedClubTile({required this.club, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final rank = club.rank > 0 ? club.rank : 0;
+    final rankColor = rank <= 3
+        ? (rank == 1
+            ? const Color(0xFFFFD700) // 금
+            : rank == 2
+                ? const Color(0xFFC0C0C0) // 은
+                : const Color(0xFFCD7F32)) // 동
+        : AppColors.subText;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 110,
-        margin: const EdgeInsets.only(right: 12),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
+            Container(
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: rankColor.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                '$rank',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: rankColor,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
             CircleAvatar(
-              radius: 25,
-              backgroundImage: club.logoUrl != null ? NetworkImage(club.logoUrl!) : null,
-              child: club.logoUrl == null ? const Icon(Icons.group) : null,
+              radius: 24,
+              backgroundImage: club.logoUrl != null && club.logoUrl!.isNotEmpty
+                  ? NetworkImage(club.logoUrl!)
+                  : null,
+              child: club.logoUrl == null || club.logoUrl!.isEmpty
+                  ? const Icon(Icons.group, color: AppColors.subText)
+                  : null,
             ),
-            const SizedBox(height: 8),
-            Text(
-              club.name, // 모델의 name 필드 사용
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-              overflow: TextOverflow.ellipsis,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    club.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '승리 ${club.wins}승',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.subText,
+                    ),
+                  ),
+                ],
+              ),
             ),
+            Icon(Icons.chevron_right, color: AppColors.subText),
           ],
         ),
       ),
