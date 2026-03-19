@@ -91,22 +91,47 @@ public class User {
     @Column(name = "fcm_token_updated_at")
     private LocalDateTime fcmTokenUpdatedAt;
 
-    public void updateProfile(String realName, String phoneNumber, String profileImageUrl) {
+    @Column(unique = true, length = 30)
+    private String nickname;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private Position position;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer exp = 0;
+
+    @Column(name = "no_show_count", nullable = false)
+    @Builder.Default
+    private Integer noShowCount = 0;
+
+    @Column(name = "participation_count", nullable = false)
+    @Builder.Default
+    private Integer participationCount = 0;
+
+    public void updateProfile(String realName, String phoneNumber, String profileImageUrl,
+                              String nickname, Position position) {
         if (realName != null) this.realName = realName;
         if (phoneNumber != null) this.phoneNumber = phoneNumber;
         if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
+        if (nickname != null) this.nickname = nickname;
+        if (position != null) this.position = position;
     }
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
     }
 
-    public void completeProfile(String realName, LocalDate dateOfBirth, Boolean isPnuStudent, String department, String studentId) {
+    public void completeProfile(String realName, LocalDate dateOfBirth, Boolean isPnuStudent,
+                                String department, String studentId, String nickname, Position position) {
         if (realName != null) this.realName = realName;
         if (dateOfBirth != null) this.dateOfBirth = dateOfBirth;
         if (isPnuStudent != null) this.isPnuStudent = isPnuStudent;
         if (department != null) this.department = department;
         if (studentId != null) this.studentId = studentId;
+        if (nickname != null) this.nickname = nickname;
+        if (position != null) this.position = position;
     }
 
     public void verifyPhoneNumber() {
@@ -133,5 +158,17 @@ public class User {
     public void clearFcmToken() {
         this.fcmToken = null;
         this.fcmTokenUpdatedAt = null;
+    }
+
+    public void addExp(int amount) {
+        this.exp += amount;
+    }
+
+    public void incrementParticipationCount() {
+        this.participationCount++;
+    }
+
+    public void incrementNoShowCount() {
+        this.noShowCount++;
     }
 }

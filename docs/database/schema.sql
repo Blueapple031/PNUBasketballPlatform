@@ -37,14 +37,18 @@ CREATE TABLE users (
     kakao_id                VARCHAR(255) UNIQUE,
     date_of_birth           DATE,
     is_pnu_student          BOOLEAN NOT NULL DEFAULT false,
-    is_admin                BOOLEAN NOT NULL DEFAULT false,
     department              VARCHAR(100),
     student_id              VARCHAR(20),
     wins                    INTEGER NOT NULL DEFAULT 0,
     games                   INTEGER NOT NULL DEFAULT 0,
     total_score             INTEGER NOT NULL DEFAULT 0,
     virtual_currency        INTEGER NOT NULL DEFAULT 0,
-    created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    nickname                VARCHAR(30) UNIQUE,
+    position                VARCHAR(20) CHECK (position IN ('GUARD', 'FORWARD', 'CENTER')),
+    exp                     INTEGER NOT NULL DEFAULT 0,
+    no_show_count           INTEGER NOT NULL DEFAULT 0,
+    participation_count     INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE UNIQUE INDEX idx_users_student_id_unique ON users(student_id) WHERE student_id IS NOT NULL AND student_id != '';
@@ -52,6 +56,7 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_google_id ON users(google_id);
 CREATE INDEX idx_users_kakao_id ON users(kakao_id);
 CREATE INDEX idx_users_real_name ON users(real_name);
+CREATE INDEX idx_users_nickname ON users(nickname);
 
 -- ============================================================
 -- clubs

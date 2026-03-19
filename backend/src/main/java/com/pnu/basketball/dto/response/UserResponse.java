@@ -1,6 +1,7 @@
 package com.pnu.basketball.dto.response;
 
 import com.pnu.basketball.domain.LoginType;
+import com.pnu.basketball.domain.Position;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,4 +26,9 @@ public class UserResponse {
     private String department;
     private String studentId;
     private LocalDateTime createdAt;
+    private String nickname;
+    private Position position;
+    private Integer exp;
+    private Integer noShowCount;
+    private Integer participationCount;
 }

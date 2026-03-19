@@ -37,11 +37,19 @@ public class UserServiceImpl implements UserService {
     public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        
+
+        if (request.getNickname() != null && !request.getNickname().isBlank()) {
+            if (userRepository.existsByNicknameAndUserIdNot(request.getNickname(), userId)) {
+                throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+            }
+        }
+
         user.updateProfile(
                 request.getRealName(),
                 request.getPhoneNumber(),
-                request.getProfileImageUrl()
+                request.getProfileImageUrl(),
+                request.getNickname(),
+                request.getPosition()
         );
         
         return toUserResponse(user);
@@ -59,12 +67,20 @@ public class UserServiceImpl implements UserService {
             }
         }
 
+        if (request.getNickname() != null && !request.getNickname().isBlank()) {
+            if (userRepository.existsByNicknameAndUserIdNot(request.getNickname(), userId)) {
+                throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+            }
+        }
+
         user.completeProfile(
                 request.getRealName(),
                 request.getDateOfBirth(),
                 request.getIsPnuStudent(),
                 request.getIsPnuStudent() != null && request.getIsPnuStudent() ? request.getDepartment() : null,
-                request.getIsPnuStudent() != null && request.getIsPnuStudent() ? request.getStudentId() : null
+                request.getIsPnuStudent() != null && request.getIsPnuStudent() ? request.getStudentId() : null,
+                request.getNickname(),
+                request.getPosition()
         );
         userRepository.save(user);
 
@@ -84,6 +100,11 @@ public class UserServiceImpl implements UserService {
                 .department(user.getDepartment())
                 .studentId(user.getStudentId())
                 .createdAt(user.getCreatedAt())
+                .nickname(user.getNickname())
+                .position(user.getPosition())
+                .exp(user.getExp())
+                .noShowCount(user.getNoShowCount())
+                .participationCount(user.getParticipationCount())
                 .build();
     }
     
