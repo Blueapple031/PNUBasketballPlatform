@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/api_response_model.dart';
 import '../../core/constants/api_endpoints.dart';
+import '../../core/auth/session_expired_handler.dart';
 
 class ApiService {
   final String baseUrl;
@@ -94,6 +95,12 @@ class ApiService {
     http.Response response,
     T Function(Object?)? fromJson,
   ) {
+    // 401: 토큰 없음/만료 → 로그인 화면으로
+    if (response.statusCode == 401) {
+      SessionExpiredHandler.trigger();
+      throw Exception('로그인이 만료되었습니다.');
+    }
+
     final responseBody = utf8.decode(response.bodyBytes);
     final contentType = response.headers['content-type'] ?? '';
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
+import 'core/auth/session_expired_handler.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/community_provider.dart';
 import 'presentation/providers/schedule_provider.dart';
@@ -16,8 +17,32 @@ import 'presentation/screens/matching/recruitment_detail_screen.dart';
 import 'presentation/screens/matching/club_match_create_screen.dart';
 import 'presentation/screens/matching/club_match_detail_screen.dart';
 
-class BasketballApp extends StatelessWidget {
+class BasketballApp extends StatefulWidget {
   const BasketballApp({super.key});
+
+  @override
+  State<BasketballApp> createState() => _BasketballAppState();
+}
+
+class _BasketballAppState extends State<BasketballApp> {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _configureSessionExpiredHandler();
+    });
+  }
+
+  void _configureSessionExpiredHandler() {
+    final ctx = _navigatorKey.currentContext;
+    if (ctx == null) return;
+    SessionExpiredHandler.configure(
+      navigatorKey: _navigatorKey,
+      onLogout: () => ctx.read<AuthProvider>().logout(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,9 +56,10 @@ class BasketballApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ClubMatchProvider()),
       ],
       child: MaterialApp(
+        navigatorKey: _navigatorKey,
         title: '딸바',
         theme: AppTheme.theme,
-        home: const RootScreen(initialIndex: 0),
+        home: const AuthGate(),
         onGenerateRoute: (settings) {
           switch (settings.name) {
             case '/recruitment-detail':
