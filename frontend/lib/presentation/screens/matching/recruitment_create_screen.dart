@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -49,23 +50,55 @@ class _RecruitmentCreateScreenState extends State<RecruitmentCreateScreen> {
     super.dispose();
   }
 
+  /// 휠 스타일 날짜·시간 선택 (Cupertino 스타일, 더 직관적)
   Future<DateTime?> _pickDateTime(DateTime? initial) async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: initial ?? DateTime.now().add(const Duration(hours: 1)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 90)),
-    );
-    if (date == null || !mounted) return null;
+    var picked = initial ?? DateTime.now().add(const Duration(hours: 1));
+    if (picked.isBefore(DateTime.now())) {
+      picked = DateTime.now().add(const Duration(hours: 1));
+    }
 
-    final time = await showTimePicker(
+    final result = await showModalBottomSheet<DateTime>(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(
-          initial ?? DateTime.now().add(const Duration(hours: 1))),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: 320,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('취소'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, picked),
+                    child: const Text('확인'),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.dateAndTime,
+                initialDateTime: picked,
+                minimumDate: DateTime.now(),
+                maximumDate: DateTime.now().add(const Duration(days: 90)),
+                onDateTimeChanged: (dt) => picked = dt,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
-    if (time == null) return null;
-
-    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    return result;
   }
 
   Future<void> _handleSubmit() async {
@@ -152,7 +185,16 @@ class _RecruitmentCreateScreenState extends State<RecruitmentCreateScreen> {
                   dateFormat: dateFormat,
                   onTap: () async {
                     final dt = await _pickDateTime(_startAt);
-                    if (dt != null) setState(() => _startAt = dt);
+                    if (dt != null) {
+                      setState(() {
+                        _startAt = dt;
+                        // 시작 시간 설정 시 마감을 자동으로 30분 전으로 설정 (수동 수정 가능)
+                        var deadline = dt.subtract(const Duration(minutes: 30));
+                        _deadlineAt = deadline.isBefore(DateTime.now())
+                            ? DateTime.now()
+                            : deadline;
+                      });
+                    }
                   },
                 ),
                 const SizedBox(height: 16),

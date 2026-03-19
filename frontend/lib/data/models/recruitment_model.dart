@@ -29,8 +29,17 @@ class RecruitmentListModel {
     required this.isFull,
   });
 
-  static DateTime _parseDateTime(dynamic v) =>
-      DateTime.parse((v as String?)?.toString() ?? '');
+  /// ISO-8601 문자열 또는 epoch ms 지원. null/빈값/실패 시 DateTime.now() 반환 (크래시 방지)
+  static DateTime _parseDateTime(dynamic v) {
+    if (v == null) return DateTime.now();
+    if (v is num) {
+      final ms = v.toInt();
+      return DateTime.fromMillisecondsSinceEpoch(ms > 9999999999 ? ms : ms * 1000);
+    }
+    final s = (v as String?)?.toString().trim();
+    if (s == null || s.isEmpty) return DateTime.now();
+    return DateTime.tryParse(s) ?? DateTime.now();
+  }
 
   factory RecruitmentListModel.fromJson(Map<String, dynamic> json) {
     return RecruitmentListModel(
