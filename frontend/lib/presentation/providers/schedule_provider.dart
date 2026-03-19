@@ -58,6 +58,10 @@ class ScheduleProvider with ChangeNotifier {
 
       _schedules = result.schedules;
       _locations = result.locations;
+      if (_locations.isNotEmpty && _selectedLocationId == null) {
+        _selectedLocationId = _locations.first.id;
+        return loadSchedules(refresh: false);
+      }
     } catch (e) {
       _errorMessage = toUserFriendlyMessage(e);
       _schedules = [];

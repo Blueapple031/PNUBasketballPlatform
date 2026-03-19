@@ -143,17 +143,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              children: [
-                _buildLocationChip(context, provider, null, '전체'),
-                ...provider.locations.map(
-                  (loc) => _buildLocationChip(
-                    context,
-                    provider,
-                    loc.id,
-                    loc.name,
-                  ),
-                ),
-              ],
+              children: provider.locations
+                  .map((loc) => _buildLocationChip(
+                        context,
+                        provider,
+                        loc.id,
+                        loc.name,
+                      ))
+                  .toList(),
             ),
           ),
         );
@@ -508,6 +505,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ),
       ),
     );
+  }
 
   void _showScheduleDetail(
     BuildContext context,
