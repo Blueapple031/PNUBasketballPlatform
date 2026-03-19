@@ -335,11 +335,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           }),
                           // 일정 블록
                           ...schedules.map((s) {
-                            final top = _timeToTop(s.startTime);
-                            final height = _timeToHeight(s.startTime, s.endTime);
-                            if (top < 0 || top + height > totalHeight) return const SizedBox.shrink();
+                            final rawTop = _timeToTop(s.startTime);
+                            final rawHeight = _timeToHeight(s.startTime, s.endTime);
+                            if (rawTop >= totalHeight || rawTop + rawHeight <= 0) {
+                              return const SizedBox.shrink();
+                            }
+                            final clampedTop = rawTop.clamp(0.0, totalHeight);
+                            final clampedBottom = (rawTop + rawHeight).clamp(0.0, totalHeight);
+                            final clampedHeight = clampedBottom - clampedTop;
+                            if (clampedHeight < 12) return const SizedBox.shrink();
 
-                            return _buildScheduleBlock(context, provider, s, top, height);
+                            return _buildScheduleBlock(context, provider, s, clampedTop, clampedHeight);
                           }),
                         ],
                       ),
