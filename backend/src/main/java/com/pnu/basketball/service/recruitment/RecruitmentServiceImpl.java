@@ -68,7 +68,8 @@ public class RecruitmentServiceImpl implements RecruitmentService {
                                                   RecruitmentGameFormat gameFormat,
                                                   LocalDateTime startFrom, LocalDateTime startTo,
                                                   Pageable pageable) {
-        return recruitmentPostRepository.findAllWithFilters(status, locationId, gameFormat, startFrom, startTo, pageable)
+        var spec = RecruitmentSpecification.withFilters(status, locationId, gameFormat, startFrom, startTo);
+        return recruitmentPostRepository.findAll(spec, pageable)
                 .map(post -> {
                     long acceptedCount = applicationRepository.countByRecruitmentIdAndStatus(
                             post.getId(), ApplicationStatus.ACCEPTED);
