@@ -47,6 +47,15 @@ public class RecruitmentServiceImpl implements RecruitmentService {
         ScheduleLocationEntity location = locationRepository.findById(request.getLocationId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_LOCATION_NOT_FOUND));
 
+        if (scheduleRepository.existsOverlappingForCreate(
+                request.getLocationId(),
+                request.getStartAt().toLocalDate(),
+                request.getStartAt().toLocalTime(),
+                request.getEndAt().toLocalTime())) {
+            throw new CustomException(ErrorCode.SCHEDULE_OVERLAP,
+                    "해당 시간대에 이미 확정된 일정(훈련 또는 매칭)이 있습니다.");
+        }
+
         RecruitmentPost post = RecruitmentPost.builder()
                 .author(author)
                 .startAt(request.getStartAt())
@@ -157,6 +166,15 @@ public class RecruitmentServiceImpl implements RecruitmentService {
             throw new CustomException(ErrorCode.MATCH_ALREADY_EXISTS);
         }
 
+        if (scheduleRepository.existsOverlappingForCreate(
+                post.getLocation().getId(),
+                post.getStartAt().toLocalDate(),
+                post.getStartAt().toLocalTime(),
+                post.getEndAt().toLocalTime())) {
+            throw new CustomException(ErrorCode.SCHEDULE_OVERLAP,
+                    "해당 시간대에 이미 확정된 일정이 있어 매칭을 확정할 수 없습니다.");
+        }
+
         post.confirm();
 
         Match match = Match.builder()
@@ -180,6 +198,12 @@ public class RecruitmentServiceImpl implements RecruitmentService {
                 .matchId(match.getId())
                 .build();
         scheduleRepository.save(schedule);
+
+        List<RecruitmentPost> overlapping = recruitmentPostRepository.findOverlappingOpenPosts(
+                post.getLocation().getId(), post.getId(), post.getStartAt(), post.getEndAt());
+        for (RecruitmentPost other : overlapping) {
+            other.cancel();
+        }
 
         List<RecruitmentApplication> accepted = applicationRepository
                 .findByRecruitmentIdAndStatus(recruitmentId, ApplicationStatus.ACCEPTED);
