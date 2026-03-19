@@ -74,16 +74,18 @@ class _ClubScreenState extends State<ClubScreen> {
   }
 
   // --- 1. 내 동아리 상세 뷰 (가입된 경우) ---
+  // 탭 순서: 순위(디폴트) → 내 동아리 → 멤버
   Widget _buildMyClubDetailView(ClubModel club) {
     return DefaultTabController(
       length: 3,
+      initialIndex: 0, // 순위 디폴트
       child: Scaffold(
         backgroundColor: AppColors.pageBg,
         appBar: AppBar(
           backgroundColor: AppColors.headerGrey,
           elevation: 0,
           title: const Text(
-            '내 동아리',
+            '동아리',
             style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
           ),
           bottom: const TabBar(
@@ -91,9 +93,9 @@ class _ClubScreenState extends State<ClubScreen> {
             labelColor: Colors.white,
             unselectedLabelColor: AppColors.subText,
             tabs: [
-              Tab(text: '정보'),
-              Tab(text: '멤버'),
               Tab(text: '순위'),
+              Tab(text: '내 동아리'),
+              Tab(text: '멤버'),
             ],
           ),
         ),
@@ -103,6 +105,10 @@ class _ClubScreenState extends State<ClubScreen> {
             Expanded(
               child: TabBarView(
                 children: [
+                  RefreshIndicator(
+                    onRefresh: _loadData,
+                    child: _buildClubRankingList(),
+                  ),
                   RefreshIndicator(
                     onRefresh: _loadData,
                     child: SingleChildScrollView(
@@ -117,10 +123,6 @@ class _ClubScreenState extends State<ClubScreen> {
                   RefreshIndicator(
                     onRefresh: _loadData,
                     child: ClubMemberList(members: _myClubMembers),
-                  ),
-                  RefreshIndicator(
-                    onRefresh: _loadData,
-                    child: _buildClubRankingList(),
                   ),
                 ],
               ),

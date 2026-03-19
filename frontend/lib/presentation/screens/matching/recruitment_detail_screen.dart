@@ -169,9 +169,8 @@ class _RecruitmentDetailScreenState extends State<RecruitmentDetailScreen> {
                   _buildInfoSection(detail, dateFormat),
                   const SizedBox(height: 20),
                   ProgressBarWidget(
-                    current: detail.acceptedCount,
-                    total: detail.neededMembers,
-                    baseCount: detail.baseMembersCount,
+                    currentCount: detail.currentCount,
+                    totalNeeded: detail.totalNeeded,
                   ),
                   const SizedBox(height: 24),
                   if (isAuthor && detail.isOpen) ...[

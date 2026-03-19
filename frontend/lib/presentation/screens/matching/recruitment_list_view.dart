@@ -314,9 +314,8 @@ class _RecruitmentCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               ProgressBarWidget(
-                current: recruitment.acceptedCount,
-                total: recruitment.neededMembers,
-                baseCount: recruitment.baseMembersCount,
+                currentCount: recruitment.currentCount,
+                totalNeeded: recruitment.totalNeeded,
               ),
             ],
           ),
