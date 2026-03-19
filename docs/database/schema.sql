@@ -1,14 +1,24 @@
 -- PostgreSQL Database Schema for 딸바 (PNU Basketball Platform)
--- 통합 스키마 (2026-03)
+-- 현재 DB 구조 반영 (2026-03)
 --
 -- 실행: psql -U postgres -d ddalba_DB -f schema.sql
 -- (docs/database/ 디렉터리에서 실행하거나, 프로젝트 루트에서 docs/database/schema.sql 지정)
+--
+-- [실제 DB와 동기화]
+-- schema.sql이 실제 DB와 다를 경우:
+--   1. dump_schema.ps1 (Windows) 또는 dump_schema.sh (Linux/Mac) 실행
+--   2. actual_schema.sql 생성됨
+--   3. diff schema.sql actual_schema.sql 로 차이 확인
+--   4. actual_schema.sql 내용을 참고해 schema.sql 수정
+-- 환경변수: PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD
 --
 -- 스키마는 schemas/ 폴더에 도메인별로 분리되어 있습니다:
 --   00_common.sql  - 확장, ENUM
 --   01_users.sql   - 회원
 --   02_clubs.sql   - 동아리, 동아리 멤버
 --   04_posts.sql   - 게시글, 댓글
+--   05_polls.sql   - 투표
+--   05_schedules.sql - 매칭 장소, 일정
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -44,7 +54,9 @@ CREATE TABLE users (
     games                   INTEGER NOT NULL DEFAULT 0,
     total_score             INTEGER NOT NULL DEFAULT 0,
     virtual_currency        INTEGER NOT NULL DEFAULT 0,
-    created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fcm_token               VARCHAR(500),
+    fcm_token_updated_at    TIMESTAMP
 );
 
 CREATE UNIQUE INDEX idx_users_student_id_unique ON users(student_id) WHERE student_id IS NOT NULL AND student_id != '';
@@ -190,6 +202,10 @@ CREATE TABLE schedules (
 CREATE INDEX idx_schedules_location_id ON schedules(location_id);
 CREATE INDEX idx_schedules_date ON schedules(schedule_date);
 CREATE INDEX idx_schedules_location_date ON schedules(location_id, schedule_date);
+CREATE INDEX idx_schedules_match_id ON schedules(match_id) WHERE match_id IS NOT NULL;
+
+COMMENT ON COLUMN schedules.status IS 'AVAILABLE=비어있음, SCHEDULED=사용중, CANCELLED=사용 예정';
+COMMENT ON COLUMN schedules.schedule_type IS 'REGULAR=일반, TRAINING=훈련(주간 반복)';
 
 -- MVP 기본 매칭 장소
 INSERT INTO schedule_locations (name, sort_order) VALUES

@@ -369,53 +369,217 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     double height,
   ) {
     final locationColor = _colorForLocation(schedule.locationId, provider.locations);
+    const textStyle = TextStyle(fontSize: 11, fontWeight: FontWeight.w500);
+    const subStyle = TextStyle(fontSize: 10, color: AppColors.subText);
 
     return Positioned(
       left: 2,
       right: 2,
       top: top + 2,
-      child: Container(
-        height: height.clamp(24, double.infinity) - 4,
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: locationColor.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(4),
-          border: Border(
-            left: BorderSide(color: locationColor, width: 3),
+      child: GestureDetector(
+        onTap: () => _showScheduleDetail(context, schedule, locationColor),
+        child: Container(
+          height: height.clamp(24, double.infinity) - 4,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: locationColor.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(4),
+            border: Border(
+              left: BorderSide(color: locationColor, width: 3),
+            ),
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final h = constraints.maxHeight;
+              final showFull = h >= 88;
+              final showLocation = h >= 36;
+
+              return ClipRect(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    if (schedule.isTraining && showFull)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: locationColor.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '훈련',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: locationColor,
+                          ),
+                        ),
+                      ),
+                    if (showLocation)
+                      Text(
+                        schedule.locationName,
+                        style: textStyle.copyWith(fontWeight: FontWeight.w600),
+                        maxLines: showFull ? 2 : 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
+                      ),
+                    if (showFull &&
+                        schedule.title != null &&
+                        schedule.title!.isNotEmpty)
+                      Text(
+                        schedule.title!,
+                        style: const TextStyle(
+                            fontSize: 10, fontWeight: FontWeight.w500),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
+                      ),
+                    Text(
+                      '${schedule.startTime}~${schedule.endTime}',
+                      style: subStyle,
+                    ),
+                    Text(
+                      schedule.statusDisplayText,
+                      style: subStyle.copyWith(
+                        color: locationColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
+      ),
+    );
+  }
+
+  void _showScheduleDetail(
+    BuildContext context,
+    ScheduleModel schedule,
+    Color accentColor,
+  ) {
+    final dateStr =
+        '${schedule.scheduleDate.year}.${schedule.scheduleDate.month.toString().padLeft(2, '0')}.${schedule.scheduleDate.day.toString().padLeft(2, '0')}';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).padding.bottom + 24,
+        ),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            FittedBox(
-              alignment: Alignment.centerLeft,
-              fit: BoxFit.scaleDown,
-              child: Text(
-                schedule.locationName,
-                style: const TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.boxBorder,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            Text(
-              '${schedule.startTime}~${schedule.endTime}',
-              style: TextStyle(
-                fontSize: 8,
-                color: AppColors.subText,
-              ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    schedule.locationName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.titleText,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Text(
+            const SizedBox(height: 16),
+            _buildDetailRow(Icons.calendar_today, '날짜', dateStr),
+            _buildDetailRow(
+              Icons.access_time,
+              '시간',
+              '${schedule.startTime} ~ ${schedule.endTime}',
+            ),
+            _buildDetailRow(
+              Icons.info_outline,
+              '상태',
               schedule.statusDisplayText,
-              style: TextStyle(
-                fontSize: 8,
-                color: locationColor,
-                fontWeight: FontWeight.w500,
-              ),
+              valueColor: accentColor,
             ),
+            if (schedule.isTraining)
+              _buildDetailRow(Icons.fitness_center, '종류', '훈련', valueColor: accentColor),
+            if (schedule.title != null && schedule.title!.isNotEmpty)
+              _buildDetailRow(Icons.title, '제목', schedule.title!),
+            if (schedule.description != null && schedule.description!.isNotEmpty)
+              _buildDetailRow(Icons.notes, '설명', schedule.description!),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(
+    IconData icon,
+    String label,
+    String value, {
+    Color? valueColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: AppColors.subText),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.subText,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: valueColor ?? AppColors.titleText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

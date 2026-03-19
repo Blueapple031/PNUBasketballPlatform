@@ -28,7 +28,7 @@ class ScheduleService {
           '${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}';
     }
     if (locationId != null && locationId.isNotEmpty) {
-      params['locationId'] = locationId;
+      params['locationIds'] = locationId;
     }
 
     final query = params.isEmpty ? '' : '?${params.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';

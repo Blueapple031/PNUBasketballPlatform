@@ -28,8 +28,8 @@ public class ScheduleController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getSchedules(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) UUID locationId) {
-        List<ScheduleResponse> schedules = scheduleService.getSchedules(startDate, endDate, locationId);
+            @RequestParam(required = false) List<UUID> locationIds) {
+        List<ScheduleResponse> schedules = scheduleService.getSchedules(startDate, endDate, locationIds);
         List<ScheduleLocationResponse> locations = locationService.getAllLocations();
 
         Map<String, Object> data = new HashMap<>();

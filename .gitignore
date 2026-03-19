@@ -286,6 +286,7 @@ lerna-debug.log*
 *.db
 *.sqlite
 *.sqlite3
+docs/database/actual_schema.sql
 
 # ===================================
 # Backup files

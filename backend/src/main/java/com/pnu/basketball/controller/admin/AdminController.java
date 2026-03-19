@@ -191,8 +191,8 @@ public class AdminController {
     public ResponseEntity<ApiResponse<List<ScheduleResponse>>> getSchedules(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) UUID locationId) {
-        List<ScheduleResponse> schedules = adminService.getSchedules(startDate, endDate, locationId);
+            @RequestParam(required = false) List<UUID> locationIds) {
+        List<ScheduleResponse> schedules = adminService.getSchedules(startDate, endDate, locationIds);
         return ResponseEntity.ok(ApiResponse.success(schedules, "일정 목록 조회 성공"));
     }
 

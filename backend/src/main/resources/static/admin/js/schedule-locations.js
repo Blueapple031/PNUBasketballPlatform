@@ -61,26 +61,42 @@ function bindLocationEvents() {
 }
 
 function refreshLocationSelects() {
-    var opts = '<option value="">전체</option>';
-    LocationsCache.forEach(function (loc) {
-        opts += '<option value="' + loc.id + '">' + (loc.name || '') + '</option>';
-    });
-    var filterEl = document.getElementById('filter-schedule-location');
-    if (filterEl) {
-        var saved = filterEl.value;
-        filterEl.innerHTML = opts;
-        if (saved) filterEl.value = saved;
+    var filterContainer = document.getElementById('filter-schedule-locations');
+    if (filterContainer) {
+        var checkedIds = [];
+        filterContainer.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+            if (cb.checked) checkedIds.push(cb.value);
+        });
+        var html = '';
+        LocationsCache.forEach(function (loc) {
+            var checked = checkedIds.indexOf(loc.id) >= 0 ? ' checked' : '';
+            html += '<label class="filter-location-checkbox"><input type="checkbox" name="filter-location-id" value="' + loc.id + '"' + checked + '> ' + (loc.name || '') + '</label>';
+        });
+        filterContainer.innerHTML = html || '<span class="empty-hint">장소가 없습니다.</span>';
     }
 
-    var editOpts = '<option value="">선택</option>';
-    LocationsCache.forEach(function (loc) {
-        editOpts += '<option value="' + loc.id + '">' + (loc.name || '') + '</option>';
-    });
-    var editEl = document.getElementById('edit-schedule-location');
-    if (editEl) {
-        var savedEdit = editEl.value;
-        editEl.innerHTML = editOpts;
-        if (savedEdit) editEl.value = savedEdit;
+    var editContainer = document.getElementById('edit-schedule-locations');
+    var editSelect = document.getElementById('edit-schedule-location');
+    if (editContainer) {
+        var checkedIds = [];
+        editContainer.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+            if (cb.checked) checkedIds.push(cb.value);
+        });
+        var html = '';
+        LocationsCache.forEach(function (loc) {
+            var checked = checkedIds.indexOf(loc.id) >= 0 ? ' checked' : '';
+            html += '<label class="filter-location-checkbox"><input type="checkbox" name="edit-location-id" value="' + loc.id + '"' + checked + '> ' + (loc.name || '') + '</label>';
+        });
+        editContainer.innerHTML = html || '<span class="empty-hint">장소가 없습니다.</span>';
+    }
+    if (editSelect) {
+        var editOpts = '<option value="">선택</option>';
+        LocationsCache.forEach(function (loc) {
+            editOpts += '<option value="' + loc.id + '">' + (loc.name || '') + '</option>';
+        });
+        var savedEdit = editSelect.value;
+        editSelect.innerHTML = editOpts;
+        if (savedEdit) editSelect.value = savedEdit;
     }
 }
 
