@@ -50,4 +50,8 @@ public class Club {
     public void setCaptain(User captain) {
         this.captain = captain;
     }
+
+    public void incrementWins() {
+        this.wins++;
+    }
 }

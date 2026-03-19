@@ -63,6 +63,24 @@ public enum ErrorCode {
     MATCH_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 확정된 경기가 존재합니다."),
     MATCH_COMPLETE_UNAUTHORIZED(HttpStatus.FORBIDDEN, "경기 완료 처리 권한이 없습니다."),
 
+    // Club Match
+    CLUB_MATCH_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "친선전 신청을 찾을 수 없습니다."),
+    CLUB_MATCH_NOT_CLUB_MEMBER(HttpStatus.FORBIDDEN, "동아리 소속 멤버만 가능합니다."),
+    CLUB_MATCH_NOT_CAPTAIN(HttpStatus.FORBIDDEN, "동아리 대표만 수행할 수 있습니다."),
+    CLUB_MATCH_ALREADY_ATTENDED(HttpStatus.CONFLICT, "이미 참가 의사를 등록했습니다."),
+    CLUB_MATCH_NOT_READY(HttpStatus.BAD_REQUEST, "상대 지정이 불가한 상태입니다."),
+    CLUB_MATCH_SAME_CLUB(HttpStatus.BAD_REQUEST, "같은 동아리를 상대로 지정할 수 없습니다."),
+    CLUB_MATCH_RESULT_EXISTS(HttpStatus.CONFLICT, "이미 결과가 입력되었습니다."),
+    CLUB_MATCH_NOT_DONE(HttpStatus.BAD_REQUEST, "경기가 완료 상태가 아닙니다."),
+    CLUB_MATCH_NOT_INVOLVED(HttpStatus.FORBIDDEN, "해당 친선전에 참여한 동아리가 아닙니다."),
+    CLUB_MATCH_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "경기 결과를 찾을 수 없습니다."),
+
+    // Review & NoShow
+    REVIEW_PERIOD_EXPIRED(HttpStatus.BAD_REQUEST, "리뷰 제출 기한(24시간)이 지났습니다."),
+    REVIEW_NOT_PARTICIPANT(HttpStatus.FORBIDDEN, "해당 경기 참가자만 리뷰할 수 있습니다."),
+    REVIEW_ALREADY_SUBMITTED(HttpStatus.CONFLICT, "이미 리뷰를 제출했습니다."),
+    NO_SHOW_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "노쇼 신고를 찾을 수 없습니다."),
+
     // Schedule
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "일정을 찾을 수 없습니다."),
     SCHEDULE_OVERLAP(HttpStatus.CONFLICT, "해당 장소의 같은 날짜·시간대에 이미 일정이 등록되어 있습니다."),

@@ -10,4 +10,6 @@ public interface MatchService {
     MatchResponse getMatch(UUID matchId);
 
     List<MatchResponse> getMyMatches(Long userId);
+
+    void completeMatch(UUID matchId, Long userId);
 }
