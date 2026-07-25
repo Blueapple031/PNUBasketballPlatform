@@ -28,8 +28,13 @@ public class ScheduleController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getSchedules(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) List<UUID> locationIds) {
-        List<ScheduleResponse> schedules = scheduleService.getSchedules(startDate, endDate, locationIds);
+            @RequestParam(required = false) List<UUID> locationIds,
+            @RequestParam(required = false) UUID locationId) {
+        // locationIds(복수) 또는 locationId(단일) 지원
+        List<UUID> effectiveIds = (locationIds != null && !locationIds.isEmpty())
+                ? locationIds
+                : (locationId != null ? List.of(locationId) : null);
+        List<ScheduleResponse> schedules = scheduleService.getSchedules(startDate, endDate, effectiveIds);
         List<ScheduleLocationResponse> locations = locationService.getAllLocations();
 
         Map<String, Object> data = new HashMap<>();

@@ -145,14 +145,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             child: Row(
               children: [
                 _buildLocationChip(context, provider, null, '전체'),
-                ...provider.locations.map(
-                  (loc) => _buildLocationChip(
-                    context,
-                    provider,
-                    loc.id,
-                    loc.name,
-                  ),
-                ),
+                ...provider.locations.map((loc) => _buildLocationChip(
+                      context,
+                      provider,
+                      loc.id,
+                      loc.name,
+                    )),
               ],
             ),
           ),
@@ -336,13 +334,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               ),
                             );
                           }),
-                          // 일정 블록
-                          ...schedules.map((s) {
-                            final top = _timeToTop(s.startTime);
-                            final height = _timeToHeight(s.startTime, s.endTime);
-                            if (top < 0 || top + height > totalHeight) return const SizedBox.shrink();
-
-                            return _buildScheduleBlock(context, provider, s, top, height);
+                          // 일정 블록 (겹치는 일정은 나란히 배치)
+                          ..._layoutScheduleBlocks(schedules, totalHeight).map((placed) {
+                            return _buildScheduleBlock(
+                              context, provider, placed.schedule,
+                              placed.top, placed.height,
+                              placed.colIndex, placed.totalCols,
+                            );
                           }),
                         ],
                       ),
@@ -361,12 +359,58 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
+  List<_PlacedSchedule> _layoutScheduleBlocks(
+    List<ScheduleModel> schedules,
+    double totalHeight,
+  ) {
+    final items = <_PlacedSchedule>[];
+    for (final s in schedules) {
+      final rawTop = _timeToTop(s.startTime);
+      final rawHeight = _timeToHeight(s.startTime, s.endTime);
+      if (rawTop >= totalHeight || rawTop + rawHeight <= 0) continue;
+      final cTop = rawTop.clamp(0.0, totalHeight);
+      final cBottom = (rawTop + rawHeight).clamp(0.0, totalHeight);
+      final cHeight = cBottom - cTop;
+      if (cHeight < 12) continue;
+      items.add(_PlacedSchedule(schedule: s, top: cTop, height: cHeight));
+    }
+
+    final columns = <List<_PlacedSchedule>>[];
+    for (final item in items) {
+      var placed = false;
+      for (var c = 0; c < columns.length; c++) {
+        final hasOverlap = columns[c].any(
+          (existing) =>
+              existing.top < item.top + item.height &&
+              item.top < existing.top + existing.height,
+        );
+        if (!hasOverlap) {
+          columns[c].add(item);
+          item.colIndex = c;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        item.colIndex = columns.length;
+        columns.add([item]);
+      }
+    }
+    final totalCols = columns.length;
+    for (final item in items) {
+      item.totalCols = totalCols;
+    }
+    return items;
+  }
+
   Widget _buildScheduleBlock(
     BuildContext context,
     ScheduleProvider provider,
     ScheduleModel schedule,
     double top,
     double height,
+    int colIndex,
+    int totalCols,
   ) {
     final locationColor = _colorForLocation(schedule.locationId, provider.locations);
     const textStyle = TextStyle(fontSize: 11, fontWeight: FontWeight.w500);
@@ -375,8 +419,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final isMatch = schedule.matchId != null && schedule.matchId!.isNotEmpty;
 
     return Positioned(
-      left: 2,
-      right: 2,
+      left: totalCols > 1
+          ? 2 + (_dayColumnWidth - 4) * colIndex / totalCols
+          : 2,
+      width: totalCols > 1
+          ? (_dayColumnWidth - 4) / totalCols
+          : _dayColumnWidth - 4,
       top: top + 2,
       child: GestureDetector(
         onTap: () {
@@ -508,6 +556,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ),
       ),
     );
+  }
 
   void _showScheduleDetail(
     BuildContext context,
@@ -639,4 +688,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
+}
+
+class _PlacedSchedule {
+  final ScheduleModel schedule;
+  final double top;
+  final double height;
+  int colIndex;
+  int totalCols;
+
+  _PlacedSchedule({
+    required this.schedule,
+    required this.top,
+    required this.height,
+    this.colIndex = 0,
+    this.totalCols = 1,
+  });
 }
