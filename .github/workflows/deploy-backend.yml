@@ -5,14 +5,19 @@ on:
     branches: [main]
     paths:
       - 'backend/**'
+      - 'docker-compose.yml'
   workflow_dispatch:  # 수동 실행 가능
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-backend
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout
@@ -26,31 +31,66 @@ jobs:
           cache: 'gradle'
 
       - name: Grant execute permission for gradlew
+        working-directory: backend
         run: chmod +x gradlew
 
       - name: Build JAR
+        working-directory: backend
         run: ./gradlew bootJar --no-daemon
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Copy docker-compose.yml to Server
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p $SSH_PORT -H $SSH_HOST >> ~/.ssh/known_hosts 2>/dev/null || true
+          scp -P $SSH_PORT -o StrictHostKeyChecking=accept-new docker-compose.yml $SSH_USER@$SSH_HOST:~/PNUBasketballPlatform/docker-compose.yml
+
       - name: Deploy to Server
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          JAR_FILE=$(ls build/libs/*.jar | head -1)
-          mkdir -p ~/.ssh
-          ssh-keyscan -p $SSH_PORT -H $SSH_HOST >> ~/.ssh/known_hosts 2>/dev/null || true
-          scp -P $SSH_PORT -o StrictHostKeyChecking=accept-new $JAR_FILE $SSH_USER@$SSH_HOST:~/PNUBasketballPlatform/app.jar
-
-      - name: Restart Application
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
-        run: |
-          ssh -o StrictHostKeyChecking=accept-new -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST 'cd ~/PNUBasketballPlatform && pkill -f app.jar || true && sleep 2 && (nohup /usr/bin/java -jar app.jar --spring.profiles.active=prod > app.log 2>&1 &)' && echo "배포 완료"
+          ssh -o StrictHostKeyChecking=accept-new -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST \
+            "cd ~/PNUBasketballPlatform && \
+             echo '$GHCR_TOKEN' | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin && \
+             docker compose pull backend && \
+             docker compose up -d && \
+             docker image prune -f" \
+          && echo "배포 완료"

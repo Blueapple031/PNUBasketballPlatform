@@ -1,0 +1,39 @@
+services:
+  backend:
+    image: ghcr.io/blueapple031/pnubasketballplatform-backend:latest
+    container_name: pnu-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    volumes:
+      - ./config:/app/config:ro
+      - ./logs:/app/logs
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - postgres
+
+  redis:
+    image: redis:7-alpine
+    container_name: pnu-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: pnu-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+
+volumes:
+  redis-data:
+  postgres-data:

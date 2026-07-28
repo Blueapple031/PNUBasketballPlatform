@@ -1,0 +1,11 @@
+build/*
+!build/libs
+!build/libs/**
+.gradle/
+out/
+bin/
+logs/
+*.log
+.idea/
+src/main/resources/application-secret.yml
+src/main/resources/firebase-service-account.json

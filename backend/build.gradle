@@ -67,3 +67,15 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+// bootJar만 사용하므로 plain jar(-plain.jar)는 생성하지 않음 (Docker COPY 시 파일 하나만 매칭되도록)
+tasks.named('jar') {
+    enabled = false
+}
+
+// 로컬 개발용 application-secret.yml(RDS 등 실제 접속 정보)은 배포용 jar에 절대 포함하지 않음.
+// 운영/도커 환경은 서버의 config/application-secret.yml(외부 마운트)만 사용해야 함.
+// bootRun은 src/main/resources를 classpath로 직접 읽으므로 로컬 개발에는 영향 없음.
+tasks.named('bootJar') {
+    exclude 'application-secret.yml'
+}
+
