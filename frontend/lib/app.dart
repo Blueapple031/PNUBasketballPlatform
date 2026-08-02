@@ -113,8 +113,17 @@ class _AuthGateState extends State<AuthGate> {
       future: _initializeFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset('assets/images/logo.png', width: 96, height: 96),
+                  const SizedBox(height: 24),
+                  const CircularProgressIndicator(),
+                ],
+              ),
+            ),
           );
         }
 
