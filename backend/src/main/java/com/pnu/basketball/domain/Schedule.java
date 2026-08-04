@@ -45,6 +45,11 @@ public class Schedule {
     @Builder.Default
     private String scheduleType = "REGULAR";
 
+    /** Stored once and expanded weekly from scheduleDate when read. */
+    @Column(name = "is_recurring", nullable = false)
+    @Builder.Default
+    private boolean recurring = false;
+
     @Column(length = 200)
     private String title;
 

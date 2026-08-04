@@ -7,16 +7,27 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
-import 'package:basketball_frontend/app.dart';
+import 'package:basketball_frontend/presentation/providers/club_match_provider.dart';
+import 'package:basketball_frontend/presentation/providers/recruitment_provider.dart';
+import 'package:basketball_frontend/presentation/screens/matching/matching_screen.dart';
 
 void main() {
-  testWidgets('App smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const BasketballApp());
+  testWidgets('Matching screen smoke test', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => RecruitmentProvider()),
+          ChangeNotifierProvider(create: (_) => ClubMatchProvider()),
+        ],
+        child: const MaterialApp(home: MatchingScreen()),
+      ),
+    );
 
-    // Verify that the UserTab screen is displayed
-    expect(find.text('마이페이지'), findsOneWidget);
     expect(find.text('딸바'), findsOneWidget);
+    expect(find.text('게스트/번개'), findsOneWidget);
+    expect(find.text('동아리 친선전'), findsOneWidget);
+    expect(find.text('모집하기'), findsOneWidget);
   });
 }
