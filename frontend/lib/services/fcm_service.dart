@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 @pragma('vm:entry-point')
@@ -21,6 +22,8 @@ class FcmService {
     importance: Importance.high,
   );
 
+  static bool _isInitialized = false;
+
   static Future<void> init() async {
     await _messaging.requestPermission(
       alert: true,
@@ -28,8 +31,17 @@ class FcmService {
       sound: true,
     );
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initSettings = InitializationSettings(android: androidSettings);
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const darwinSettings = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: darwinSettings,
+    );
     await _localNotifications.initialize(
       initSettings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
@@ -44,6 +56,8 @@ class FcmService {
 
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
+    _isInitialized = true;
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
         _localNotifications.show(
@@ -57,6 +71,11 @@ class FcmService {
               channelDescription: _channel.description,
               importance: Importance.high,
               priority: Priority.high,
+            ),
+            iOS: const DarwinNotificationDetails(
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
             ),
           ),
         );
@@ -75,8 +94,16 @@ class FcmService {
   }
 
   static Future<String?> getToken() async {
-    return await _messaging.getToken();
+    if (!_isInitialized) return null;
+    try {
+      return await _messaging.getToken();
+    } catch (error) {
+      // iOS에서는 APNs 토큰이 준비되기 전에 호출될 수 있다.
+      debugPrint('FCM token is not ready: $error');
+      return null;
+    }
   }
 
-  static Stream<String> get onTokenRefresh => _messaging.onTokenRefresh;
+  static Stream<String> get onTokenRefresh =>
+      _isInitialized ? _messaging.onTokenRefresh : const Stream.empty();
 }

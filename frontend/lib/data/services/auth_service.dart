@@ -34,7 +34,8 @@ class AuthService {
         if (department != null) 'department': department,
         if (studentId != null) 'studentId': studentId,
       },
-      fromJson: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      fromJson: (json) =>
+          AuthResponseModel.fromJson(json as Map<String, dynamic>),
     );
   }
 
@@ -48,7 +49,8 @@ class AuthService {
         'email': email,
         'password': password,
       },
-      fromJson: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      fromJson: (json) =>
+          AuthResponseModel.fromJson(json as Map<String, dynamic>),
     );
   }
 
@@ -60,7 +62,8 @@ class AuthService {
       body: {
         'accessToken': accessToken,
       },
-      fromJson: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      fromJson: (json) =>
+          AuthResponseModel.fromJson(json as Map<String, dynamic>),
     );
   }
 
@@ -72,7 +75,8 @@ class AuthService {
       body: {
         'idToken': idToken,
       },
-      fromJson: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      fromJson: (json) =>
+          AuthResponseModel.fromJson(json as Map<String, dynamic>),
     );
   }
 
@@ -84,7 +88,8 @@ class AuthService {
       body: {
         'refreshToken': refreshToken,
       },
-      fromJson: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      fromJson: (json) =>
+          AuthResponseModel.fromJson(json as Map<String, dynamic>),
     );
   }
 
@@ -156,7 +161,8 @@ class AuthService {
     return await apiService.get<ClubSelectionStatusModel>(
       ApiEndpoints.clubSelectionStatus,
       headers: {'Authorization': 'Bearer $accessToken'},
-      fromJson: (json) => ClubSelectionStatusModel.fromJson(json as Map<String, dynamic>),
+      fromJson: (json) =>
+          ClubSelectionStatusModel.fromJson(json as Map<String, dynamic>),
     );
   }
 
@@ -194,7 +200,8 @@ class AuthService {
         'clubId': clubId,
         if (role != null) 'role': role,
       },
-      fromJson: (json) => ClubSelectResultModel.fromJson(json as Map<String, dynamic>),
+      fromJson: (json) =>
+          ClubSelectResultModel.fromJson(json as Map<String, dynamic>),
     );
   }
 
@@ -230,6 +237,15 @@ class AuthService {
     );
   }
 
+  Future<ApiResponseModel<void>> deleteAccount({
+    required String accessToken,
+  }) async {
+    return await apiService.delete<void>(
+      ApiEndpoints.userMe,
+      headers: {'Authorization': 'Bearer $accessToken'},
+    );
+  }
+
   Future<ApiResponseModel<List<MemberModel>>> getClubMembers({
     required String accessToken,
     required String clubId,
@@ -243,4 +259,3 @@ class AuthService {
     );
   }
 }
-

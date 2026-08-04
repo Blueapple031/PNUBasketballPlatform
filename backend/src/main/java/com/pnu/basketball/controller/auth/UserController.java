@@ -49,7 +49,7 @@ public class UserController {
     }
 
     @DeleteMapping("/me")
-    @Operation(summary = "회원 탈퇴", description = "현재 로그인한 사용자의 계정을 비활성화(소프트 삭제)합니다.")
+    @Operation(summary = "회원 탈퇴", description = "현재 로그인한 사용자의 계정과 개인정보를 영구 삭제합니다.")
     public ResponseEntity<ApiResponse<Void>> withdraw(
             @AuthenticationPrincipal Long userId
     ) {

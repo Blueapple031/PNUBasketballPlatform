@@ -208,6 +208,24 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> deleteAccount() async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      await authRepository.deleteAccount();
+      _currentUser = null;
+      return true;
+    } catch (e) {
+      _errorMessage = toUserFriendlyMessage(e);
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> checkEmailAvailability(String email) async {
     try {
       return await authRepository.checkEmailAvailability(email);
@@ -284,7 +302,8 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<ClubSelectResultModel?> selectClub(String clubId, {String? role}) async {
+  Future<ClubSelectResultModel?> selectClub(String clubId,
+      {String? role}) async {
     try {
       _isLoading = true;
       _errorMessage = null;
@@ -334,4 +353,3 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 }
-

@@ -3,10 +3,12 @@ import '../../../core/theme/app_colors.dart';
 
 class SettingsList extends StatelessWidget {
   final VoidCallback? onLogout;
+  final VoidCallback? onDeleteAccount;
 
   const SettingsList({
     super.key,
     this.onLogout,
+    this.onDeleteAccount,
   });
 
   @override
@@ -55,11 +57,12 @@ class SettingsList extends StatelessWidget {
             isDestructive: true,
             onTap: onLogout,
           ),
-          const _SettingsMenuTile(
+          _SettingsMenuTile(
             icon: Icons.delete_forever,
             title: '탈퇴',
             subtitle: '계정을 영구 삭제합니다',
             isDestructive: true,
+            onTap: onDeleteAccount,
           ),
         ],
       ),
