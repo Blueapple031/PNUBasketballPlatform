@@ -25,19 +25,32 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
     List<Schedule> findByLocationIdInAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
             List<UUID> locationIds, LocalDate startDate, LocalDate endDate);
 
+    List<Schedule> findByRecurringTrueAndScheduleDateLessThanEqual(LocalDate endDate);
+
+    List<Schedule> findByRecurringTrueAndLocationIdInAndScheduleDateLessThanEqual(
+            List<UUID> locationIds, LocalDate endDate);
+
     long countByLocationId(UUID locationId);
 
     /**
      * 같은 장소, 같은 날짜에 시간이 겹치는 일정이 있는지 확인 (생성 시)
      */
-    @Query("""
-            SELECT COUNT(s) > 0 FROM Schedule s
-            WHERE s.location.id = :locationId
-            AND s.scheduleDate = :scheduleDate
-            AND s.startTime < :endTime
-            AND s.endTime > :startTime
-            AND s.status != com.pnu.basketball.domain.ScheduleStatus.CANCELLED
-            """)
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1 FROM schedules s
+                WHERE s.location_id = :locationId
+                  AND s.start_time < :endTime
+                  AND s.end_time > :startTime
+                  AND s.status <> 'CANCELLED'
+                  AND (
+                    (s.is_recurring = FALSE AND s.schedule_date = :scheduleDate)
+                    OR
+                    (s.is_recurring = TRUE
+                     AND s.schedule_date <= :scheduleDate
+                     AND MOD((CAST(:scheduleDate AS date) - s.schedule_date), 7) = 0)
+                  )
+            )
+            """, nativeQuery = true)
     boolean existsOverlappingForCreate(
             @Param("locationId") UUID locationId,
             @Param("scheduleDate") LocalDate scheduleDate,
@@ -47,16 +60,43 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
     /**
      * 같은 장소, 같은 날짜에 시간이 겹치는 일정이 있는지 확인 (수정 시, excludeId 제외)
      */
-    @Query("""
-            SELECT COUNT(s) > 0 FROM Schedule s
-            WHERE s.location.id = :locationId
-            AND s.scheduleDate = :scheduleDate
-            AND s.startTime < :endTime
-            AND s.endTime > :startTime
-            AND s.status != com.pnu.basketball.domain.ScheduleStatus.CANCELLED
-            AND s.id != :excludeId
-            """)
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1 FROM schedules s
+                WHERE s.location_id = :locationId
+                  AND s.start_time < :endTime
+                  AND s.end_time > :startTime
+                  AND s.status <> 'CANCELLED'
+                  AND s.id <> :excludeId
+                  AND (
+                    (s.is_recurring = FALSE AND s.schedule_date = :scheduleDate)
+                    OR
+                    (s.is_recurring = TRUE
+                     AND s.schedule_date <= :scheduleDate
+                     AND MOD((CAST(:scheduleDate AS date) - s.schedule_date), 7) = 0)
+                  )
+            )
+            """, nativeQuery = true)
     boolean existsOverlappingForUpdate(
+            @Param("locationId") UUID locationId,
+            @Param("scheduleDate") LocalDate scheduleDate,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
+            @Param("excludeId") UUID excludeId);
+
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1 FROM schedules s
+                WHERE s.location_id = :locationId
+                  AND s.start_time < :endTime
+                  AND s.end_time > :startTime
+                  AND s.status <> 'CANCELLED'
+                  AND (:excludeId IS NULL OR s.id <> :excludeId)
+                  AND EXTRACT(ISODOW FROM s.schedule_date) = EXTRACT(ISODOW FROM CAST(:scheduleDate AS date))
+                  AND (s.is_recurring = TRUE OR s.schedule_date >= :scheduleDate)
+            )
+            """, nativeQuery = true)
+    boolean existsOverlappingForWeeklyRecurrence(
             @Param("locationId") UUID locationId,
             @Param("scheduleDate") LocalDate scheduleDate,
             @Param("startTime") LocalTime startTime,

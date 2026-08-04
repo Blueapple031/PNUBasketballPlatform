@@ -25,6 +25,7 @@ public class ScheduleResponse {
     private LocalTime endTime;
     private String status;
     private String scheduleType;
+    private boolean recurring;
     private String title;
     private String description;
     private UUID matchId;
@@ -41,11 +42,18 @@ public class ScheduleResponse {
                 .endTime(schedule.getEndTime())
                 .status(schedule.getStatus().name())
                 .scheduleType(schedule.getScheduleType())
+                .recurring(schedule.isRecurring())
                 .title(schedule.getTitle())
                 .description(schedule.getDescription())
                 .matchId(schedule.getMatchId())
                 .createdAt(schedule.getCreatedAt())
                 .updatedAt(schedule.getUpdatedAt())
                 .build();
+    }
+
+    public static ScheduleResponse occurrence(Schedule schedule, LocalDate occurrenceDate) {
+        ScheduleResponse response = from(schedule);
+        response.scheduleDate = occurrenceDate;
+        return response;
     }
 }

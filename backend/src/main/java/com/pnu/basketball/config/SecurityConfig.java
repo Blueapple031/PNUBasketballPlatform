@@ -61,7 +61,8 @@ public class SecurityConfig {
                                 "/api-docs/**",
                                 "/v3/api-docs/**",
                                 "/admin/**",
-                                "/privacy.html"
+                                "/privacy.html",
+                                "/account-deletion.html"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

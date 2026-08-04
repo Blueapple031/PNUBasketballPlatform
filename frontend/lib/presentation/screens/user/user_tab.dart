@@ -41,10 +41,96 @@ class _UserTabState extends State<UserTab> {
       return;
     }
 
+    if (!mounted) {
+      return;
+    }
+
     final authProvider = context.read<AuthProvider>();
     await authProvider.logout();
 
     if (!mounted) {
+      return;
+    }
+
+    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+  }
+
+  Future<void> _handleDeleteAccount() async {
+    final confirmationController = TextEditingController();
+    var canDelete = false;
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('회원 탈퇴'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '계정과 개인정보가 영구 삭제되며 복구할 수 없습니다. '
+                    '계속하려면 아래 입력란에 “탈퇴”를 입력하세요.',
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: confirmationController,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      labelText: '확인 문구',
+                      hintText: '탈퇴',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      setDialogState(() {
+                        canDelete = value.trim() == '탈퇴';
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('취소'),
+                ),
+                TextButton(
+                  onPressed: canDelete
+                      ? () => Navigator.of(dialogContext).pop(true)
+                      : null,
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.errorRed,
+                  ),
+                  child: const Text('계정 삭제'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    confirmationController.dispose();
+
+    if (shouldDelete != true || !mounted) {
+      return;
+    }
+
+    final authProvider = context.read<AuthProvider>();
+    final deleted = await authProvider.deleteAccount();
+
+    if (!mounted) {
+      return;
+    }
+
+    if (!deleted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage ?? '회원 탈퇴에 실패했습니다.'),
+        ),
+      );
       return;
     }
 
@@ -92,8 +178,7 @@ class _UserTabState extends State<UserTab> {
 
           if (authProvider.currentUser == null) {
             final errorText = authProvider.errorMessage;
-            final requiresReLogin =
-                errorText == null ||
+            final requiresReLogin = errorText == null ||
                 errorText.contains('로그인') ||
                 errorText.contains('인증');
 
@@ -142,7 +227,10 @@ class _UserTabState extends State<UserTab> {
                     const SizedBox(height: 24),
                     ProfileHeader(user: authProvider.currentUser!),
                     const SizedBox(height: 24),
-                    SettingsList(onLogout: _handleLogout),
+                    SettingsList(
+                      onLogout: _handleLogout,
+                      onDeleteAccount: _handleDeleteAccount,
+                    ),
                     const SizedBox(height: 32),
                   ],
                 ),

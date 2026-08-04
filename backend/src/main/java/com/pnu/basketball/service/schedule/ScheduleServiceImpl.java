@@ -16,8 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -31,37 +35,66 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     @Transactional(readOnly = true)
     public List<ScheduleResponse> getSchedules(LocalDate startDate, LocalDate endDate, List<UUID> locationIds) {
-        List<Schedule> schedules;
-        boolean hasLocationFilter = locationIds != null && !locationIds.isEmpty();
-
+        LocalDate effectiveStart;
+        LocalDate effectiveEnd;
         if (startDate != null && endDate != null) {
-            if (hasLocationFilter) {
-                schedules = scheduleRepository.findByLocationIdInAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
-                        locationIds, startDate, endDate);
-            } else {
-                schedules = scheduleRepository.findByScheduleDateBetweenOrderByScheduleDateAscLocation_NameAscStartTimeAsc(
-                        startDate, endDate);
-            }
+            effectiveStart = startDate;
+            effectiveEnd = endDate;
         } else if (startDate != null) {
-            schedules = scheduleRepository.findByScheduleDateOrderByLocation_NameAscStartTimeAsc(startDate);
-            if (hasLocationFilter) {
-                schedules = schedules.stream()
-                        .filter(s -> locationIds.contains(s.getLocation().getId()))
-                        .collect(Collectors.toList());
-            }
+            effectiveStart = startDate;
+            effectiveEnd = startDate;
         } else {
-            LocalDate defaultStart = LocalDate.now();
-            LocalDate defaultEnd = defaultStart.plusDays(13);
-            if (hasLocationFilter) {
-                schedules = scheduleRepository.findByLocationIdInAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
-                        locationIds, defaultStart, defaultEnd);
-            } else {
-                schedules = scheduleRepository.findByScheduleDateBetweenOrderByScheduleDateAscLocation_NameAscStartTimeAsc(
-                        defaultStart, defaultEnd);
-            }
+            effectiveStart = LocalDate.now();
+            effectiveEnd = effectiveStart.plusDays(13);
         }
 
-        return schedules.stream().map(ScheduleResponse::from).collect(Collectors.toList());
+        if (effectiveStart.isAfter(effectiveEnd)) {
+            throw new CustomException(ErrorCode.INVALID_INPUT, "시작 날짜는 종료 날짜보다 늦을 수 없습니다.");
+        }
+
+        boolean hasLocationFilter = locationIds != null && !locationIds.isEmpty();
+        List<Schedule> datedSchedules = hasLocationFilter
+                ? scheduleRepository.findByLocationIdInAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
+                        locationIds, effectiveStart, effectiveEnd)
+                : scheduleRepository.findByScheduleDateBetweenOrderByScheduleDateAscLocation_NameAscStartTimeAsc(
+                        effectiveStart, effectiveEnd);
+
+        List<Schedule> recurringSchedules = hasLocationFilter
+                ? scheduleRepository.findByRecurringTrueAndLocationIdInAndScheduleDateLessThanEqual(
+                        locationIds, effectiveEnd)
+                : scheduleRepository.findByRecurringTrueAndScheduleDateLessThanEqual(effectiveEnd);
+
+        Map<UUID, Schedule> uniqueSchedules = new LinkedHashMap<>();
+        datedSchedules.forEach(schedule -> uniqueSchedules.put(schedule.getId(), schedule));
+        recurringSchedules.forEach(schedule -> uniqueSchedules.put(schedule.getId(), schedule));
+
+        LocalDate rangeStart = effectiveStart;
+        LocalDate rangeEnd = effectiveEnd;
+        return uniqueSchedules.values().stream()
+                .flatMap(schedule -> expandSchedule(schedule, rangeStart, rangeEnd).stream())
+                .sorted(Comparator.comparing(ScheduleResponse::getScheduleDate)
+                        .thenComparing(ScheduleResponse::getLocationName)
+                        .thenComparing(ScheduleResponse::getStartTime))
+                .collect(Collectors.toList());
+    }
+
+    private List<ScheduleResponse> expandSchedule(Schedule schedule, LocalDate startDate, LocalDate endDate) {
+        if (!schedule.isRecurring()) {
+            return List.of(ScheduleResponse.from(schedule));
+        }
+
+        LocalDate occurrence = schedule.getScheduleDate();
+        if (occurrence.isBefore(startDate)) {
+            long daysFromFirst = ChronoUnit.DAYS.between(occurrence, startDate);
+            occurrence = occurrence.plusWeeks((daysFromFirst + 6) / 7);
+        }
+
+        List<ScheduleResponse> occurrences = new ArrayList<>();
+        while (!occurrence.isAfter(endDate)) {
+            occurrences.add(ScheduleResponse.occurrence(schedule, occurrence));
+            occurrence = occurrence.plusWeeks(1);
+        }
+        return occurrences;
     }
 
     @Override
@@ -72,22 +105,16 @@ public class ScheduleServiceImpl implements ScheduleService {
         return ScheduleResponse.from(schedule);
     }
 
-    private static final int TRAINING_WEEKS = 12;
-
     @Override
     @Transactional
     public ScheduleCreateResult createSchedule(ScheduleCreateRequest request) {
         ScheduleLocationEntity location = locationRepository.findById(request.getLocationId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_LOCATION_NOT_FOUND));
 
-        if (request.getStartTime().isAfter(request.getEndTime()) || request.getStartTime().equals(request.getEndTime())) {
-            throw new CustomException(ErrorCode.INVALID_INPUT, "시작 시간은 종료 시간보다 이전이어야 합니다.");
-        }
+        validateTimeRange(request.getStartTime(), request.getEndTime());
 
-        boolean isTraining = "TRAINING".equalsIgnoreCase(request.getScheduleType());
-
-        if (isTraining) {
-            return createTrainingSchedules(request, location);
+        if ("TRAINING".equalsIgnoreCase(request.getScheduleType())) {
+            return createRecurringTraining(request, location);
         }
 
         if (scheduleRepository.existsOverlappingForCreate(
@@ -95,16 +122,14 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new CustomException(ErrorCode.SCHEDULE_OVERLAP);
         }
 
-        ScheduleStatus status = parseStatus(request.getStatus(), ScheduleStatus.SCHEDULED);
-        String scheduleType = parseScheduleType(request.getScheduleType());
-
         Schedule schedule = Schedule.builder()
                 .location(location)
                 .scheduleDate(request.getScheduleDate())
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
-                .status(status)
-                .scheduleType(scheduleType)
+                .status(parseStatus(request.getStatus(), ScheduleStatus.SCHEDULED))
+                .scheduleType(parseScheduleType(request.getScheduleType()))
+                .recurring(false)
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .build();
@@ -113,36 +138,28 @@ public class ScheduleServiceImpl implements ScheduleService {
         return ScheduleCreateResult.single(ScheduleResponse.from(schedule));
     }
 
-    private ScheduleCreateResult createTrainingSchedules(ScheduleCreateRequest request, ScheduleLocationEntity location) {
-        ScheduleStatus status = parseStatus(request.getStatus(), ScheduleStatus.SCHEDULED);
-        LocalDate baseDate = request.getScheduleDate();
-
-        List<Schedule> created = new ArrayList<>();
-        for (int week = 0; week < TRAINING_WEEKS; week++) {
-            LocalDate scheduleDate = baseDate.plusWeeks(week);
-            if (scheduleRepository.existsOverlappingForCreate(
-                    request.getLocationId(), scheduleDate, request.getStartTime(), request.getEndTime())) {
-                throw new CustomException(ErrorCode.SCHEDULE_OVERLAP,
-                        scheduleDate + " 해당 날짜·시간대에 이미 일정이 있습니다. 다른 날짜를 선택하거나 기존 일정을 확인해 주세요.");
-            }
-            Schedule schedule = Schedule.builder()
-                    .location(location)
-                    .scheduleDate(scheduleDate)
-                    .startTime(request.getStartTime())
-                    .endTime(request.getEndTime())
-                    .status(status)
-                    .scheduleType("TRAINING")
-                    .title(request.getTitle())
-                    .description(request.getDescription())
-                    .build();
-            created.add(scheduleRepository.save(schedule));
+    private ScheduleCreateResult createRecurringTraining(
+            ScheduleCreateRequest request, ScheduleLocationEntity location) {
+        if (scheduleRepository.existsOverlappingForWeeklyRecurrence(
+                request.getLocationId(), request.getScheduleDate(), request.getStartTime(), request.getEndTime(), null)) {
+            throw new CustomException(ErrorCode.SCHEDULE_OVERLAP,
+                    "같은 요일과 시간대에 겹치는 일정이 있습니다. 기존 일정을 확인해 주세요.");
         }
-        return ScheduleCreateResult.multiple(ScheduleResponse.from(created.get(0)), created.size());
-    }
 
-    private String parseScheduleType(String type) {
-        if (type == null || type.isBlank()) return "REGULAR";
-        return "TRAINING".equalsIgnoreCase(type) ? "TRAINING" : "REGULAR";
+        Schedule schedule = Schedule.builder()
+                .location(location)
+                .scheduleDate(request.getScheduleDate())
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .status(parseStatus(request.getStatus(), ScheduleStatus.SCHEDULED))
+                .scheduleType("TRAINING")
+                .recurring(true)
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .build();
+
+        schedule = scheduleRepository.save(schedule);
+        return ScheduleCreateResult.single(ScheduleResponse.from(schedule));
     }
 
     @Override
@@ -150,24 +167,25 @@ public class ScheduleServiceImpl implements ScheduleService {
     public ScheduleResponse updateSchedule(UUID id, ScheduleUpdateRequest request) {
         Schedule schedule = scheduleRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
-
         ScheduleLocationEntity location = locationRepository.findById(request.getLocationId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_LOCATION_NOT_FOUND));
 
-        if (request.getStartTime().isAfter(request.getEndTime()) || request.getStartTime().equals(request.getEndTime())) {
-            throw new CustomException(ErrorCode.INVALID_INPUT, "시작 시간은 종료 시간보다 이전이어야 합니다.");
-        }
+        validateTimeRange(request.getStartTime(), request.getEndTime());
 
-        if (scheduleRepository.existsOverlappingForUpdate(
-                request.getLocationId(), request.getScheduleDate(), request.getStartTime(), request.getEndTime(), id)) {
+        boolean overlaps = schedule.isRecurring()
+                ? scheduleRepository.existsOverlappingForWeeklyRecurrence(
+                        request.getLocationId(), request.getScheduleDate(),
+                        request.getStartTime(), request.getEndTime(), id)
+                : scheduleRepository.existsOverlappingForUpdate(
+                        request.getLocationId(), request.getScheduleDate(),
+                        request.getStartTime(), request.getEndTime(), id);
+        if (overlaps) {
             throw new CustomException(ErrorCode.SCHEDULE_OVERLAP);
         }
 
         ScheduleStatus status = parseStatus(request.getStatus(), schedule.getStatus());
-
         schedule.update(location, request.getScheduleDate(), request.getStartTime(),
                 request.getEndTime(), status, request.getTitle(), request.getDescription());
-
         return ScheduleResponse.from(schedule);
     }
 
@@ -178,6 +196,17 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new CustomException(ErrorCode.SCHEDULE_NOT_FOUND);
         }
         scheduleRepository.deleteById(id);
+    }
+
+    private void validateTimeRange(java.time.LocalTime startTime, java.time.LocalTime endTime) {
+        if (!startTime.isBefore(endTime)) {
+            throw new CustomException(ErrorCode.INVALID_INPUT, "시작 시간은 종료 시간보다 이전이어야 합니다.");
+        }
+    }
+
+    private String parseScheduleType(String type) {
+        if (type == null || type.isBlank()) return "REGULAR";
+        return "TRAINING".equalsIgnoreCase(type) ? "TRAINING" : "REGULAR";
     }
 
     private ScheduleStatus parseStatus(String statusStr, ScheduleStatus defaultStatus) {

@@ -107,6 +107,14 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 40),
+                Center(
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    width: 96,
+                    height: 96,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 const Text(
                   '딸바',
                   style: TextStyle(

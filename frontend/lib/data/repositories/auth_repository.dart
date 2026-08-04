@@ -4,6 +4,7 @@ import '../models/club_model.dart';
 import '../models/member_model.dart';
 import '../services/auth_service.dart';
 import '../../services/fcm_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -13,11 +14,13 @@ class AuthRepository {
   final AuthService authService;
   final FlutterSecureStorage secureStorage;
   final GoogleSignIn googleSignIn;
-  static const String _googleWebClientId =
-      String.fromEnvironment(
-        'GOOGLE_WEB_CLIENT_ID',
-        defaultValue: '234779227231-11ip2gu9o7bt1absesjmh1u58ovno9hv.apps.googleusercontent.com',
-      );
+  static const String _googleWebClientId = String.fromEnvironment(
+    'GOOGLE_WEB_CLIENT_ID',
+    defaultValue:
+        '234779227231-11ip2gu9o7bt1absesjmh1u58ovno9hv.apps.googleusercontent.com',
+  );
+  static const String _googleIosClientId =
+      '234779227231-nl12i2u7tn19mrh58doale7ehjmmj9s0.apps.googleusercontent.com';
 
   AuthRepository({
     AuthService? authService,
@@ -27,6 +30,9 @@ class AuthRepository {
         secureStorage = secureStorage ?? const FlutterSecureStorage(),
         googleSignIn = googleSignIn ??
             GoogleSignIn(
+              clientId: defaultTargetPlatform == TargetPlatform.iOS
+                  ? _googleIosClientId
+                  : null,
               serverClientId:
                   _googleWebClientId.isEmpty ? null : _googleWebClientId,
             );
@@ -117,7 +123,8 @@ class AuthRepository {
         token = await UserApi.instance.loginWithKakaoAccount();
       }
 
-      final response = await authService.kakaoLogin(accessToken: token.accessToken);
+      final response =
+          await authService.kakaoLogin(accessToken: token.accessToken);
 
       if (response.success && response.data != null) {
         await _saveTokens(response.data!);
@@ -258,6 +265,26 @@ class AuthRepository {
     }
   }
 
+  Future<void> deleteAccount() async {
+    final accessToken = await getAccessToken();
+    if (accessToken == null || accessToken.isEmpty) {
+      throw Exception('로그인이 필요합니다.');
+    }
+
+    final response = await authService.deleteAccount(
+      accessToken: accessToken,
+    );
+    if (!response.success) {
+      throw Exception(_buildErrorMessage(response.error, '회원 탈퇴에 실패했습니다.'));
+    }
+
+    await clearTokens();
+    await googleSignIn.signOut();
+    try {
+      await UserApi.instance.logout();
+    } catch (_) {}
+  }
+
   // 토큰 갱신
   Future<String?> refreshAccessToken() async {
     try {
@@ -394,7 +421,8 @@ class AuthRepository {
     return null;
   }
 
-  Future<ClubSelectResultModel> selectClub(String clubId, {String? role}) async {
+  Future<ClubSelectResultModel> selectClub(String clubId,
+      {String? role}) async {
     final accessToken = await getAccessToken();
     if (accessToken == null) throw Exception('로그인이 필요합니다.');
 
@@ -440,4 +468,3 @@ class AuthRepository {
     throw Exception(response.error?['message'] ?? '동아리 멤버 조회 실패');
   }
 }
-

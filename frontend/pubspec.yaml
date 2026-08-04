@@ -52,17 +52,26 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   json_serializable: ^6.7.1
   build_runner: ^2.4.7
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
-  
+
   assets:
     - assets/images/
     - assets/icons/
     - assets/fonts/
-  
+
   fonts:
     - family: Roboto
       fonts:
         - asset: assets/fonts/Roboto-Regular.ttf
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  remove_alpha_ios: true
+  adaptive_icon_background: "#3721F4"
+  adaptive_icon_foreground: "assets/images/logo_foreground.png"
 

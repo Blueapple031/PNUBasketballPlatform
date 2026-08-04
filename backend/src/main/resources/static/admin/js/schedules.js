@@ -78,7 +78,7 @@ function fetchSchedules() {
                         '<td>' + titleShort + '</td>' +
                         '<td>' +
                         '<button type="button" class="action-btn btn-edit-schedule" data-id="' + s.id + '">수정</button> ' +
-                        '<button type="button" class="action-btn btn-delete-schedule" data-id="' + s.id + '" style="background:#e53e3e">삭제</button>' +
+                        '<button type="button" class="action-btn btn-delete-schedule" data-id="' + s.id + '" data-recurring="' + (!!s.recurring) + '" style="background:#e53e3e">' + (s.recurring ? '전체 취소' : '삭제') + '</button>' +
                         '</td>' +
                         '</tr>'
                     );
@@ -101,7 +101,7 @@ function bindScheduleEvents() {
     });
     document.querySelectorAll('.btn-delete-schedule').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            deleteSchedule(this.getAttribute('data-id'));
+            deleteSchedule(this.getAttribute('data-id'), this.getAttribute('data-recurring') === 'true');
         });
     });
 }
@@ -130,6 +130,10 @@ function openScheduleModal(id) {
                     var s = res.data;
                     locationSelect.value = s.locationId || '';
                     document.getElementById('edit-schedule-type').value = s.scheduleType || 'REGULAR';
+                    hintEl.style.display = s.recurring ? 'block' : 'none';
+                    hintEl.textContent = s.recurring
+                        ? '이 훈련을 수정하면 이후 매주 반복되는 전체 일정에 적용됩니다.'
+                        : '훈련 선택 시, 시작일부터 같은 요일·시간으로 완전히 취소할 때까지 매주 고정됩니다.';
                     document.getElementById('edit-schedule-date').value = s.scheduleDate || '';
                     document.getElementById('edit-schedule-start-time').value = s.startTime ? String(s.startTime).substring(0, 5) : '';
                     document.getElementById('edit-schedule-end-time').value = s.endTime ? String(s.endTime).substring(0, 5) : '';
@@ -145,6 +149,7 @@ function openScheduleModal(id) {
         locationSelect.required = false;
         document.getElementById('edit-schedule-type').value = 'TRAINING';
         hintEl.style.display = 'block';
+        hintEl.textContent = '훈련 선택 시, 시작일부터 같은 요일·시간으로 완전히 취소할 때까지 매주 고정됩니다.';
         document.getElementById('edit-schedule-date').value = '';
         document.getElementById('edit-schedule-start-time').value = '18:00';
         document.getElementById('edit-schedule-end-time').value = '22:00';
@@ -252,14 +257,17 @@ function handleScheduleError(err) {
     }
 }
 
-function deleteSchedule(id) {
-    if (!confirm('이 일정을 삭제하시겠습니까?')) return;
+function deleteSchedule(id, recurring) {
+    var message = recurring
+        ? '이 정기 훈련을 완전히 취소하시겠습니까? 이후의 모든 반복 일정이 함께 삭제됩니다.'
+        : '이 일정을 삭제하시겠습니까?';
+    if (!confirm(message)) return;
 
     Admin.apiRequest('/admin/schedules/' + id, { method: 'DELETE' })
         .then(function (res) {
             if (res.success) {
                 fetchSchedules();
-                alert('삭제되었습니다.');
+                alert(recurring ? '정기 훈련을 완전히 취소했습니다.' : '삭제되었습니다.');
             }
         })
         .catch(function (err) {
@@ -271,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('edit-schedule-type').addEventListener('change', function () {
         var hintEl = document.getElementById('schedule-type-hint');
         hintEl.style.display = this.value === 'TRAINING' ? 'block' : 'none';
+        hintEl.textContent = '훈련 선택 시, 시작일부터 같은 요일·시간으로 완전히 취소할 때까지 매주 고정됩니다.';
     });
     document.getElementById('btn-create-schedule').addEventListener('click', function () {
         openScheduleModal(null);

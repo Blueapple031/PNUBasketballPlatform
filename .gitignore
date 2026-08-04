@@ -267,6 +267,9 @@ application-secret.yml
 # ===================================
 logs/
 *.log
+
+# Local docker-compose runtime config (mirrors server ~/PNUBasketballPlatform/config)
+/config/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

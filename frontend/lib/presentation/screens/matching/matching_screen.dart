@@ -18,10 +18,18 @@ class _MatchingScreenState extends State<MatchingScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabChanged);
+  }
+
+  void _handleTabChanged() {
+    if (!_tabController.indexIsChanging && mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -37,37 +45,117 @@ class _MatchingScreenState extends State<MatchingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
           children: [
-            Icon(Icons.sports_basketball, color: AppColors.alertOrange, size: 28),
-            const SizedBox(width: 8),
-            const Text('매칭'),
+            const _BrandHeader(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Container(
+                height: 46,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.softSurface,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  dividerColor: Colors.transparent,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BoxDecoration(
+                    color: AppColors.activeBlue,
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: AppColors.titleText,
+                  labelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  tabs: const [
+                    Tab(text: '게스트/번개'),
+                    Tab(text: '동아리 친선전'),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: const [
+                  RecruitmentListView(),
+                  ClubMatchListView(),
+                ],
+              ),
+            ),
           ],
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.activeBlue,
-          unselectedLabelColor: AppColors.subText,
-          indicatorColor: AppColors.activeBlue,
-          tabs: const [
-            Tab(text: '게스트/번개'),
-            Tab(text: '동아리 친선전'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          RecruitmentListView(),
-          ClubMatchListView(),
-        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _onFabPressed,
         backgroundColor: AppColors.activeBlue,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('모집하기', style: TextStyle(color: Colors.white)),
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        icon: const Icon(Icons.add_rounded),
+        label: Text(
+          _tabController.index == 0 ? '모집하기' : '친선전 만들기',
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
+}
+
+class _BrandHeader extends StatelessWidget {
+  const _BrandHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 66,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: ClipRect(
+                child: Transform.scale(
+                  scale: 1.28,
+                  child: Image.asset(
+                    'assets/images/nuktu_r.png',
+                    key: const ValueKey('brand-logo'),
+                    fit: BoxFit.cover,
+                    filterQuality: FilterQuality.high,
+                    semanticLabel: '넉터 로고',
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 64,
+              height: 36,
+              child: ClipRect(
+                child: Image.asset(
+                  'assets/images/nuktu_text.png',
+                  key: const ValueKey('brand-wordmark'),
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  semanticLabel: '넉터',
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

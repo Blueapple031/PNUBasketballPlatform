@@ -10,8 +10,14 @@ void main() async {
 
   await initializeDateFormatting('ko', null);
 
-  await Firebase.initializeApp();
-  await FcmService.init();
+  // Firebase의 iOS 설정 파일이 아직 없어도 앱 자체는 실행할 수 있게 한다.
+  // 설정이 완료된 환경에서는 FCM이 정상적으로 초기화된다.
+  try {
+    await Firebase.initializeApp();
+    await FcmService.init();
+  } catch (error) {
+    debugPrint('Firebase initialization skipped: $error');
+  }
 
   // 카카오 SDK 초기화 (run.ps1 사용 시 gradle.properties 키 전달)
   const nativeAppKey = String.fromEnvironment(
@@ -22,4 +28,3 @@ void main() async {
 
   runApp(const BasketballApp());
 }
-

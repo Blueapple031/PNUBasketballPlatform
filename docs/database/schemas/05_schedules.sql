@@ -31,6 +31,7 @@ CREATE TABLE schedules (
     end_time        TIME NOT NULL,
     status          schedule_status NOT NULL DEFAULT 'SCHEDULED',
     schedule_type   VARCHAR(50) NOT NULL DEFAULT 'REGULAR',
+    is_recurring    BOOLEAN NOT NULL DEFAULT FALSE,
     title           VARCHAR(200),
     description     TEXT,
     match_id        UUID,
@@ -43,9 +44,11 @@ CREATE INDEX idx_schedules_location_id ON schedules(location_id);
 CREATE INDEX idx_schedules_date ON schedules(schedule_date);
 CREATE INDEX idx_schedules_location_date ON schedules(location_id, schedule_date);
 CREATE INDEX idx_schedules_match_id ON schedules(match_id) WHERE match_id IS NOT NULL;
+CREATE INDEX idx_schedules_recurring ON schedules(is_recurring, schedule_date) WHERE is_recurring = TRUE;
 
 COMMENT ON TABLE schedule_locations IS '매칭 장소 (유동적 확장)';
 COMMENT ON TABLE schedules IS '농구장 일정';
 COMMENT ON COLUMN schedules.status IS 'AVAILABLE=비어있음, SCHEDULED=사용중, CANCELLED=사용 예정';
 COMMENT ON COLUMN schedules.schedule_type IS 'REGULAR=일반, TRAINING=훈련(주간 반복)';
+COMMENT ON COLUMN schedules.is_recurring IS 'TRUE이면 schedule_date부터 종료일 없이 매주 반복';
 COMMENT ON COLUMN schedules.match_id IS '향후 매칭/모집 확정 시 연동';
