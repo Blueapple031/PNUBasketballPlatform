@@ -25,7 +25,8 @@ void main() {
       ),
     );
 
-    expect(find.text('딸바'), findsOneWidget);
+    expect(find.byKey(const ValueKey('brand-logo')), findsOneWidget);
+    expect(find.byKey(const ValueKey('brand-wordmark')), findsOneWidget);
     expect(find.text('게스트/번개'), findsOneWidget);
     expect(find.text('동아리 친선전'), findsOneWidget);
     expect(find.text('모집하기'), findsOneWidget);

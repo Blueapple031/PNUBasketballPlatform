@@ -124,23 +124,34 @@ class _BrandHeader extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Row(
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(9),
-              child: Image.asset(
-                'assets/images/logo.png',
-                width: 34,
-                height: 34,
-                fit: BoxFit.cover,
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: ClipRect(
+                child: Transform.scale(
+                  scale: 1.28,
+                  child: Image.asset(
+                    'assets/images/nuktu_r.png',
+                    key: const ValueKey('brand-logo'),
+                    fit: BoxFit.cover,
+                    filterQuality: FilterQuality.high,
+                    semanticLabel: '넉터 로고',
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 10),
-            const Text(
-              '딸바',
-              style: TextStyle(
-                color: AppColors.activeBlue,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.4,
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 64,
+              height: 36,
+              child: ClipRect(
+                child: Image.asset(
+                  'assets/images/nuktu_text.png',
+                  key: const ValueKey('brand-wordmark'),
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  semanticLabel: '넉터',
+                ),
               ),
             ),
           ],
