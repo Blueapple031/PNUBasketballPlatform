@@ -1,0 +1,22 @@
+app:
+  token-storage: redis
+  release: ${RELEASE_COMMIT:unknown}
+
+spring:
+  flyway:
+    enabled: true
+    locations: filesystem:/app/db/migration,classpath:db/migration
+    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:false}
+    baseline-version: "100"
+    validate-on-migrate: true
+    clean-disabled: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+logging:
+  level:
+    root: INFO
+    com.pnu.basketball: INFO
+    org.springframework.web: INFO
+    org.springframework.security: WARN

@@ -1,0 +1,16 @@
+.git
+.github
+**/.gradle
+**/build
+**/.idea
+**/*.iml
+**/*.log
+**/.DS_Store
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+backend/src/test/resources/application-secret.yml
+frontend
+pict
+SPEC
