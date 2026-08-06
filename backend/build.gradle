@@ -32,6 +32,10 @@ dependencies {
     
     // Database
     runtimeOnly 'org.postgresql:postgresql'
+    // PostgreSQL 17 support starts in Flyway 10.20. Keep core and the
+    // database-specific module on the same explicitly reviewed version.
+    implementation 'org.flywaydb:flyway-core:10.20.1'
+    implementation 'org.flywaydb:flyway-database-postgresql:10.20.1'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     
     // JWT
