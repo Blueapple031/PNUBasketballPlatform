@@ -1,4 +1,4 @@
--- PostgreSQL Database Schema for 딸바 (PNU Basketball Platform)
+-- PostgreSQL Database Schema for 넉터(NUKTU)
 -- 현재 DB 구조 반영 (2026-03)
 --
 -- 실행: psql -U postgres -d ddalba_DB -f schema.sql

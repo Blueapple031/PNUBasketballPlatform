@@ -13,7 +13,7 @@ CREATE DATABASE ddalba_DB
     CONNECTION LIMIT = -1;
 
 -- 2. 데이터베이스 코멘트
-COMMENT ON DATABASE ddalba_DB IS 'PNU Basketball Platform (딸바) Database';
+COMMENT ON DATABASE ddalba_DB IS '넉터(NUKTU) Database';
 
 -- 데이터베이스 목록 확인
 \l

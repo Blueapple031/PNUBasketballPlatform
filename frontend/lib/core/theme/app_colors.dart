@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// PNU Basketball Platform - Design System Color Palette
+/// 넉터(NUKTU) - Design System Color Palette
 ///
 /// PNU Plato 디자인 시스템을 기반으로 한 색상 정의
 ///

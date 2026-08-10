@@ -57,7 +57,7 @@ class _BasketballAppState extends State<BasketballApp> {
       ],
       child: MaterialApp(
         navigatorKey: _navigatorKey,
-        title: '딸바',
+        title: '넉터(NUKTU)',
         theme: AppTheme.theme,
         home: const AuthGate(),
         onGenerateRoute: (settings) {

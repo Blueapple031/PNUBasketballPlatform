@@ -1,6 +1,6 @@
 # 📋 게시판 API 명세 (Board API Specification)
 
-> **딸바 (PNU Basketball Platform)** 게시판 REST API 명세서  
+> **넉터(NUKTU)** 게시판 REST API 명세서
 > **버전**: 1.0.0  
 > **최종 수정일**: 2026-02
 

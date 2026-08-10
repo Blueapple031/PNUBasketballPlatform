@@ -2,7 +2,7 @@
     <!-- Android 13+ 알림 권한 (FCM) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
-        android:label="basketball_frontend"
+        android:label="넉터(NUKTU)"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

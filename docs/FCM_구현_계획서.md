@@ -1,6 +1,6 @@
 # FCM(Firebase Cloud Messaging) 알람 기능 구현 계획서
 
-> **프로젝트:** 딸바 (PNUBasketballPlatform)  
+> **프로젝트:** 넉터(NUKTU) (PNUBasketballPlatform)
 > **작성일:** 2026.03.09  
 > **목적:** FCM 토큰 기반 푸시 알림 기능 상세 구현 계획
 
@@ -60,7 +60,7 @@
 #### 0-2. Android 앱 등록
 1. 프로젝트 설정 → **앱 추가** → Android
 2. 패키지 이름: `com.pnu.basketball`
-3. 앱 닉네임: `딸바` (선택)
+3. 앱 닉네임: `넉터(NUKTU)` (선택)
 4. SHA-1: 디버그 키는 나중에 추가 가능
 
 #### 0-3. google-services.json 배치

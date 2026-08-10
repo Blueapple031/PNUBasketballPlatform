@@ -20,7 +20,7 @@ public class HealthCheckController {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "UP");
         response.put("timestamp", LocalDateTime.now());
-        response.put("service", "PNU Basketball Platform");
+        response.put("service", "넉터(NUKTU)");
         response.put("version", "1.0.0");
         response.put("startTime", startTime);
         

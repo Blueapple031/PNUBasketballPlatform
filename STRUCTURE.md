@@ -1,6 +1,6 @@
 # 📁 프로젝트 구조 명세서 (STRUCTURE.md)
 
-> **딸바 (PNU Basketball Platform)** 프로젝트의 폴더 구조 및 아키텍처 설계 명세서
+> **넉터(NUKTU)** 프로젝트의 폴더 구조 및 아키텍처 설계 명세서
 
 ---
 
@@ -20,7 +20,7 @@
 
 ### 프로젝트 정보
 
-- **프로젝트명**: 딸바 (PNU Basketball Platform)
+- **프로젝트명**: 넉터(NUKTU)
 - **프로젝트 타입**: Monorepo (단일 저장소)
 - **아키텍처 패턴**:
   - Backend: **Layered Architecture** (Controller → Service → Repository)
@@ -795,4 +795,4 @@ Provider → Riverpod 마이그레이션 고려 (타입 안정성 향상)
 
 **문서 작성일**: 2026년 1월  
 **최종 수정일**: 2026년 1월  
-**작성자**: 딸바 개발팀
+**작성자**: 넉터(NUKTU) 개발팀

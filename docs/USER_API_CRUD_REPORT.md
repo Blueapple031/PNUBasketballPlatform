@@ -1,7 +1,7 @@
 # User API CRUD 생성 보고서
 
 > **작성일**: 2026-02-12  
-> **프로젝트**: PNUBasketballPlatform (딸바)  
+> **프로젝트**: 넉터(NUKTU) (PNUBasketballPlatform)
 > **작성자**: 개발팀
 
 ---

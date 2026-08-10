@@ -71,7 +71,7 @@ class _MainFeedScreenState extends State<MainFeedScreen> {
           children: [
             Icon(Icons.sports_basketball, color: AppColors.alertOrange, size: 28),
             const SizedBox(width: 8),
-            const Text('딸바'),
+            const Text('넉터(NUKTU)'),
           ],
         ),
         actions: [

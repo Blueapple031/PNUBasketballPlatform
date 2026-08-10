@@ -1,6 +1,6 @@
 # 🔐 인증 기능 구현 작업 계획서 (Authentication Implementation Plan)
 
-> **딸바 (PNU Basketball Platform)** 자체 로그인 및 구글 로그인 기능 구현 계획서  
+> **넉터(NUKTU)** 자체 로그인 및 구글 로그인 기능 구현 계획서
 > **버전**: 1.0.0  
 > **작성일**: 2026-01
 
@@ -1000,5 +1000,5 @@ public class AuthController {
 ---
 
 **문서 작성일**: 2026년 1월  
-**작성자**: 딸바 개발팀
+**작성자**: 넉터(NUKTU) 개발팀
 

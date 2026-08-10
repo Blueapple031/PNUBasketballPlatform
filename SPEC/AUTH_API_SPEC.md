@@ -1,6 +1,6 @@
 # 🔐 인증 API 명세서 (Authentication API Specification)
 
-> **딸바 (PNU Basketball Platform)** 인증 관련 REST API 명세서  
+> **넉터(NUKTU)** 인증 관련 REST API 명세서
 > **버전**: 1.0.0  
 > **최종 수정일**: 2026-01
 
@@ -732,4 +732,4 @@ Authorization: Bearer {access_token}
 
 **문서 작성일**: 2026년 1월  
 **최종 수정일**: 2026년 2월  
-**작성자**: 딸바 개발팀
+**작성자**: 넉터(NUKTU) 개발팀

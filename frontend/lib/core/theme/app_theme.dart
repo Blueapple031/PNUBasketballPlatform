@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// PNU Basketball Platform - Theme Configuration
+/// 넉터(NUKTU) - Theme Configuration
 /// 
 /// 앱 전체의 테마를 한 곳에서 관리합니다.
 /// 모든 위젯은 이 테마를 자동으로 상속받습니다.

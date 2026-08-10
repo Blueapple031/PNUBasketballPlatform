@@ -1,4 +1,4 @@
-# PNU Basketball Flutter app
+# 넉터(NUKTU) Flutter app
 
 ## Android 실행
 
